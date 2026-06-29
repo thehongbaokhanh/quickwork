@@ -12,4 +12,5 @@ func RegisterAuthRoutes(router fiber.Router, authHandler *handlers.AuthHandler) 
 	// Đăng ký các Endpoint mới theo đúng đặc tả nghiệp vụ đề ra
 	authGroup.Post("/register-student", authHandler.RegisterStudent)
 	authGroup.Post("/register-enterprise", authHandler.RegisterEnterprise)
+	authGroup.Post("/login", authHandler.Login)
 }

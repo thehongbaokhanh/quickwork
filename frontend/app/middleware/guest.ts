@@ -8,7 +8,7 @@ export default defineNuxtRouteMiddleware(() => {
     const role = authStore.userRole
     
     if (role === 'ADMIN') return navigateTo('/admin/dashboard')
-    if (role === 'COMPANY') return navigateTo('/company/dashboard')
+    if (role === 'ENTERPRISE') return navigateTo('/enterprise/dashboard')
     return navigateTo('/dashboard') // Mặc định cho STUDENT
   }
 })

@@ -83,14 +83,25 @@ const handleLogin = async () => {
   isLoading.value = true
   errorMessage.value = ''
   try {
-    await authStore.login({ email: form.email, password: form.password })
+    await authStore.login({
+    email: form.email,
+    password: form.password
+})
     
     // Đăng nhập thành công, điều phối luồng dựa trên vai trò người dùng
     const role = authStore.userRole
-    if (role === 'ADMIN') await navigateTo('/admin/dashboard')
-    else if (role === 'COMPANY') await navigateTo('/company/dashboard')
-    else await navigateTo('/dashboard')
-  } catch (err: any) {
+
+if (!role) {
+  throw new Error("Không lấy được thông tin quyền người dùng")
+}
+
+if (role === "ADMIN") {
+  await navigateTo("/admin/dashboard")
+} else if (role === "ENTERPRISE") {
+  await navigateTo("/enterprise/dashboard")
+} else {
+  await navigateTo("/dashboard")
+} } catch (err: any) {
     errorMessage.value = err.message || 'Thông tin tài khoản hoặc mật khẩu chưa chính xác.'
   } finally {
     isLoading.value = false
