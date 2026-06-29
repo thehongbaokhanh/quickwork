@@ -7,7 +7,7 @@ export default defineNuxtRouteMiddleware(() => {
     return navigateTo('/login')
   }
 
-  if (authStore.userRole !== 'COMPANY') {
+  if (authStore.userRole !== 'ENTERPRISE') {
     return navigateTo('/403')
   }
 })

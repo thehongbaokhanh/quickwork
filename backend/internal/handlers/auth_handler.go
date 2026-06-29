@@ -141,3 +141,66 @@ func (h *AuthHandler) RegisterEnterprise(c *fiber.Ctx) error {
 		"data":    res,
 	})
 }
+
+// Login
+// @Summary Đăng nhập
+// @Description Đăng nhập hệ thống
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body request.LoginRequest true "Thông tin đăng nhập"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /api/v1/auth/login [post]
+func (h *AuthHandler) Login(c *fiber.Ctx) error {
+
+	req := new(request.LoginRequest)
+
+	if err := c.BodyParser(req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể đọc dữ liệu JSON.",
+		})
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Dữ liệu không hợp lệ.",
+			"errors": err.Error(),
+		})
+	}
+
+	res, err := h.authService.Login(req)
+
+	if err != nil {
+
+		switch err {
+
+		case service.ErrInvalidCredential:
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+				"success": false,
+				"message": "Email hoặc mật khẩu không đúng.",
+			})
+
+		case service.ErrAccountBanned:
+			return c.Status(http.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"message": "Tài khoản đã bị khóa.",
+			})
+
+		default:
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"message": err.Error(),
+			})
+		}
+	}
+
+	return c.JSON(fiber.Map{
+	"success": true,
+	"message": "Đăng nhập thành công.",
+	"data": res,
+})
+}

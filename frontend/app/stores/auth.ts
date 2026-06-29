@@ -2,19 +2,20 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { AuthService } from '~/services/auth.service'
 
+
 // Định nghĩa cấu trúc thông tin User cơ bản
 interface UserProfile {
   id: string
   email: string
   name: string
-  role: 'STUDENT' | 'COMPANY' | 'ADMIN'
+  role: 'STUDENT' | 'ENTERPRISE' | 'ADMIN'
 }
 
 export const useAuthStore = defineStore('auth', () => {
   // --- STATE ---
   const user = ref<UserProfile | null>(null)
   const token = ref<string | null>(null)
-  
+
   // Khởi tạo trạng thái từ localStorage nếu đang chạy ở phía Trình duyệt (Client)
   if (import.meta.client) {
     token.value = localStorage.getItem('qw_access_token')
@@ -36,45 +37,61 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Xử lý hành động Đăng nhập từ UI Form
    */
-  async function login(credentials: any) {
-    try {
-      // Gọi qua tầng Service, không gọi Axios trực tiếp
-      const response: any = await AuthService.login(credentials)
-      
-      // Giả định Backend GoFiber trả về cấu trúc: { token: string, user: UserProfile }
-      token.value = response.token
-      user.value = response.user
+  async function login(credentials:any){
 
-      // Lưu trữ trạng thái xuống bộ nhớ trình duyệt để duy trì phiên làm việc
-      if (import.meta.client) {
-        localStorage.setItem('qw_access_token', response.token)
-        localStorage.setItem('qw_user_profile', JSON.stringify(response.user))
-        localStorage.setItem('qw_user_role', response.user.role)
-      }
-      
-      return response
-    } catch (error) {
-      // Đẩy lỗi ra ngoài để UI Form hiển thị thông báo cho người dùng
-      throw error
+    const response = await AuthService.login(credentials)
+
+    const data = response.data
+
+    token.value = data.access_token
+
+    user.value = {
+
+        id: String(data.user_id),
+
+        email: data.email,
+
+        name: "",
+
+        role: data.role
     }
-  }
+
+    if(process.client){
+
+        localStorage.setItem(
+            "qw_access_token",
+            data.access_token
+        )
+
+        localStorage.setItem(
+            "qw_refresh_token",
+            data.refresh_token
+        )
+
+        localStorage.setItem(
+            "qw_user_profile",
+            JSON.stringify(user.value)
+        )
+    }
+} 
 
   /**
    * Xử lý hành động Đăng xuất xóa sạch dữ liệu phiên làm việc
    */
-  function logout() {
-    token.value = null
-    user.value = null
+  function logout(){
 
-    if (import.meta.client) {
-      localStorage.removeItem('qw_access_token')
-      localStorage.removeItem('qw_user_profile')
-      localStorage.removeItem('qw_user_role')
-      
-      // Ép điều hướng về trang đăng nhập sạch sẽ
-      navigateTo('/login')
+    token.value=null
+
+    user.value=null
+
+    if(process.client){
+
+        localStorage.clear()
+
     }
-  }
+
+    navigateTo("/login")
+}
 
   return {
     user,

@@ -1,4 +1,4 @@
-package service
+package services
 
 import "errors"
 
@@ -8,4 +8,5 @@ var (
 	ErrInvalidCredential   = errors.New("invalid credential")
 	ErrEnterpriseNotVerify = errors.New("enterprise not verified")
 	ErrJobClosed           = errors.New("job closed")
+	ErrAccountBanned     = errors.New("account banned")
 )

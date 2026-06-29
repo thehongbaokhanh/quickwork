@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"gorm.io/gorm"
@@ -6,12 +6,14 @@ import (
 	"quickwork.local/backend/internal/dto/response"
 	"quickwork.local/backend/internal/models"
 	"quickwork.local/backend/internal/repositories"
+	jwt "quickwork.local/backend/pkg/jwt"
 	"quickwork.local/backend/pkg/password"
 )
 
 type AuthService interface {
 	RegisterStudent(req *request.RegisterStudentRequest) (*response.RegisterResponse, error)
 	RegisterEnterprise(req *request.RegisterEnterpriseRequest) (*response.RegisterResponse, error)
+	Login(req *request.LoginRequest) (*response.LoginResponse, error)
 }
 
 type authService struct {
@@ -154,5 +156,39 @@ func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest)
 		Role:      user.Role,
 		Status:    user.Status,
 		CreatedAt: user.CreatedAt,
+	}, nil
+}
+
+func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse, error) {
+
+	// 1. Tìm User theo Email
+	user, err := s.userRepo.FindByEmail(s.db, req.Email)
+	if err != nil {
+		return nil, ErrInvalidCredential
+	}
+
+	// 2. So sánh Password
+	if err := password.Compare(user.Password, req.Password); err != nil {
+		return nil, ErrInvalidCredential
+	}
+
+	// 3. Kiểm tra Status
+	if user.Status != "ACTIVE" {
+		return nil, ErrAccountBanned
+	}
+
+	// 4. Sinh JWT
+	accessToken, err := jwt.GenerateAccessToken(user.ID, user.Role)
+	if err != nil {
+		return nil, err
+	}
+	
+
+	// 5. Trả Response
+	return &response.LoginResponse{
+		AccessToken: accessToken,
+		UserID: user.ID,
+		Email: user.Email,
+		Role: user.Role,
 	}, nil
 }
