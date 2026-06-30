@@ -13,7 +13,7 @@ import (
 	"quickwork.local/backend/internal/repositories"
 	"quickwork.local/backend/internal/services"
 	"quickwork.local/backend/pkg/jwt"
-	redispkg "quickwork.local/backend/pkg/redis"
+	"quickwork.local/backend/pkg/redis"
 	"quickwork.local/backend/routes"
 )
 
@@ -25,7 +25,10 @@ func main() {
 	}
 
 	// Khởi tạo Redis
-	redispkg.Init(cfg)
+	if err := redis.Init(cfg); err != nil {
+		log.Fatal("Redis initialization failed:", err)
+	}
+	defer redis.Client.Close()
 
 	// Khởi tạo JWT Secret
 	jwt.SetSecret(cfg.JWTSecret)
@@ -47,6 +50,7 @@ func main() {
 	userRepo := repositories.NewUserRepository()
 	studentRepo := repositories.NewStudentRepository()
 	enterpriseRepo := repositories.NewEnterpriseRepository()
+	authRedisRepo := repositories.NewAuthRedisRepository(redis.Client)
 
 	// Service
 	authService := services.NewAuthService(
@@ -54,6 +58,7 @@ func main() {
 		userRepo,
 		studentRepo,
 		enterpriseRepo,
+    	authRedisRepo,
 	)
 
 	// Handler

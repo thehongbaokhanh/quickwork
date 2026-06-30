@@ -1,6 +1,9 @@
 package services
 
 import (
+	"context"
+	"time"
+
 	"gorm.io/gorm"
 	"quickwork.local/backend/internal/dto/request"
 	"quickwork.local/backend/internal/dto/response"
@@ -14,6 +17,11 @@ type AuthService interface {
 	RegisterStudent(req *request.RegisterStudentRequest) (*response.RegisterResponse, error)
 	RegisterEnterprise(req *request.RegisterEnterpriseRequest) (*response.RegisterResponse, error)
 	Login(req *request.LoginRequest) (*response.LoginResponse, error)
+	Logout(
+		ctx context.Context,
+		accessToken string,
+		refreshToken string,
+	) error
 }
 
 type authService struct {
@@ -21,6 +29,7 @@ type authService struct {
 	userRepo       repositories.UserRepository
 	studentRepo    repositories.StudentRepository
 	enterpriseRepo repositories.EnterpriseRepository
+	authRedisRepo  repositories.AuthRedisRepository
 }
 
 func NewAuthService(
@@ -28,12 +37,14 @@ func NewAuthService(
 	userRepo repositories.UserRepository,
 	studentRepo repositories.StudentRepository,
 	enterpriseRepo repositories.EnterpriseRepository,
+	authRedisRepo repositories.AuthRedisRepository,
 ) AuthService {
 	return &authService{
 		db:             db,
 		userRepo:       userRepo,
 		studentRepo:    studentRepo,
 		enterpriseRepo: enterpriseRepo,
+		authRedisRepo:  authRedisRepo,
 	}
 }
 
@@ -182,13 +193,93 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 	if err != nil {
 		return nil, err
 	}
-	
+
+	refreshToken, err := jwt.GenerateRefreshToken(user.ID, user.Role)
+	if err != nil {
+		return nil, err
+	}
 
 	// 5. Trả Response
 	return &response.LoginResponse{
-		AccessToken: accessToken,
-		UserID: user.ID,
-		Email: user.Email,
-		Role: user.Role,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		UserID:       user.ID,
+		Email:        user.Email,
+		Role:         user.Role,
 	}, nil
+}
+
+func (s *authService) Logout(
+
+	ctx context.Context,
+
+	accessToken string,
+
+	refreshToken string,
+
+) error {
+
+	//----------------------------------
+	// Access Token
+	//----------------------------------
+
+	accessClaims, err := jwt.VerifyToken(accessToken)
+
+	if err != nil {
+		return err
+	}
+
+	duration := time.Until(
+		accessClaims.ExpiresAt.Time,
+	)
+
+	if duration > 0 {
+
+		err = s.authRedisRepo.AddToBlacklist(
+			ctx,
+			accessClaims.TokenUUID,
+			duration,
+		)
+
+		if err != nil {
+			return err
+		}
+
+	}	
+
+	err = s.authRedisRepo.AddToBlacklist(
+		ctx,
+		accessClaims.TokenUUID,
+		duration,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	//----------------------------------
+	// Refresh Token
+	//----------------------------------
+
+	refreshClaims, err := jwt.VerifyToken(refreshToken)
+
+	if err != nil {
+		return err
+	}
+
+	duration = time.Until(
+		refreshClaims.ExpiresAt.Time,
+	)
+
+	err = s.authRedisRepo.AddToBlacklist(
+		ctx,
+		refreshClaims.TokenUUID,
+		duration,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

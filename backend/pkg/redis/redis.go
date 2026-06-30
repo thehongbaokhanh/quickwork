@@ -16,7 +16,7 @@ var (
 )
 
 
-func Init(cfg *config.Config) {
+func Init(cfg *config.Config) error {
 
 	Client = redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisHost + ":" + cfg.RedisPort,
@@ -28,10 +28,11 @@ func Init(cfg *config.Config) {
 	defer cancel()
 
 	_, err := Client.Ping(ctx).Result()
-
 	if err != nil {
-		log.Fatal("Redis Error:", err)
+		return err
 	}
 
 	log.Println("✅ Redis Connected")
+
+	return nil
 }

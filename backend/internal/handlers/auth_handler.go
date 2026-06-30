@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -203,4 +204,46 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	"message": "Đăng nhập thành công.",
 	"data": res,
 })
+}
+
+func (h *AuthHandler) Logout(c *fiber.Ctx) error {
+
+    auth := c.Get("Authorization")
+
+    if auth == ""{
+
+        return c.Status(401).JSON(fiber.Map{
+            "success":false,
+            "message":"Missing Authorization Header",
+        })
+    }
+
+    token := strings.TrimPrefix(auth,"Bearer ")
+
+    refresh := c.Cookies("refresh_token")
+
+    err := h.authService.Logout(
+        c.Context(),
+        token,
+        refresh,
+    )
+
+    if err != nil{
+
+        return c.Status(500).JSON(fiber.Map{
+            "success":false,
+            "message":err.Error(),
+        })
+    }
+
+    c.Cookie(&fiber.Cookie{
+        Name:"refresh_token",
+        Value:"",
+        MaxAge:-1,
+    })
+
+    return c.JSON(fiber.Map{
+        "success":true,
+        "message":"Logout successfully",
+    })
 }

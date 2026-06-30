@@ -4,7 +4,7 @@ package jwt
 import (
 	"errors"
 	"time"
-
+	"github.com/google/uuid"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -18,18 +18,20 @@ func SetSecret(secret string) {
 
 // Claims maps identity parameters into the JWT payload structure.
 type Claims struct {
-	UserID uint   `json:"user_id"`
-	Role   string `json:"role"`
+	UserID    uint   `json:"user_id"`
+	Role      string `json:"role"`
+	TokenUUID string `json:"token_uuid"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken issues a new JWT string signed using HS256 containing identity claims.
-func GenerateRefreshToken(userID uint) (string, error) {
+func GenerateRefreshToken(userID uint, role string) (string, error) {
 
 	claims := Claims{
 
 		UserID: userID,
-
+		Role:   role,
+		TokenUUID: uuid.NewString(),
 		RegisteredClaims: jwt.RegisteredClaims{
 
 			ExpiresAt: jwt.NewNumericDate(
@@ -51,7 +53,7 @@ func GenerateAccessToken(userID uint, role string) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		Role:   role,
-
+		TokenUUID: uuid.NewString(),
 		RegisteredClaims: jwt.RegisteredClaims{
 
 			ExpiresAt: jwt.NewNumericDate(
@@ -66,6 +68,7 @@ func GenerateAccessToken(userID uint, role string) (string, error) {
 
 	return token.SignedString(SecretKey)
 }
+
 func VerifyToken(tokenString string) (*Claims, error) {
 
 	token, err := jwt.ParseWithClaims(
