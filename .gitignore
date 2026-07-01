@@ -21,3 +21,32 @@ storage/
 
 # Temporary files
 tmp/
+
+# Environment
+.env
+backend/.env
+frontend/.env
+
+# Node
+frontend/node_modules/
+
+# Nuxt
+frontend/.nuxt/
+frontend/.output/
+
+# Vite cache
+frontend/node_modules/.cache/
+
+# Logs
+*.log
+
+# Go
+bin/
+tmp/
+
+# IDE
+.vscode/
+.idea/
+
+# Uploads
+storage/
