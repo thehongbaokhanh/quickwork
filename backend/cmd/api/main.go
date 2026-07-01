@@ -5,6 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/swagger"
+	_ "quickwork.local/backend/docs"
 
 	"quickwork.local/backend/config"
 	"quickwork.local/backend/database"
@@ -17,6 +19,11 @@ import (
 	"quickwork.local/backend/routes"
 )
 
+// @title QuickWork API
+// @version 1.0
+// @description Backend API của QuickWork
+// @host localhost:8080
+// @BasePath /api/v1
 func main() {
 
 	cfg, err := config.LoadConfig()
@@ -60,7 +67,7 @@ func main() {
 		userRepo,
 		studentRepo,
 		enterpriseRepo,
-    	authRedisRepo,
+		authRedisRepo,
 	)
 
 	// Handler
@@ -73,14 +80,16 @@ func main() {
 
 	api := app.Group("/api/v1")
 
-	// Public API
 	routes.RegisterAuthRoutes(api, authHandler)
 
-	// Protected API
 	protected := api.Group("/", middleware.AuthMiddleware())
+
 	protected.Get("/profile", testHandler.Profile)
 
-	routes.RegisterTestRoutes(protected, testHandler)	
+	routes.RegisterTestRoutes(protected, testHandler)
+
+	// Swagger
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	log.Println("Server started at :" + cfg.AppPort)
 	log.Fatal(app.Listen(":" + cfg.AppPort))

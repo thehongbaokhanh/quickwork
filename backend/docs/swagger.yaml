@@ -1,0 +1,171 @@
+basePath: /api/v1
+definitions:
+  request.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  request.RegisterEnterpriseRequest:
+    properties:
+      company_name:
+        minLength: 3
+        type: string
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      tax_code:
+        maxLength: 13
+        minLength: 10
+        type: string
+    required:
+    - company_name
+    - email
+    - password
+    - tax_code
+    type: object
+  request.RegisterStudentRequest:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone:
+        maxLength: 11
+        minLength: 10
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - phone
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Backend API của QuickWork
+  title: QuickWork API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Đăng nhập hệ thống
+      parameters:
+      - description: Thông tin đăng nhập
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Đăng nhập
+      tags:
+      - Authentication
+  /auth/register-enterprise:
+    post:
+      consumes:
+      - application/json
+      description: Tiếp nhận thông tin doanh nghiệp.
+      parameters:
+      - description: Payload Đăng ký Doanh nghiệp
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterEnterpriseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Thành công
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Lỗi định dạng dữ liệu
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Trùng Email hoặc TaxCode
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Lỗi hệ thống
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Đăng ký tài khoản Doanh nghiệp
+      tags:
+      - Authentication
+  /auth/register-student:
+    post:
+      consumes:
+      - application/json
+      description: Tiếp nhận thông tin cơ bản của học viên để mở tài khoản tự động
+        và khởi tạo Profile.
+      parameters:
+      - description: Payload Đăng ký Sinh viên
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterStudentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Thành công
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Lỗi định dạng dữ liệu
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Trùng lặp Email
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Lỗi hệ thống
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Đăng ký tài khoản Sinh viên
+      tags:
+      - Authentication
+swagger: "2.0"

@@ -32,6 +32,7 @@ func SetupTestRoutes(app fiber.Router) {
 		middleware.RoleMiddleware("enterprise"),
 		testHandler.EnterpriseTest,
 	)
+	
 }
 
 func RegisterTestRoutes(router fiber.Router, testHandler *handlers.TestHandler) {

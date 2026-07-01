@@ -34,7 +34,7 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 // @Failure 400 {object} map[string]interface{} "Lỗi định dạng dữ liệu"
 // @Failure 409 {object} map[string]interface{} "Trùng lặp Email"
 // @Failure 500 {object} map[string]interface{} "Lỗi hệ thống"
-// @Router /api/v1/auth/register-student [post]
+// @Router /auth/register-student [post]
 func (h *AuthHandler) RegisterStudent(c *fiber.Ctx) error {
 
 	req := new(request.RegisterStudentRequest)
@@ -91,7 +91,7 @@ func (h *AuthHandler) RegisterStudent(c *fiber.Ctx) error {
 // @Failure 400 {object} map[string]interface{} "Lỗi định dạng dữ liệu"
 // @Failure 409 {object} map[string]interface{} "Trùng Email hoặc TaxCode"
 // @Failure 500 {object} map[string]interface{} "Lỗi hệ thống"
-// @Router /api/v1/auth/register-enterprise [post]
+// @Router /auth/register-enterprise [post]
 func (h *AuthHandler) RegisterEnterprise(c *fiber.Ctx) error {
 
 	req := new(request.RegisterEnterpriseRequest)
@@ -153,7 +153,7 @@ func (h *AuthHandler) RegisterEnterprise(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
-// @Router /api/v1/auth/login [post]
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	req := new(request.LoginRequest)
