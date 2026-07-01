@@ -16,6 +16,7 @@ type Config struct {
 	AppName               string
 	AppPort               string
 	AppEnv                string
+	AdminSecret           string
 	DBHost                string
 	DBPort                string
 	DBName                string
@@ -52,6 +53,7 @@ func LoadConfig() (*Config, error) {
 		AppName:               getEnv("APP_NAME", "QuickWork"),
 		AppPort:               getEnv("APP_PORT", "8080"),
 		AppEnv:                getEnv("APP_ENV", "development"),
+		AdminSecret:           getEnv("ADMIN_SECRET", ""),
 		DBHost:                getEnv("DB_HOST", "127.0.0.1"),
 		DBPort:                getEnv("DB_PORT", "3306"),
 		DBName:                getEnv("DB_NAME", "quickwork"),

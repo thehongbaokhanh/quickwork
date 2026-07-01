@@ -6,6 +6,10 @@ export const AuthService = {
   async login(payload: any) {
     return await apiClient.post("/auth/login", payload);
   },
+
+  async logout() {
+    return await apiClient.post("/auth/logout");
+  },
     
   async register(payload: any) {
     const config = useRuntimeConfig()

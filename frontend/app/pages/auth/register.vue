@@ -21,7 +21,7 @@
       </div>
 
       <div class="text-center text-sm text-gray-500">
-        <NuxtLink to="/login" class="text-blue-600 font-medium hover:underline">Quay lại Đăng nhập</NuxtLink>
+        <NuxtLink to="/auth/login" class="text-blue-600 font-medium hover:underline">Quay lại Đăng nhập</NuxtLink>
       </div>
     </div>
   </NuxtLayout>
@@ -30,9 +30,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-definePageMeta({
-  middleware: ['guest']
-})
+
 
 const role = ref<'STUDENT' | 'COMPANY'>('STUDENT')
 </script>

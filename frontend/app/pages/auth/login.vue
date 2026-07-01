@@ -12,12 +12,16 @@
           <input
             id="email"
             v-model="form.email"
+            @blur="validateEmail"
+            @input="validateEmail"
             type="email"
             required
-            class="appearance-none block w-full px-3 py-2.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            class="appearance-none block w-full px-3 py-2.5 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            :class="errors.email ? 'border-red-300' : 'border-gray-300'"
             placeholder="example@quickwork.vn"
           />
         </div>
+        <p v-if="errors.email" class="mt-1 text-sm text-red-500">{{ errors.email }}</p>
       </div>
 
       <div>
@@ -26,12 +30,16 @@
           <input
             id="password"
             v-model="form.password"
+            @blur="validatePassword"
+            @input="validatePassword"
             type="password"
             required
-            class="appearance-none block w-full px-3 py-2.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            class="appearance-none block w-full px-3 py-2.5 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            :class="errors.password ? 'border-red-300' : 'border-gray-300'"
             placeholder="••••••••"
           />
         </div>
+        <p v-if="errors.password" class="mt-1 text-sm text-red-500">{{ errors.password }}</p>
       </div>
 
       <div class="flex items-center justify-between">
@@ -56,7 +64,7 @@
 
       <div class="text-center text-sm text-gray-600 pt-2">
         Chưa có tài khoản? 
-        <NuxtLink to="/register" class="font-medium text-blue-600 hover:text-blue-500">Đăng ký ngay</NuxtLink>
+        <NuxtLink to="/auth/register" class="font-medium text-blue-600 hover:text-blue-500">Đăng ký ngay</NuxtLink>
       </div>
     </form>
   </NuxtLayout>
@@ -66,9 +74,7 @@
 import { ref, reactive } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 
-definePageMeta({
-  middleware: ['guest']
-})
+
 
 const authStore = useAuthStore()
 const isLoading = ref(false)
@@ -79,7 +85,35 @@ const form = reactive({
   password: ''
 })
 
+const errors = reactive({
+  email: '',
+  password: ''
+})
+
+const validateEmail = () => {
+  if (!form.email) {
+    errors.email = 'Vui lòng nhập email.'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    errors.email = 'Email không hợp lệ.'
+  } else {
+    errors.email = ''
+  }
+}
+
+const validatePassword = () => {
+  if (!form.password) {
+    errors.password = 'Vui lòng nhập mật khẩu.'
+  } else {
+    errors.password = ''
+  }
+}
+
 const handleLogin = async () => {
+  validateEmail()
+  validatePassword()
+
+  if (errors.email || errors.password) return
+
   isLoading.value = true
   errorMessage.value = ''
   try {

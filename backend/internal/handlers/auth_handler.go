@@ -169,7 +169,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
 			"message": "Dữ liệu không hợp lệ.",
-			"errors": err.Error(),
+			"errors":  err.Error(),
 		})
 	}
 
@@ -200,50 +200,91 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-	"success": true,
-	"message": "Đăng nhập thành công.",
-	"data": res,
-})
+		"success": true,
+		"message": "Đăng nhập thành công.",
+		"data":    res,
+	})
 }
 
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 
-    auth := c.Get("Authorization")
+	auth := c.Get("Authorization")
 
-    if auth == ""{
+	if auth == "" {
 
-        return c.Status(401).JSON(fiber.Map{
-            "success":false,
-            "message":"Missing Authorization Header",
-        })
-    }
+		return c.Status(401).JSON(fiber.Map{
+			"success": false,
+			"message": "Missing Authorization Header",
+		})
+	}
 
-    token := strings.TrimPrefix(auth,"Bearer ")
+	token := strings.TrimPrefix(auth, "Bearer ")
 
-    refresh := c.Cookies("refresh_token")
+	refresh := c.Cookies("refresh_token")
 
-    err := h.authService.Logout(
-        c.Context(),
-        token,
-        refresh,
-    )
+	err := h.authService.Logout(
+		c.Context(),
+		token,
+		refresh,
+	)
 
-    if err != nil{
+	if err != nil {
 
-        return c.Status(500).JSON(fiber.Map{
-            "success":false,
-            "message":err.Error(),
-        })
-    }
+		return c.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
 
-    c.Cookie(&fiber.Cookie{
-        Name:"refresh_token",
-        Value:"",
-        MaxAge:-1,
-    })
+	c.Cookie(&fiber.Cookie{
+		Name:   "refresh_token",
+		Value:  "",
+		MaxAge: -1,
+	})
 
-    return c.JSON(fiber.Map{
-        "success":true,
-        "message":"Logout successfully",
-    })
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Logout successfully",
+	})
+}
+
+func (h *AuthHandler) RegisterFirstAdmin(c *fiber.Ctx) error {
+
+	req := new(request.RegisterAdminRequest)
+
+	// Đọc JSON
+	if err := c.BodyParser(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể đọc dữ liệu JSON.",
+		})
+	}
+
+	// Validate
+	if err := h.validate.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Dữ liệu không hợp lệ.",
+			"errors":  err.Error(),
+		})
+	}
+
+	// Lấy Admin Secret từ Header
+	adminSecret := c.Get("X-ADMIN-SECRET")
+
+	// Gọi Service
+	res, err := h.authService.RegisterFirstAdmin(req, adminSecret)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"success": true,
+		"message": "Tạo Admin đầu tiên thành công.",
+		"data":    res,
+	})
 }

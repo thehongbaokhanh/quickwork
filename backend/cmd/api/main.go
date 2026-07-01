@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("ADMIN_SECRET =", cfg.AdminSecret)
 
 	// Khởi tạo Redis
 	if err := redis.Init(cfg); err != nil {
@@ -55,6 +56,7 @@ func main() {
 	// Service
 	authService := services.NewAuthService(
 		db,
+		cfg,
 		userRepo,
 		studentRepo,
 		enterpriseRepo,

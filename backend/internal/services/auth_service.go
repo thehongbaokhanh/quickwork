@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
+	"quickwork.local/backend/config"
 	"quickwork.local/backend/internal/dto/request"
 	"quickwork.local/backend/internal/dto/response"
 	"quickwork.local/backend/internal/models"
@@ -22,10 +24,17 @@ type AuthService interface {
 		accessToken string,
 		refreshToken string,
 	) error
+
+	RegisterFirstAdmin(
+		req *request.RegisterAdminRequest,
+		secret string,
+	) (*response.RegisterResponse, error)
 }
 
 type authService struct {
-	db             *gorm.DB
+	db  *gorm.DB
+	cfg *config.Config
+
 	userRepo       repositories.UserRepository
 	studentRepo    repositories.StudentRepository
 	enterpriseRepo repositories.EnterpriseRepository
@@ -34,6 +43,8 @@ type authService struct {
 
 func NewAuthService(
 	db *gorm.DB,
+	cfg *config.Config,
+
 	userRepo repositories.UserRepository,
 	studentRepo repositories.StudentRepository,
 	enterpriseRepo repositories.EnterpriseRepository,
@@ -41,6 +52,7 @@ func NewAuthService(
 ) AuthService {
 	return &authService{
 		db:             db,
+		cfg:            cfg,
 		userRepo:       userRepo,
 		studentRepo:    studentRepo,
 		enterpriseRepo: enterpriseRepo,
@@ -245,7 +257,7 @@ func (s *authService) Logout(
 			return err
 		}
 
-	}	
+	}
 
 	err = s.authRedisRepo.AddToBlacklist(
 		ctx,
@@ -282,4 +294,85 @@ func (s *authService) Logout(
 	}
 
 	return nil
+}
+
+func (s *authService) RegisterFirstAdmin(
+	req *request.RegisterAdminRequest,
+	secret string,
+) (*response.RegisterResponse, error) {
+
+	// 1. Kiểm tra Admin Secret
+	if secret != s.cfg.AdminSecret {
+		return nil, errors.New("invalid admin secret")
+	}
+
+	// 2. Transaction
+	tx := s.db.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 3. Kiểm tra đã có admin chưa
+	count, err := s.userRepo.CountAdmin(tx)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if count > 0 {
+		tx.Rollback()
+		return nil, errors.New("admin already exists")
+	}
+
+	// 4. Kiểm tra email đã tồn tại chưa
+	_, err = s.userRepo.FindByEmail(tx, req.Email)
+	if err == nil {
+		tx.Rollback()
+		return nil, ErrEmailConflict
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// 5. Hash Password
+	hashedPassword, err := password.Hash(req.Password)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// 6. Tạo User Admin
+	admin := &models.User{
+		Email:    req.Email,
+		Password: hashedPassword,
+		Role:     "ADMIN",
+		Status:   "ACTIVE",
+	}
+
+	// Nếu model User của bạn có FullName thì thêm	:
+	// FullName: req.FullName,
+
+	// 7. Lưu xuống Database
+	if err := s.userRepo.Create(tx, admin); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// 8. Commit
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
+	return &response.RegisterResponse{
+		ID:        admin.ID,
+		Email:     admin.Email,
+		Role:      admin.Role,
+		Status:    admin.Status,
+		CreatedAt: admin.CreatedAt,
+	}, nil
 }

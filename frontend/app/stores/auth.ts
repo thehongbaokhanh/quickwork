@@ -73,24 +73,37 @@ export const useAuthStore = defineStore('auth', () => {
             JSON.stringify(user.value)
         )
     }
-} 
+}
+
+  function setCurrentUser(userData: UserProfile) {
+    user.value = userData
+    if (process.client) {
+      localStorage.setItem("qw_user_profile", JSON.stringify(userData))
+    }
+  }
+
+  function clearAuth() {
+    token.value = null
+    user.value = null
+    if (process.client) {
+      localStorage.removeItem("qw_access_token")
+      localStorage.removeItem("qw_refresh_token")
+      localStorage.removeItem("qw_user_profile")
+    }
+  }
 
   /**
    * Xử lý hành động Đăng xuất xóa sạch dữ liệu phiên làm việc
    */
-  function logout(){
-
-    token.value=null
-
-    user.value=null
-
-    if(process.client){
-
-        localStorage.clear()
-
+  async function logout(){
+    try {
+      await AuthService.logout()
+    } catch (e) {
+      console.error('Logout API failed:', e)
     }
 
-    navigateTo("/login")
+    clearAuth()
+    navigateTo("/auth/login")
 }
 
   return {
@@ -99,6 +112,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     userRole,
     login,
-    logout
+    logout,
+    setCurrentUser,
+    clearAuth
   }
 })

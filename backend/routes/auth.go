@@ -13,4 +13,5 @@ func RegisterAuthRoutes(router fiber.Router, authHandler *handlers.AuthHandler) 
 	authGroup.Post("/register-student", authHandler.RegisterStudent)
 	authGroup.Post("/register-enterprise", authHandler.RegisterEnterprise)
 	authGroup.Post("/login", authHandler.Login)
+	authGroup.Post("/register-admin", authHandler.RegisterFirstAdmin)
 }
