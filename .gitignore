@@ -1,0 +1,23 @@
+# Environment
+.env
+
+# Build
+bin/
+dist/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local uploads
+storage/
+
+# Temporary files
+tmp/
