@@ -2,9 +2,15 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"quickwork.local/backend/config"
 	"quickwork.local/backend/internal/dto/request"
@@ -29,6 +35,9 @@ type AuthService interface {
 		req *request.RegisterAdminRequest,
 		secret string,
 	) (*response.RegisterResponse, error)
+
+	LoginOrRegisterGoogle(ctx context.Context, code string) (*response.LoginResponse, error)
+	GetGoogleConfig() map[string]string
 }
 
 type authService struct {
@@ -161,7 +170,9 @@ func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest)
 		UserID:      user.ID,
 		CompanyName: req.CompanyName,
 		TaxCode:     req.TaxCode,
+		GPKDURL:     req.GPKDURL,
 		KYBStatus:   models.KYBPending,
+		StatusKYB:   models.KYBPending,
 	}
 
 	if err := s.enterpriseRepo.Create(tx, enterpriseProfile); err != nil {
@@ -222,78 +233,47 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 }
 
 func (s *authService) Logout(
-
 	ctx context.Context,
-
 	accessToken string,
-
 	refreshToken string,
-
 ) error {
 
-	//----------------------------------
-	// Access Token
-	//----------------------------------
-
-	accessClaims, err := jwt.VerifyToken(accessToken)
-
-	if err != nil {
+	if err := s.blacklistToken(ctx, accessToken); err != nil {
 		return err
 	}
 
-	duration := time.Until(
-		accessClaims.ExpiresAt.Time,
-	)
-
-	if duration > 0 {
-
-		err = s.authRedisRepo.AddToBlacklist(
-			ctx,
-			accessClaims.TokenUUID,
-			duration,
-		)
-
-		if err != nil {
-			return err
-		}
-
-	}
-
-	err = s.authRedisRepo.AddToBlacklist(
-		ctx,
-		accessClaims.TokenUUID,
-		duration,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	//----------------------------------
-	// Refresh Token
-	//----------------------------------
-
-	refreshClaims, err := jwt.VerifyToken(refreshToken)
-
-	if err != nil {
-		return err
-	}
-
-	duration = time.Until(
-		refreshClaims.ExpiresAt.Time,
-	)
-
-	err = s.authRedisRepo.AddToBlacklist(
-		ctx,
-		refreshClaims.TokenUUID,
-		duration,
-	)
-
-	if err != nil {
+	if err := s.blacklistToken(ctx, refreshToken); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *authService) blacklistToken(ctx context.Context, token string) error {
+	token = strings.TrimSpace(token)
+	if token == "" || isInvalidTokenValue(token) || strings.Count(token, ".") != 2 {
+		return nil
+	}
+
+	claims, err := jwt.DecodeToken(token)
+	if err != nil {
+		return err
+	}
+
+	if claims.ExpiresAt == nil {
+		return errors.New("token expiration missing")
+	}
+
+	expiration := time.Until(claims.ExpiresAt.Time)
+	if expiration <= 0 {
+		return nil
+	}
+
+	return s.authRedisRepo.AddToBlacklist(ctx, token, expiration)
+}
+
+func isInvalidTokenValue(token string) bool {
+	return strings.EqualFold(token, "null") || strings.EqualFold(token, "undefined")
 }
 
 func (s *authService) RegisterFirstAdmin(
@@ -375,4 +355,176 @@ func (s *authService) RegisterFirstAdmin(
 		Status:    admin.Status,
 		CreatedAt: admin.CreatedAt,
 	}, nil
+}
+
+type googleTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	IDToken     string `json:"id_token"`
+}
+
+type googleUserInfo struct {
+	ID      string `json:"id"`
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+	Picture string `json:"picture"`
+}
+
+func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*response.LoginResponse, error) {
+	var email, name, picture string
+
+	// Mock flow check
+	if strings.HasPrefix(code, "mock_") || s.cfg.GoogleClientID == "" || s.cfg.GoogleClientSecret == "" {
+		// Mock authentication
+		email = "google_mock_user@gmail.com"
+		name = "Google Mock Student"
+		picture = "https://lh3.googleusercontent.com/a/mock-avatar-id"
+	} else {
+		// Real Google flow
+		// 1. Exchange auth code for access token
+		tokenURL := "https://oauth2.googleapis.com/token"
+		form := url.Values{}
+		form.Add("code", code)
+		form.Add("client_id", s.cfg.GoogleClientID)
+		form.Add("client_secret", s.cfg.GoogleClientSecret)
+		form.Add("redirect_uri", s.cfg.GoogleRedirectURI)
+		form.Add("grant_type", "authorization_code")
+
+		resp, err := http.PostForm(tokenURL, form)
+		if err != nil {
+			return nil, errors.New("failed to connect to Google OAuth server: " + err.Error())
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			return nil, errors.New("Google token exchange returned status " + resp.Status + ": " + string(bodyBytes))
+		}
+
+		var tokenRes googleTokenResponse
+		if err := json.NewDecoder(resp.Body).Decode(&tokenRes); err != nil {
+			return nil, err
+		}
+
+		// 2. Fetch UserInfo
+		userInfoURL := "https://www.googleapis.com/oauth2/v2/userinfo"
+		req, err := http.NewRequestWithContext(ctx, "GET", userInfoURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Authorization", "Bearer "+tokenRes.AccessToken)
+
+		client := &http.Client{Timeout: 10 * time.Second}
+		infoResp, err := client.Do(req)
+		if err != nil {
+			return nil, errors.New("failed to fetch user info from Google: " + err.Error())
+		}
+		defer infoResp.Body.Close()
+
+		if infoResp.StatusCode != http.StatusOK {
+			return nil, errors.New("failed to fetch user info from Google, status: " + infoResp.Status)
+		}
+
+		var userInfo googleUserInfo
+		if err := json.NewDecoder(infoResp.Body).Decode(&userInfo); err != nil {
+			return nil, err
+		}
+
+		email = userInfo.Email
+		name = userInfo.Name
+		picture = userInfo.Picture
+	}
+
+	if email == "" {
+		return nil, errors.New("Google account does not provide an email address")
+	}
+
+	// Look up user in Database
+	user, err := s.userRepo.FindByEmail(s.db, email)
+	if err != nil {
+		// User does not exist, auto-register as STUDENT
+		hashedPassword, err := password.Hash(uuid.New().String())
+		if err != nil {
+			return nil, err
+		}
+
+		tx := s.db.Begin()
+		defer func() {
+			if r := recover(); r != nil {
+				tx.Rollback()
+			}
+		}()
+
+		user = &models.User{
+			Email:    email,
+			Password: hashedPassword,
+			Role:     "STUDENT",
+			Status:   "ACTIVE",
+		}
+
+		if err := s.userRepo.Create(tx, user); err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		studentProfile := &models.StudentProfile{
+			UserID: user.ID,
+			Name:   name,
+			Avatar: picture,
+		}
+
+		if err := s.studentRepo.Create(tx, studentProfile); err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			return nil, err
+		}
+	} else {
+		// User exists, if it is active, we just log them in. But we also update their name/avatar if empty/changed
+		if user.Status != "ACTIVE" {
+			return nil, ErrAccountBanned
+		}
+
+		// Update profile photo if empty
+		if user.Role == "STUDENT" {
+			var studentProfile models.StudentProfile
+			err := s.db.Where("user_id = ?", user.ID).First(&studentProfile).Error
+			if err == nil && (studentProfile.Avatar == "" || studentProfile.Name == "") {
+				if studentProfile.Avatar == "" {
+					studentProfile.Avatar = picture
+				}
+				if studentProfile.Name == "" {
+					studentProfile.Name = name
+				}
+				s.db.Save(&studentProfile)
+			}
+		}
+	}
+
+	// Generate Access and Refresh Tokens
+	accessToken, err := jwt.GenerateAccessToken(user.ID, user.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := jwt.GenerateRefreshToken(user.ID, user.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		UserID:       user.ID,
+		Email:        user.Email,
+		Role:         user.Role,
+	}, nil
+}
+
+func (s *authService) GetGoogleConfig() map[string]string {
+	return map[string]string{
+		"client_id":    s.cfg.GoogleClientID,
+		"redirect_uri": s.cfg.GoogleRedirectURI,
+	}
 }

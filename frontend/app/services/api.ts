@@ -1,29 +1,73 @@
-import axios from "axios";
+type ApiOptions = {
+  params?: Record<string, any>
+  query?: Record<string, any>
+  headers?: HeadersInit
+  credentials?: RequestCredentials
+  [key: string]: any
+}
 
-const apiClient = axios.create({
-  baseURL: "http://localhost:8080/api/v1",
-  headers: {
-    "Content-Type": "application/json",
+type ApiMethod = NonNullable<NonNullable<Parameters<typeof $fetch>[1]>['method']>
+
+function isAbsoluteUrl(url: string) {
+  return /^https?:\/\//i.test(url)
+}
+
+function buildHeaders(headers?: HeadersInit) {
+  const requestHeaders = new Headers(headers)
+  const accessToken = useCookie<string | null>('access_token')
+
+  if (!requestHeaders.has('Content-Type')) {
+    requestHeaders.set('Content-Type', 'application/json')
+  }
+
+  if (accessToken.value) {
+    requestHeaders.set('Authorization', `Bearer ${accessToken.value}`)
+  }
+
+  return requestHeaders
+}
+
+async function request<T = any>(
+  method: ApiMethod,
+  url: string,
+  body?: any,
+  options: ApiOptions = {},
+) {
+  const config = useRuntimeConfig()
+  const { params, query, headers, ...fetchOptions } = options
+
+  const reqHeaders = buildHeaders(headers)
+  if (body instanceof FormData) {
+    reqHeaders.delete('Content-Type')
+  }
+
+  return await $fetch<T>(url, {
+    baseURL: isAbsoluteUrl(url) ? undefined : config.public.apiBase,
+    method,
+    body,
+    query: query || params,
+    headers: reqHeaders,
+    ...fetchOptions,
+  })
+}
+
+const apiClient = {
+  get<T = any>(url: string, options?: ApiOptions) {
+    return request<T>('GET', url, undefined, options)
   },
-});
 
-apiClient.interceptors.request.use((config) => {
-  if (process.client) {
-    const token = localStorage.getItem("qw_access_token");
+  post<T = any>(url: string, body?: any, options?: ApiOptions) {
+    return request<T>('POST', url, body, options)
+  },
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
+  put<T = any>(url: string, body?: any, options?: ApiOptions) {
+    return request<T>('PUT', url, body, options)
+  },
 
-  return config;
-});
+  delete<T = any>(url: string, options?: ApiOptions) {
+    return request<T>('DELETE', url, undefined, options)
+  },
+}
 
-apiClient.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-export default apiClient;
+export type ApiClient = typeof apiClient
+export default apiClient

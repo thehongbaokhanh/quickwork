@@ -4,17 +4,16 @@ package jwt
 import (
 	"errors"
 	"time"
-	"github.com/google/uuid"
-	"github.com/golang-jwt/jwt/v5"
-)
 
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+)
 
 var SecretKey []byte
 
 func SetSecret(secret string) {
 	SecretKey = []byte(secret)
 }
-
 
 // Claims maps identity parameters into the JWT payload structure.
 type Claims struct {
@@ -29,8 +28,8 @@ func GenerateRefreshToken(userID uint, role string) (string, error) {
 
 	claims := Claims{
 
-		UserID: userID,
-		Role:   role,
+		UserID:    userID,
+		Role:      role,
 		TokenUUID: uuid.NewString(),
 		RegisteredClaims: jwt.RegisteredClaims{
 
@@ -51,8 +50,8 @@ func GenerateRefreshToken(userID uint, role string) (string, error) {
 func GenerateAccessToken(userID uint, role string) (string, error) {
 
 	claims := Claims{
-		UserID: userID,
-		Role:   role,
+		UserID:    userID,
+		Role:      role,
 		TokenUUID: uuid.NewString(),
 		RegisteredClaims: jwt.RegisteredClaims{
 
@@ -72,6 +71,34 @@ func GenerateAccessToken(userID uint, role string) (string, error) {
 func VerifyToken(tokenString string) (*Claims, error) {
 
 	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&Claims{},
+		func(t *jwt.Token) (interface{}, error) {
+
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, errors.New("unexpected signing method")
+			}
+
+			return SecretKey, nil
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*Claims)
+
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	return claims, nil
+}
+
+func DecodeToken(tokenString string) (*Claims, error) {
+
+	token, err := jwt.NewParser(jwt.WithoutClaimsValidation()).ParseWithClaims(
 		tokenString,
 		&Claims{},
 		func(t *jwt.Token) (interface{}, error) {

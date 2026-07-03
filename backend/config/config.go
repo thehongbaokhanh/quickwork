@@ -29,6 +29,9 @@ type Config struct {
 	JWTExpiryHours        int
 	JWTRefreshExpiryHours int
 	UploadDir             string
+	GoogleClientID        string
+	GoogleClientSecret    string
+	GoogleRedirectURI     string
 }
 
 // LoadConfig loads the environment variables into the Config struct.
@@ -66,6 +69,9 @@ func LoadConfig() (*Config, error) {
 		JWTExpiryHours:        jwtExpiry,
 		JWTRefreshExpiryHours: jwtRefreshExpiry,
 		UploadDir:             getEnv("UPLOAD_DIR", "storage"),
+		GoogleClientID:        getEnv("GOOGLE_CLIENT_ID", ""),
+		GoogleClientSecret:    getEnv("GOOGLE_CLIENT_SECRET", ""),
+		GoogleRedirectURI:     getEnv("GOOGLE_REDIRECT_URI", "http://localhost:3000/auth/google/callback"),
 	}
 
 	return cfg, nil

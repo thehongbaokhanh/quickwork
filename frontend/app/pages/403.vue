@@ -6,3 +6,9 @@
     <NuxtLink to="/auth/login" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-medium text-sm hover:bg-blue-700 shadow-sm transition-colors">Quay lại Đăng nhập</NuxtLink>
   </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({
+  layout: false
+})
+</script>

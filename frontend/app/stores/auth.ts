@@ -13,18 +13,45 @@ interface UserProfile {
 
 export const useAuthStore = defineStore('auth', () => {
   // --- STATE ---
-  const user = ref<UserProfile | null>(null)
-  const token = ref<string | null>(null)
+  const accessTokenCookie = useCookie<string | null>('access_token', {
+    path: '/',
+    sameSite: 'lax',
+  })
+  const refreshTokenCookie = useCookie<string | null>('refresh_token', {
+    path: '/',
+    sameSite: 'lax',
+  })
+  const userProfileCookie = useCookie<UserProfile | null>('user_profile', {
+    path: '/',
+    sameSite: 'lax',
+  })
+  const user = ref<UserProfile | null>(userProfileCookie.value)
+  const token = ref<string | null>(accessTokenCookie.value)
 
   // Khởi tạo trạng thái từ localStorage nếu đang chạy ở phía Trình duyệt (Client)
   if (import.meta.client) {
-    token.value = localStorage.getItem('qw_access_token')
-    const savedUser = localStorage.getItem('qw_user_profile')
-    if (savedUser) {
-      try {
-        user.value = JSON.parse(savedUser)
-      } catch (e) {
-        console.error('Lỗi phân tích cú pháp profile người dùng:', e)
+    const legacyAccessToken = localStorage.getItem('qw_access_token')
+    const legacyRefreshToken = localStorage.getItem('qw_refresh_token')
+
+    if (!accessTokenCookie.value && legacyAccessToken) {
+      accessTokenCookie.value = legacyAccessToken
+    }
+
+    if (!refreshTokenCookie.value && legacyRefreshToken) {
+      refreshTokenCookie.value = legacyRefreshToken
+    }
+
+    token.value = accessTokenCookie.value
+
+    if (!userProfileCookie.value) {
+      const savedUser = localStorage.getItem('qw_user_profile')
+      if (savedUser) {
+        try {
+          user.value = JSON.parse(savedUser)
+          userProfileCookie.value = user.value
+        } catch (e) {
+          console.error('Lỗi phân tích cú pháp profile người dùng:', e)
+        }
       }
     }
   }
@@ -44,30 +71,18 @@ export const useAuthStore = defineStore('auth', () => {
     const data = response.data
 
     token.value = data.access_token
+    accessTokenCookie.value = data.access_token
+    refreshTokenCookie.value = data.refresh_token
 
     user.value = {
-
         id: String(data.user_id),
-
         email: data.email,
-
         name: "",
-
         role: data.role
     }
+    userProfileCookie.value = user.value
 
     if(process.client){
-
-        localStorage.setItem(
-            "qw_access_token",
-            data.access_token
-        )
-
-        localStorage.setItem(
-            "qw_refresh_token",
-            data.refresh_token
-        )
-
         localStorage.setItem(
             "qw_user_profile",
             JSON.stringify(user.value)
@@ -77,6 +92,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setCurrentUser(userData: UserProfile) {
     user.value = userData
+    userProfileCookie.value = userData
     if (process.client) {
       localStorage.setItem("qw_user_profile", JSON.stringify(userData))
     }
@@ -85,6 +101,9 @@ export const useAuthStore = defineStore('auth', () => {
   function clearAuth() {
     token.value = null
     user.value = null
+    accessTokenCookie.value = null
+    refreshTokenCookie.value = null
+    userProfileCookie.value = null
     if (process.client) {
       localStorage.removeItem("qw_access_token")
       localStorage.removeItem("qw_refresh_token")
@@ -92,10 +111,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * Xử lý hành động Đăng xuất xóa sạch dữ liệu phiên làm việc
-   */
-  async function logout(){
+  async function logout() {
     try {
       await AuthService.logout()
     } catch (e) {
@@ -104,7 +120,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     clearAuth()
     navigateTo("/auth/login")
-}
+  }
 
   return {
     user,

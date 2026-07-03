@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 
 	"quickwork.local/backend/internal/dto/request"
 	service "quickwork.local/backend/internal/services"
@@ -208,24 +211,23 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 
-	auth := c.Get("Authorization")
-
-	if auth == "" {
-
-		return c.Status(401).JSON(fiber.Map{
+	accessToken, ok := parseBearerToken(c.Get("Authorization"))
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"success": false,
-			"message": "Missing Authorization Header",
+			"message": "Invalid Authorization Header",
 		})
 	}
 
-	token := strings.TrimPrefix(auth, "Bearer ")
-
-	refresh := c.Cookies("refresh_token")
+	refreshToken := strings.TrimSpace(c.Cookies("refresh_token"))
+	if refreshToken == "" {
+		refreshToken = strings.TrimSpace(c.Cookies("qw_refresh_token"))
+	}
 
 	err := h.authService.Logout(
 		c.Context(),
-		token,
-		refresh,
+		accessToken,
+		refreshToken,
 	)
 
 	if err != nil {
@@ -244,8 +246,31 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"success": true,
-		"message": "Logout successfully",
+		"message": "Logged out successfully",
 	})
+}
+
+func parseBearerToken(authHeader string) (string, bool) {
+	authHeader = strings.TrimSpace(authHeader)
+	if authHeader == "" {
+		return "", false
+	}
+
+	const bearerPrefix = "Bearer "
+	if !strings.HasPrefix(authHeader, bearerPrefix) {
+		return "", false
+	}
+
+	token := strings.TrimSpace(strings.TrimPrefix(authHeader, bearerPrefix))
+	if token == "" || isInvalidTokenValue(token) || strings.Count(token, ".") != 2 {
+		return "", false
+	}
+
+	return token, true
+}
+
+func isInvalidTokenValue(token string) bool {
+	return strings.EqualFold(token, "null") || strings.EqualFold(token, "undefined")
 }
 
 func (h *AuthHandler) RegisterFirstAdmin(c *fiber.Ctx) error {
@@ -286,5 +311,107 @@ func (h *AuthHandler) RegisterFirstAdmin(c *fiber.Ctx) error {
 		"success": true,
 		"message": "Tạo Admin đầu tiên thành công.",
 		"data":    res,
+	})
+}
+
+// UploadGPKD
+// @Summary Tải lên giấy phép kinh doanh (GPKD)
+// @Description Tải lên file giấy phép kinh doanh và nhận về đường dẫn lưu trữ.
+// @Tags Authentication
+// @Accept multipart/form-data
+// @Produce json
+// @Param gpkd formData file true "File giấy phép kinh doanh"
+// @Success 200 {object} map[string]interface{} "Tải lên thành công"
+// @Failure 400 {object} map[string]interface{} "Không tìm thấy file"
+// @Failure 500 {object} map[string]interface{} "Lỗi hệ thống khi lưu file"
+// @Router /auth/upload [post]
+func (h *AuthHandler) UploadGPKD(c *fiber.Ctx) error {
+	file, err := c.FormFile("gpkd")
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Không tìm thấy file gpkd",
+		})
+	}
+
+	if err := os.MkdirAll("uploads", 0755); err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể tạo thư mục lưu trữ",
+		})
+	}
+
+	ext := filepath.Ext(file.Filename)
+	filename := uuid.New().String() + ext
+	filePath := filepath.Join("uploads", filename)
+
+	if err := c.SaveFile(file, filePath); err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể lưu file",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"url":     "/uploads/" + filename,
+	})
+}
+
+// GoogleLogin
+// @Summary Đăng nhập bằng Google
+// @Description Tiếp nhận mã xác thực từ phía client để xác thực và lấy thông tin tài khoản Google từ Google Server.
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body request.GoogleLoginRequest true "Mã xác thực từ Google"
+// @Success 200 {object} map[string]interface{} "Đăng nhập thành công"
+// @Failure 400 {object} map[string]interface{} "Lỗi tham số hoặc dữ liệu"
+// @Failure 550 {object} map[string]interface{} "Lỗi hệ thống"
+// @Router /auth/google [post]
+func (h *AuthHandler) GoogleLogin(c *fiber.Ctx) error {
+	req := new(request.GoogleLoginRequest)
+
+	if err := c.BodyParser(req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể đọc dữ liệu JSON.",
+		})
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Dữ liệu không hợp lệ.",
+			"errors":  err.Error(),
+		})
+	}
+
+	res, err := h.authService.LoginOrRegisterGoogle(c.UserContext(), req.Code)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Đăng nhập bằng Google thành công.",
+		"data":    res,
+	})
+}
+
+// GetGoogleConfig
+// @Summary Lấy cấu hình Google OAuth
+// @Tags Authentication
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /auth/google/config [get]
+func (h *AuthHandler) GetGoogleConfig(c *fiber.Ctx) error {
+	config := h.authService.GetGoogleConfig()
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    config,
 	})
 }

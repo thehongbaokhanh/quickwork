@@ -11,6 +11,8 @@ type StudentProfile struct {
 	Name  string `gorm:"type:varchar(100);not null" json:"name"`
 	Phone string `gorm:"type:varchar(20)" json:"phone"`
 
+	Avatar string `gorm:"type:varchar(255)" json:"avatar"`
+
 	Skills string `gorm:"type:text" json:"skills"`
 
 	CVURL string `gorm:"column:cv_url;type:varchar(255)" json:"cv_url"`
