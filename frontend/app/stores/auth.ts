@@ -13,39 +13,53 @@ interface UserProfile {
 
 export const useAuthStore = defineStore('auth', () => {
   // --- STATE ---
-  const accessTokenCookie = useCookie<string | null>('access_token', {
+  const accessTokenCookie = useCookie<string | undefined | null>('access_token', {
     path: '/',
     sameSite: 'lax',
   })
-  const refreshTokenCookie = useCookie<string | null>('refresh_token', {
+  const refreshTokenCookie = useCookie<string | undefined | null>('refresh_token', {
     path: '/',
     sameSite: 'lax',
   })
-  const userProfileCookie = useCookie<UserProfile | null>('user_profile', {
+  const userProfileCookie = useCookie<UserProfile | undefined | null>('user_profile', {
     path: '/',
     sameSite: 'lax',
   })
-  const user = ref<UserProfile | null>(userProfileCookie.value)
-  const token = ref<string | null>(accessTokenCookie.value)
+
+  // Hàm làm sạch cookie để phòng chống việc Nuxt 3 chuyển đổi null/undefined thành chuỗi "null"/"undefined"
+  const cleanCookieValue = <T>(cookieRef: { value: T | null | undefined }): T | undefined => {
+    const val = cookieRef.value
+    if (val === null || val === undefined || (typeof val === 'string' && (val === 'null' || val === 'undefined'))) {
+      cookieRef.value = undefined
+      return undefined
+    }
+    return val as T
+  }
+
+  const cleanAccessToken = cleanCookieValue(accessTokenCookie)
+  const cleanRefreshToken = cleanCookieValue(refreshTokenCookie)
+  const cleanUserProfile = cleanCookieValue(userProfileCookie)
+
+  const user = ref<UserProfile | null>(cleanUserProfile || null)
+  const token = ref<string | null>(cleanAccessToken || null)
 
   // Khởi tạo trạng thái từ localStorage nếu đang chạy ở phía Trình duyệt (Client)
   if (import.meta.client) {
     const legacyAccessToken = localStorage.getItem('qw_access_token')
     const legacyRefreshToken = localStorage.getItem('qw_refresh_token')
 
-    if (!accessTokenCookie.value && legacyAccessToken) {
+    if (!cleanAccessToken && legacyAccessToken && legacyAccessToken !== 'null' && legacyAccessToken !== 'undefined') {
       accessTokenCookie.value = legacyAccessToken
+      token.value = legacyAccessToken
     }
 
-    if (!refreshTokenCookie.value && legacyRefreshToken) {
+    if (!cleanRefreshToken && legacyRefreshToken && legacyRefreshToken !== 'null' && legacyRefreshToken !== 'undefined') {
       refreshTokenCookie.value = legacyRefreshToken
     }
 
-    token.value = accessTokenCookie.value
-
-    if (!userProfileCookie.value) {
+    if (!cleanUserProfile) {
       const savedUser = localStorage.getItem('qw_user_profile')
-      if (savedUser) {
+      if (savedUser && savedUser !== 'null' && savedUser !== 'undefined') {
         try {
           user.value = JSON.parse(savedUser)
           userProfileCookie.value = user.value
@@ -101,9 +115,9 @@ export const useAuthStore = defineStore('auth', () => {
   function clearAuth() {
     token.value = null
     user.value = null
-    accessTokenCookie.value = null
-    refreshTokenCookie.value = null
-    userProfileCookie.value = null
+    accessTokenCookie.value = undefined
+    refreshTokenCookie.value = undefined
+    userProfileCookie.value = undefined
     if (process.client) {
       localStorage.removeItem("qw_access_token")
       localStorage.removeItem("qw_refresh_token")

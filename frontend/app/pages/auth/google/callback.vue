@@ -104,11 +104,14 @@ onMounted(async () => {
       // Redirect based on role
       setTimeout(async () => {
         if (data.role === 'ADMIN') {
-          await navigateTo('/admin/dashboard')
+          await navigateTo('/admin')
         } else if (data.role === 'ENTERPRISE') {
-          await navigateTo('/enterprise/dashboard')
+          await navigateTo('/enterprise')
+        } else if (data.role === 'STUDENT') {
+          await navigateTo('/student')
         } else {
-          await navigateTo('/dashboard')
+          status.value = 'error'
+          errorMessage.value = 'Quyền hạn của tài khoản không hợp lệ.'
         }
       }, 1500)
     } else {

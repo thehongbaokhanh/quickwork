@@ -18,11 +18,18 @@ export default defineNuxtRouteMiddleware((to, from) => {
   // 2. Đã đăng nhập
   const role = authStore.userRole
 
-  // Nếu truy cập lại trang đăng nhập / đăng ký thì điều hướng về dashboard
+  // Kiểm tra tính hợp lệ của role
+  const validRoles = ['ADMIN', 'ENTERPRISE', 'STUDENT']
+  if (!role || !validRoles.includes(role)) {
+    authStore.logout()
+    return navigateTo('/auth/login?error=invalid_role')
+  }
+
+  // Nếu truy cập lại trang đăng nhập / đăng ký thì điều hướng về dashboard tương ứng
   if (['/auth/login', '/auth/register'].includes(to.path)) {
-    if (role === 'ADMIN') return navigateTo('/admin/dashboard')
-    if (role === 'ENTERPRISE') return navigateTo('/enterprise/dashboard')
-    return navigateTo('/dashboard')
+    if (role === 'ADMIN') return navigateTo('/admin')
+    if (role === 'ENTERPRISE') return navigateTo('/enterprise')
+    if (role === 'STUDENT') return navigateTo('/student')
   }
 
   // 3. Phân quyền theo Role

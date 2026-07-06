@@ -12,6 +12,8 @@ declare module 'nuxt/app' {
     "auth-vue": ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/auth.vue.js").default>
     default: ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/default.vue").default>
     "default-vue": ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/default.vue.js").default>
+    enterprise: ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/enterprise.vue").default>
+    student: ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/student.vue").default>
   }
   export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts
   interface PageMeta {

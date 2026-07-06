@@ -107,14 +107,20 @@ definePageMeta({
   layout: 'auth'
 })
 
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 
-
-
+const route = useRoute()
 const authStore = useAuthStore()
 const isLoading = ref(false)
 const errorMessage = ref('')
+
+onMounted(() => {
+  if (route.query.error === 'invalid_role') {
+    errorMessage.value = 'Tài khoản của bạn có quyền truy cập không hợp lệ hoặc chưa được phân quyền.'
+  }
+})
 
 const form = reactive({
   email: '',
@@ -161,16 +167,14 @@ const handleLogin = async () => {
     // Đăng nhập thành công, điều phối luồng dựa trên vai trò người dùng
     const role = authStore.userRole
 
-if (!role) {
-  throw new Error("Không lấy được thông tin quyền người dùng")
-}
-
 if (role === "ADMIN") {
-  await navigateTo("/admin/dashboard")
+  await navigateTo("/admin")
 } else if (role === "ENTERPRISE") {
-  await navigateTo("/enterprise/dashboard")
+  await navigateTo("/enterprise")
+} else if (role === "STUDENT") {
+  await navigateTo("/student")
 } else {
-  await navigateTo("/dashboard")
+  throw new Error("Không lấy được thông tin quyền người dùng hợp lệ")
 } } catch (err: any) {
     errorMessage.value = err.message || 'Thông tin tài khoản hoặc mật khẩu chưa chính xác.'
   } finally {
