@@ -13,7 +13,7 @@ type StudentProfile struct {
 
 	Avatar string `gorm:"type:varchar(255)" json:"avatar"`
 
-	Skills string `gorm:"type:text" json:"skills"`
+	Skills []Skill `gorm:"many2many:student_profile_skills;" json:"skills"`
 
 	CVURL string `gorm:"column:cv_url;type:varchar(255)" json:"cv_url"`
 
@@ -26,4 +26,4 @@ type StudentProfile struct {
 
 func (StudentProfile) TableName() string {
 	return "student_profiles"
-}
+}

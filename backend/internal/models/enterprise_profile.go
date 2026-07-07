@@ -5,10 +5,12 @@ import (
 	"time"
 )
 
+type KYBStatus string
+
 const (
-	KYBPending  = "PENDING"
-	KYBApproved = "APPROVED"
-	KYBRejected = "REJECTED"
+	KYBPending  KYBStatus = "PENDING"
+	KYBApproved KYBStatus = "APPROVED"
+	KYBRejected KYBStatus = "REJECTED"
 )
 
 type EnterpriseProfile struct {
@@ -20,12 +22,11 @@ type EnterpriseProfile struct {
 
 	GPKDURL string `gorm:"column:gpkd_url;type:varchar(255)" json:"gpkd_url"`
 
-	KYBStatus string `gorm:"column:kyb_status;size:20;default:PENDING"`
+	KYBStatus KYBStatus `gorm:"column:kyb_status;type:varchar(20);default:'PENDING'" json:"kyb_status,omitempty"`
 
-	StatusKYB string `gorm:"column:status_kyb;type:enum('PENDING','APPROVED','REJECTED');default:'PENDING'" json:"status_kyb"`
+	StatusKYB KYBStatus `gorm:"column:status_kyb;type:varchar(20);default:'PENDING'" json:"status_kyb"`
 
 	User User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
-
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -35,3 +36,4 @@ type EnterpriseProfile struct {
 func (EnterpriseProfile) TableName() string {
 	return "enterprise_profiles"
 }
+

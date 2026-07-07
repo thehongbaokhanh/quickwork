@@ -93,8 +93,8 @@ func (s *authService) RegisterStudent(req *request.RegisterStudentRequest) (*res
 	user := &models.User{
 		Email:    req.Email,
 		Password: hashedPassword,
-		Role:     "STUDENT",
-		Status:   "ACTIVE",
+		Role:     models.RoleStudent,
+		Status:   models.UserStatusActive,
 	}
 
 	if err := s.userRepo.Create(tx, user); err != nil {
@@ -121,8 +121,8 @@ func (s *authService) RegisterStudent(req *request.RegisterStudentRequest) (*res
 	return &response.RegisterResponse{
 		ID:        user.ID,
 		Email:     user.Email,
-		Role:      user.Role,
-		Status:    user.Status,
+		Role:      string(user.Role),
+		Status:    string(user.Status),
 		CreatedAt: user.CreatedAt,
 	}, nil
 }
@@ -157,8 +157,8 @@ func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest)
 	user := &models.User{
 		Email:    req.Email,
 		Password: hashedPassword,
-		Role:     "ENTERPRISE",
-		Status:   "ACTIVE",
+		Role:     models.RoleEnterprise,
+		Status:   models.UserStatusActive,
 	}
 
 	if err := s.userRepo.Create(tx, user); err != nil {
@@ -187,8 +187,8 @@ func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest)
 	return &response.RegisterResponse{
 		ID:        user.ID,
 		Email:     user.Email,
-		Role:      user.Role,
-		Status:    user.Status,
+		Role:      string(user.Role),
+		Status:    string(user.Status),
 		CreatedAt: user.CreatedAt,
 	}, nil
 }
@@ -207,17 +207,17 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 	}
 
 	// 3. Kiểm tra Status
-	if user.Status != "ACTIVE" {
+	if user.Status != models.UserStatusActive {
 		return nil, ErrAccountBanned
 	}
 
 	// 4. Sinh JWT
-	accessToken, err := jwt.GenerateAccessToken(user.ID, user.Role)
+	accessToken, err := jwt.GenerateAccessToken(user.ID, string(user.Role))
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := jwt.GenerateRefreshToken(user.ID, user.Role)
+	refreshToken, err := jwt.GenerateRefreshToken(user.ID, string(user.Role))
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 		RefreshToken: refreshToken,
 		UserID:       user.ID,
 		Email:        user.Email,
-		Role:         user.Role,
+		Role:         string(user.Role),
 	}, nil
 }
 
@@ -330,8 +330,8 @@ func (s *authService) RegisterFirstAdmin(
 	admin := &models.User{
 		Email:    req.Email,
 		Password: hashedPassword,
-		Role:     "ADMIN",
-		Status:   "ACTIVE",
+		Role:     models.RoleAdmin,
+		Status:   models.UserStatusActive,
 	}
 
 	// Nếu model User của bạn có FullName thì thêm	:
@@ -351,8 +351,8 @@ func (s *authService) RegisterFirstAdmin(
 	return &response.RegisterResponse{
 		ID:        admin.ID,
 		Email:     admin.Email,
-		Role:      admin.Role,
-		Status:    admin.Status,
+		Role:      string(admin.Role),
+		Status:    string(admin.Status),
 		CreatedAt: admin.CreatedAt,
 	}, nil
 }
@@ -482,12 +482,12 @@ func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*
 		}
 	} else {
 		// User exists, if it is active, we just log them in. But we also update their name/avatar if empty/changed
-		if user.Status != "ACTIVE" {
+		if user.Status != models.UserStatusActive {
 			return nil, ErrAccountBanned
 		}
 
 		// Update profile photo if empty
-		if user.Role == "STUDENT" {
+		if user.Role == models.RoleStudent {
 			var studentProfile models.StudentProfile
 			err := s.db.Where("user_id = ?", user.ID).First(&studentProfile).Error
 			if err == nil && (studentProfile.Avatar == "" || studentProfile.Name == "") {
@@ -503,12 +503,12 @@ func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*
 	}
 
 	// Generate Access and Refresh Tokens
-	accessToken, err := jwt.GenerateAccessToken(user.ID, user.Role)
+	accessToken, err := jwt.GenerateAccessToken(user.ID, string(user.Role))
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := jwt.GenerateRefreshToken(user.ID, user.Role)
+	refreshToken, err := jwt.GenerateRefreshToken(user.ID, string(user.Role))
 	if err != nil {
 		return nil, err
 	}
@@ -518,7 +518,7 @@ func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*
 		RefreshToken: refreshToken,
 		UserID:       user.ID,
 		Email:        user.Email,
-		Role:         user.Role,
+		Role:         string(user.Role),
 	}, nil
 }
 

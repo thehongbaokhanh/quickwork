@@ -32,6 +32,9 @@ func main() {
 	}
 	log.Println("ADMIN_SECRET =", cfg.AdminSecret)
 
+	// Khởi tạo Cloudinary
+	config.InitCloudinary()
+
 	// Khởi tạo Redis
 	if err := redis.Init(cfg); err != nil {
 		log.Fatal("Redis initialization failed:", err)
@@ -59,6 +62,7 @@ func main() {
 	studentRepo := repositories.NewStudentRepository()
 	enterpriseRepo := repositories.NewEnterpriseRepository()
 	authRedisRepo := repositories.NewAuthRedisRepository(redis.Client)
+	jobRepo := repositories.NewJobRepository(db)
 
 	// Service
 	authService := services.NewAuthService(
@@ -73,6 +77,7 @@ func main() {
 	// Handler
 	authHandler := handlers.NewAuthHandler(authService)
 	testHandler := handlers.NewTestHandler()
+	enterpriseJobHandler := handlers.NewEnterpriseJobHandler(jobRepo)
 
 	app := fiber.New()
 
@@ -95,6 +100,9 @@ func main() {
 	protected.Get("/profile", testHandler.Profile)
 
 	routes.RegisterTestRoutes(protected, testHandler)
+
+	enterpriseGroup := protected.Group("/enterprise", middleware.RoleMiddleware("ENTERPRISE"))
+	routes.RegisterEnterpriseJobRoutes(enterpriseGroup, enterpriseJobHandler)
 
 	// Swagger
 	app.Get("/swagger/*", swagger.HandlerDefault)

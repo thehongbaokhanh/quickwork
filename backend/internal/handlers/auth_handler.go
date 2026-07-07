@@ -2,14 +2,13 @@ package handlers
 
 import (
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 
+	"quickwork.local/backend/config"
 	"quickwork.local/backend/internal/dto/request"
 	service "quickwork.local/backend/internal/services"
 )
@@ -326,7 +325,7 @@ func (h *AuthHandler) RegisterFirstAdmin(c *fiber.Ctx) error {
 // @Failure 500 {object} map[string]interface{} "Lỗi hệ thống khi lưu file"
 // @Router /auth/upload [post]
 func (h *AuthHandler) UploadGPKD(c *fiber.Ctx) error {
-	file, err := c.FormFile("gpkd")
+	fileHeader, err := c.FormFile("gpkd")
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
@@ -334,27 +333,35 @@ func (h *AuthHandler) UploadGPKD(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := os.MkdirAll("uploads", 0755); err != nil {
+	fileReader, err := fileHeader.Open()
+	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
-			"message": "Không thể tạo thư mục lưu trữ",
+			"message": "Không thể mở file",
+		})
+	}
+	defer fileReader.Close()
+
+	if config.CLD == nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Cloudinary chưa được cấu hình",
 		})
 	}
 
-	ext := filepath.Ext(file.Filename)
-	filename := uuid.New().String() + ext
-	filePath := filepath.Join("uploads", filename)
-
-	if err := c.SaveFile(file, filePath); err != nil {
+	resp, err := config.CLD.Upload.Upload(c.UserContext(), fileReader, uploader.UploadParams{
+		Folder: "gpkd",
+	})
+	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
-			"message": "Không thể lưu file",
+			"message": "Không thể tải file lên Cloudinary: " + err.Error(),
 		})
 	}
 
 	return c.JSON(fiber.Map{
 		"success": true,
-		"url":     "/uploads/" + filename,
+		"url":     resp.SecureURL,
 	})
 }
 
