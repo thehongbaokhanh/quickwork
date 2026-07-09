@@ -1,4 +1,16 @@
 export default defineNuxtConfig({
+  app: {
+    head: {
+      htmlAttrs: {
+        lang: 'vi',
+      },
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      ],
+    },
+  },
+
   future: {
     compatibilityVersion: 4,
   },
@@ -6,6 +18,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-06-24',
 
   ssr: true,
+
+  css: ['~/assets/css/main.css'],
 
   modules: [
     '@pinia/nuxt',
@@ -30,5 +44,17 @@ export default defineNuxtConfig({
 
   pinia: {
     storesDirs: ['./app/stores/**'],
+  },
+
+  tailwindcss: {
+    config: {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Segoe UI"', '"Inter"', '"Be Vietnam Pro"', '"Noto Sans"', 'Arial', 'sans-serif'],
+          },
+        },
+      },
+    },
   },
 })

@@ -20,6 +20,8 @@
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
+    "@iconify-json/svg-spinners": "^1.2.4",
+    "@iconify-json/uil": "^1.2.3",
     "@nuxt/eslint": "^1.16.0",
     "@nuxt/fonts": "^0.14.0",
     "@nuxt/icon": "^2.2.3",

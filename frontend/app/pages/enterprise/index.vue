@@ -1,364 +1,431 @@
 <template>
-  <div class="space-y-8">
-    <!-- Header Welcome & Quick Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-xl md:text-2xl font-black text-slate-900">Xin chào, {{ userName }} 👋</h1>
-        <p class="text-xs text-slate-400 font-semibold mt-1">Chúc bạn một ngày làm việc hiệu quả và tuyển dụng thành công!</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button 
-          @click="openCreateJobModal"
-          class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-100 flex items-center gap-2 transition-all active:scale-98"
-        >
-          <Icon name="uil:plus-circle" class="w-4.5 h-4.5" />
-          <span>Đăng tin tuyển dụng</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Stats Grid -->
-    <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      <div 
-        v-for="stat in stats" 
-        :key="stat.title"
-        class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow transition-shadow flex flex-col justify-between"
-      >
-        <span class="text-xs font-semibold text-slate-400">{{ stat.title }}</span>
-        <div class="flex items-baseline justify-between mt-3">
-          <span class="text-2xl font-black text-slate-800">{{ stat.value }}</span>
-          <span :class="['text-[10px] font-bold px-1.5 py-0.5 rounded', stat.trendClass]">
-            {{ stat.trend }}
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Chart & Quick Actions Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- SVG Trend Chart (Col span 2) -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="font-extrabold text-slate-900 text-sm">Thống kê ứng viên</h3>
-            <p class="text-[11px] text-slate-400 font-medium">Xu hướng ứng tuyển trong 6 tháng gần nhất</p>
+  <div class="space-y-5">
+    <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="grid gap-5 bg-slate-950 px-5 py-6 text-white lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-6">
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-emerald-400/15 px-3 py-1 text-xs font-bold text-emerald-100 ring-1 ring-emerald-300/20">
+              <Icon name="uil:database" class="h-4 w-4" />
+              Dữ liệu hệ thống
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-1 text-xs font-bold text-slate-100 ring-1 ring-white/10">
+              <Icon name="uil:briefcase" class="h-4 w-4" />
+              {{ totalJobs }} tin tuyển dụng
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-1 text-xs font-bold text-slate-100 ring-1 ring-white/10">
+              <Icon name="uil:calendar-alt" class="h-4 w-4" />
+              {{ latestJobDateLabel }}
+            </span>
           </div>
-          <span class="text-xs font-bold text-indigo-600 cursor-pointer hover:underline">Chi tiết báo cáo</span>
+
+          <h1 class="mt-4 text-2xl font-black leading-tight tracking-normal sm:text-3xl">
+            Trung tâm tuyển dụng của {{ userName }}
+          </h1>
+          <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+            Theo dõi trạng thái tin tuyển dụng, xử lý tin đang chờ duyệt và tạo tin mới từ dữ liệu thật của tài khoản doanh nghiệp hiện tại.
+          </p>
         </div>
 
-        <!-- SVG Line Chart Mockup -->
-        <div class="relative h-60 w-full pt-4 flex items-end">
-          <svg class="w-full h-full" viewBox="0 0 600 220">
-            <!-- Grid lines -->
-            <line x1="40" y1="20" x2="580" y2="20" stroke="#f1f5f9" stroke-width="1" />
-            <line x1="40" y1="70" x2="580" y2="70" stroke="#f1f5f9" stroke-width="1" />
-            <line x1="40" y1="120" x2="580" y2="120" stroke="#f1f5f9" stroke-width="1" />
-            <line x1="40" y1="170" x2="580" y2="170" stroke="#f1f5f9" stroke-width="1" />
-            <line x1="40" y1="200" x2="580" y2="200" stroke="#cbd5e1" stroke-width="1.5" />
-
-            <!-- Y Axis indicators -->
-            <text x="10" y="25" fill="#94a3b8" font-size="10" font-weight="600">80</text>
-            <text x="10" y="75" fill="#94a3b8" font-size="10" font-weight="600">50</text>
-            <text x="10" y="125" fill="#94a3b8" font-size="10" font-weight="600">30</text>
-            <text x="10" y="175" fill="#94a3b8" font-size="10" font-weight="600">10</text>
-            <text x="15" y="205" fill="#94a3b8" font-size="10" font-weight="600">0</text>
-
-            <!-- Chart Line -->
-            <path 
-              d="M 60 160 L 150 140 L 240 90 L 330 110 L 420 50 L 510 30" 
-              fill="none" 
-              stroke="#4f46e5" 
-              stroke-width="3" 
-              stroke-linecap="round" 
-              stroke-linejoin="round"
-            />
-
-            <!-- Dots -->
-            <circle cx="60" cy="160" r="5" fill="#4f46e5" stroke="#ffffff" stroke-width="2" />
-            <circle cx="150" cy="140" r="5" fill="#4f46e5" stroke="#ffffff" stroke-width="2" />
-            <circle cx="240" cy="90" r="5" fill="#4f46e5" stroke="#ffffff" stroke-width="2" />
-            <circle cx="330" cy="110" r="5" fill="#4f46e5" stroke="#ffffff" stroke-width="2" />
-            <circle cx="420" cy="50" r="5" fill="#4f46e5" stroke="#ffffff" stroke-width="2" />
-            <circle cx="510" cy="30" r="5" fill="#4f46e5" stroke="#ffffff" stroke-width="2" />
-
-            <!-- X Axis indicators -->
-            <text x="45" y="218" fill="#94a3b8" font-size="10" font-weight="600">Tháng 1</text>
-            <text x="135" y="218" fill="#94a3b8" font-size="10" font-weight="600">Tháng 2</text>
-            <text x="225" y="218" fill="#94a3b8" font-size="10" font-weight="600">Tháng 3</text>
-            <text x="315" y="218" fill="#94a3b8" font-size="10" font-weight="600">Tháng 4</text>
-            <text x="405" y="218" fill="#94a3b8" font-size="10" font-weight="600">Tháng 5</text>
-            <text x="495" y="218" fill="#94a3b8" font-size="10" font-weight="600">Tháng 6</text>
-          </svg>
-        </div>
-      </div>
-
-      <!-- Quick Actions (Col span 1) -->
-      <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5">
-        <div>
-          <h3 class="font-extrabold text-slate-900 text-sm">Thao tác nhanh</h3>
-          <p class="text-[11px] text-slate-400 font-medium">Lối tắt quản lý hệ thống</p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3.5">
-          <button 
+        <div class="flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
+          <NuxtLink
+            to="/enterprise/jobs"
+            class="inline-flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15"
+          >
+            <Icon name="uil:list-ul" class="h-5 w-5" />
+            Xem danh sách
+          </NuxtLink>
+          <button
+            class="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-400 px-4 py-2.5 text-sm font-black text-slate-950 shadow-sm transition hover:bg-emerald-300 disabled:opacity-60"
+            type="button"
             @click="openCreateJobModal"
-            class="p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-100 rounded-2xl flex flex-col items-center justify-center gap-2 text-center text-slate-700 hover:text-indigo-600 transition-all font-semibold text-xs active:scale-98"
           >
-            <Icon name="uil:plus-circle" class="w-6 h-6" />
-            <span>Đăng tin</span>
+            <Icon name="uil:plus-circle" class="h-5 w-5" />
+            Đăng tin mới
           </button>
-          
-          <a 
-            href="#"
-            class="p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-100 rounded-2xl flex flex-col items-center justify-center gap-2 text-center text-slate-700 hover:text-indigo-600 transition-all font-semibold text-xs active:scale-98"
-          >
-            <Icon name="uil:users-alt" class="w-6 h-6" />
-            <span>Xem ứng viên</span>
-          </a>
-
-          <a 
-            href="#"
-            class="p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-100 rounded-2xl flex flex-col items-center justify-center gap-2 text-center text-slate-700 hover:text-indigo-600 transition-all font-semibold text-xs active:scale-98"
-          >
-            <Icon name="uil:edit" class="w-6 h-6" />
-            <span>Sửa Công ty</span>
-          </a>
-
-          <a 
-            href="#"
-            class="p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-100 rounded-2xl flex flex-col items-center justify-center gap-2 text-center text-slate-700 hover:text-indigo-600 transition-all font-semibold text-xs active:scale-98"
-          >
-            <Icon name="uil:user-circle" class="w-6 h-6" />
-            <span>Hồ sơ Admin</span>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Jobs List Table -->
-    <section class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-      <!-- Header Table -->
-      <div class="p-6 border-b border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 class="font-extrabold text-slate-900 text-sm">Tin tuyển dụng gần đây</h3>
-          <p class="text-[11px] text-slate-400 font-medium">Danh sách các tin tuyển dụng đang hoạt động</p>
-        </div>
-        
-        <!-- Filter Search inside Table -->
-        <div class="flex items-center bg-slate-50 border border-slate-200/80 rounded-xl px-3.5 py-2 w-72 text-xs">
-          <Icon name="uil:search" class="text-slate-400 mr-2 w-4 h-4" />
-          <input 
-            type="text" 
-            placeholder="Tìm tin tuyển dụng..." 
-            v-model="searchQuery"
-            class="bg-transparent border-none text-slate-800 focus:outline-none w-full"
-          />
         </div>
       </div>
 
-      <!-- Loading skeleton -->
-      <div v-if="isLoading" class="p-6 space-y-4">
-        <div v-for="i in 3" :key="i" class="animate-pulse flex items-center justify-between py-3 border-b border-slate-50">
-          <div class="flex-1 space-y-2">
-            <div class="h-4 bg-slate-100 rounded-lg w-1/3"></div>
-            <div class="h-3 bg-slate-100 rounded-lg w-1/4"></div>
-          </div>
-          <div class="w-24 h-6 bg-slate-100 rounded-lg"></div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="filteredJobs.length === 0" class="p-12 text-center space-y-4">
-        <div class="w-14 h-14 bg-slate-50 text-slate-400 flex items-center justify-center rounded-full mx-auto text-2xl">
-          <Icon name="uil:document-info" />
-        </div>
-        <h4 class="font-bold text-slate-900 text-sm">Không tìm thấy tin tuyển dụng nào</h4>
-        <p class="text-slate-500 text-xs max-w-xs mx-auto">Không tìm thấy kết quả phù hợp với từ khóa tìm kiếm. Vui lòng nhập từ khóa khác.</p>
-      </div>
-
-      <!-- Table Content -->
-      <div v-else class="overflow-x-auto">
-        <table class="w-full text-left text-xs font-semibold text-slate-600">
-          <thead class="bg-slate-50/50 text-[10px] text-slate-400 uppercase border-b border-slate-100">
-            <tr>
-              <th class="px-6 py-4">Tiêu đề tuyển dụng</th>
-              <th class="px-6 py-4">Địa điểm</th>
-              <th class="px-6 py-4">Mức lương</th>
-              <th class="px-6 py-4">Trạng thái</th>
-              <th class="px-6 py-4">Ngày đăng</th>
-              <th class="px-6 py-4 text-center">Ứng viên</th>
-              <th class="px-6 py-4 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-50">
-            <tr 
-              v-for="job in filteredJobs" 
-              :key="job.id"
-              class="hover:bg-slate-50/40 transition-colors"
-            >
-              <td class="px-6 py-4.5">
-                <span class="font-bold text-slate-950 text-xs block hover:text-indigo-600 cursor-pointer transition-colors">{{ job.title }}</span>
-                <span class="text-[10px] text-slate-400 font-semibold block mt-0.5">{{ job.type }}</span>
-              </td>
-              <td class="px-6 py-4.5 font-medium text-slate-500">{{ job.location }}</td>
-              <td class="px-6 py-4.5 font-medium text-slate-500">{{ job.salary }}</td>
-              <td class="px-6 py-4.5">
-                <span :class="['px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border', job.statusClass]">
-                  {{ job.status }}
-                </span>
-              </td>
-              <td class="px-6 py-4.5 font-medium text-slate-400">{{ job.createdAt }}</td>
-              <td class="px-6 py-4.5 text-center">
-                <span class="inline-flex items-center justify-center bg-indigo-50 text-indigo-600 w-6 h-6 rounded-full font-bold">
-                  {{ job.applicantsCount }}
-                </span>
-              </td>
-              <td class="px-6 py-4.5 text-right space-x-2">
-                <button 
-                  @click="openActionDemo('Chi tiết', job)"
-                  class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-lg transition-all"
-                  title="Chi tiết"
-                >
-                  <Icon name="uil:eye" class="w-4.5 h-4.5" />
-                </button>
-                <button 
-                  @click="openActionDemo('Đóng tin', job)"
-                  class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50/50 rounded-lg transition-all"
-                  title="Đóng tin"
-                >
-                  <Icon name="uil:ban" class="w-4.5 h-4.5" />
-                </button>
-                <button 
-                  @click="openActionDemo('Xóa', job)"
-                  class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50/50 rounded-lg transition-all"
-                  title="Xóa tin"
-                >
-                  <Icon name="uil:trash-alt" class="w-4.5 h-4.5" />
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </section>
 
-    <!-- Create Job Modal Simulator -->
-    <transition 
-      enter-active-class="transition duration-150 ease-out"
-      enter-from-class="transform scale-95 opacity-0"
-      enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-100 ease-in"
-      leave-from-class="transform scale-100 opacity-100"
-      leave-to-class="transform scale-95 opacity-0"
+    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+      <button
+        v-for="stat in statusCards"
+        :key="stat.key"
+        :class="[
+          'rounded-lg border bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
+          activeStatus === stat.key ? 'border-slate-900 ring-2 ring-slate-900/10' : 'border-slate-200'
+        ]"
+        type="button"
+        @click="activeStatus = stat.key"
+      >
+        <div class="flex items-center justify-between gap-3">
+          <span :class="['flex h-10 w-10 items-center justify-center rounded-md', stat.iconClass]">
+            <Icon :name="stat.icon" class="h-5 w-5" />
+          </span>
+          <span class="text-2xl font-black text-slate-950">{{ stat.value }}</span>
+        </div>
+        <p class="mt-3 text-sm font-black text-slate-900">{{ stat.label }}</p>
+        <p class="mt-1 min-h-8 text-xs leading-4 text-slate-500">{{ stat.description }}</p>
+      </button>
+    </section>
+
+    <div
+      v-if="errorMessage"
+      class="flex items-start gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
     >
-      <div v-if="createModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-2xl max-w-md w-full space-y-4 text-left">
-          <div class="flex items-center justify-between border-b border-slate-50 pb-3">
-            <h3 class="font-extrabold text-slate-900 text-sm">Đăng tin tuyển dụng mới</h3>
-            <button @click="createModalOpen = false" class="text-slate-400 hover:text-slate-600">
-              <Icon name="uil:multiply" class="w-5 h-5" />
-            </button>
-          </div>
-          <form @submit.prevent="submitCreateJob" class="space-y-4 text-xs font-semibold text-slate-700">
+      <Icon name="uil:exclamation-triangle" class="mt-0.5 h-5 w-5 shrink-0" />
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="space-y-4 border-b border-slate-100 px-5 py-4 lg:px-6">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <label class="block text-slate-600 mb-1">Tiêu đề tin tuyển dụng</label>
-              <input 
-                type="text" 
-                required 
-                v-model="newJobForm.title"
-                class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
-                placeholder="Ví dụ: Thực tập sinh Golang Backend"
+              <h2 class="text-base font-black text-slate-950">Tin tuyển dụng từ hệ thống</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">Danh sách được tải trực tiếp từ API của tài khoản nhà tuyển dụng.</p>
+            </div>
+
+            <div class="flex w-full items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2 lg:w-80">
+              <Icon name="uil:search" class="mr-2 h-4 w-4 text-slate-400" />
+              <input
+                v-model="searchQuery"
+                class="w-full bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+                placeholder="Tìm theo tiêu đề, địa điểm, trạng thái"
+                type="text"
               />
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-slate-600 mb-1">Địa điểm làm việc</label>
-                <input 
-                  type="text" 
-                  required 
-                  v-model="newJobForm.location"
-                  class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
-                  placeholder="Hà Nội, TP. HCM..."
-                />
-              </div>
-              <div>
-                <label class="block text-slate-600 mb-1">Mức lương</label>
-                <input 
-                  type="text" 
-                  required 
-                  v-model="newJobForm.salary"
-                  class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
-                  placeholder="5 - 8 triệu, Thỏa thuận..."
-                />
-              </div>
-            </div>
-            <div>
-              <label class="block text-slate-600 mb-1">Loại công việc</label>
-              <select 
-                v-model="newJobForm.type"
-                class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+          </div>
+
+          <div class="flex gap-2 overflow-x-auto pb-1">
+            <button
+              v-for="filter in statusFilters"
+              :key="filter.value"
+              :class="[
+                'inline-flex shrink-0 items-center gap-2 rounded-md border px-3 py-2 text-xs font-bold transition',
+                activeStatus === filter.value
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              ]"
+              type="button"
+              @click="activeStatus = filter.value"
+            >
+              <span>{{ filter.label }}</span>
+              <span
+                :class="[
+                  'rounded px-1.5 py-0.5 text-[10px]',
+                  activeStatus === filter.value ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'
+                ]"
               >
-                <option value="Thực tập">Thực tập (Intern)</option>
-                <option value="Bán thời gian">Bán thời gian (Part-time)</option>
-                <option value="Toàn thời gian">Toàn thời gian (Full-time)</option>
-              </select>
+                {{ filter.count }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="isLoading" class="space-y-3 px-5 py-6">
+          <div v-for="index in 5" :key="index" class="grid gap-3 rounded-md border border-slate-100 p-4 sm:grid-cols-[minmax(0,1fr)_120px_120px]">
+            <div class="space-y-2">
+              <div class="h-4 w-2/3 animate-pulse rounded bg-slate-100" />
+              <div class="h-3 w-1/2 animate-pulse rounded bg-slate-100" />
             </div>
+            <div class="h-4 animate-pulse rounded bg-slate-100" />
+            <div class="h-4 animate-pulse rounded bg-slate-100" />
+          </div>
+        </div>
+
+        <div v-else-if="filteredJobs.length === 0" class="px-5 py-16 text-center">
+          <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
+            <Icon name="uil:document-info" class="h-7 w-7" />
+          </div>
+          <h3 class="mt-4 text-sm font-black text-slate-950">{{ emptyTitle }}</h3>
+          <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+            {{ emptyMessage }}
+          </p>
+          <button
+            v-if="!searchQuery && activeStatus === 'ALL'"
+            class="mt-5 inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800"
+            type="button"
+            @click="openCreateJobModal"
+          >
+            <Icon name="uil:plus-circle" class="h-5 w-5" />
+            Tạo tin đầu tiên
+          </button>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full min-w-[920px] text-left text-sm">
+            <thead class="border-b border-slate-100 bg-slate-50 text-xs font-black uppercase text-slate-500">
+              <tr>
+                <th class="px-5 py-3">STT</th>
+                <th class="px-5 py-3">Tin tuyển dụng</th>
+                <th class="px-5 py-3">Địa điểm</th>
+                <th class="px-5 py-3">Số lượng</th>
+                <th class="px-5 py-3">Mức lương</th>
+                <th class="px-5 py-3">Trạng thái</th>
+                <th class="px-5 py-3">Ngày tạo</th>
+                <th class="px-5 py-3 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr v-for="(job, index) in filteredJobs" :key="job.id" class="transition hover:bg-slate-50/80">
+                <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
+                <td class="px-5 py-4">
+                  <p class="max-w-xs truncate font-black text-slate-950">{{ job.title || 'Chưa có tiêu đề' }}</p>
+                  <p class="mt-1 max-w-xs truncate text-xs font-semibold text-slate-500">{{ job.requirements || 'Chưa cập nhật yêu cầu' }}</p>
+                </td>
+                <td class="px-5 py-4 font-semibold text-slate-600">{{ job.location || 'Chưa cập nhật' }}</td>
+                <td class="px-5 py-4 font-semibold text-slate-600">{{ formatSlots(job.slots) }}</td>
+                <td class="px-5 py-4 font-semibold text-slate-600">{{ job.salary || 'Chưa cập nhật' }}</td>
+                <td class="px-5 py-4">
+                  <span :class="['inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black uppercase', getStatusClass(job.status)]">
+                    {{ getStatusLabel(job.status) }}
+                  </span>
+                </td>
+                <td class="px-5 py-4 font-semibold text-slate-500">{{ formatDate(job.created_at) }}</td>
+                <td class="px-5 py-4 text-right">
+                  <button
+                    v-if="normalizeStatus(job.status) !== 'CLOSED'"
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-400 transition hover:bg-amber-50 hover:text-amber-700"
+                    title="Đóng tin"
+                    type="button"
+                    @click="closeJob(job.id)"
+                  >
+                    <Icon name="uil:ban" class="h-5 w-5" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <aside class="space-y-5">
+        <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
             <div>
-              <label class="block text-slate-600 mb-1">Mô tả công việc</label>
-              <textarea 
-                rows="3"
-                required
-                v-model="newJobForm.description"
-                class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
-                placeholder="Mô tả công việc cần làm..."
-              ></textarea>
+              <h2 class="text-base font-black text-slate-950">Hiệu suất hiển thị</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">Tin đã duyệt trên tổng tin tuyển dụng.</p>
             </div>
-            <div class="pt-3 border-t border-slate-50 flex items-center justify-end gap-3">
-              <button 
-                type="button" 
-                @click="createModalOpen = false" 
-                class="px-4 py-2 border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 transition-all"
+            <Icon name="uil:analytics" class="h-5 w-5 text-slate-400" />
+          </div>
+
+          <div class="mt-5 rounded-lg bg-slate-950 p-4 text-white">
+            <div class="flex items-end justify-between gap-3">
+              <div>
+                <p class="text-xs font-bold uppercase text-slate-400">Tỷ lệ hiển thị</p>
+                <p class="mt-1 text-3xl font-black">{{ approvalRate }}%</p>
+              </div>
+              <span class="rounded-md bg-white/10 px-2.5 py-1 text-xs font-bold text-slate-200">
+                {{ countByStatus.APPROVED || 0 }}/{{ totalJobs }}
+              </span>
+            </div>
+            <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+              <div class="h-full rounded-full bg-emerald-400" :style="{ width: `${approvalRate}%` }" />
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="rounded-md border border-slate-100 bg-slate-50 px-3 py-3">
+              <p class="text-xs font-bold text-slate-500">Đã duyệt</p>
+              <p class="mt-1 text-lg font-black text-slate-950">{{ countByStatus.APPROVED || 0 }}</p>
+            </div>
+            <div class="rounded-md border border-slate-100 bg-slate-50 px-3 py-3">
+              <p class="text-xs font-bold text-slate-500">Tổng tin</p>
+              <p class="mt-1 text-lg font-black text-slate-950">{{ totalJobs }}</p>
+            </div>
+          </div>
+
+          <button
+            v-if="rejectedJobs.length > 0"
+            class="mt-4 flex w-full items-center justify-between gap-3 rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-left text-sm font-bold text-rose-700 transition hover:bg-rose-100"
+            type="button"
+            @click="activeStatus = 'REJECTED'"
+          >
+            <span>{{ rejectedJobs.length }} tin cần chỉnh sửa</span>
+            <Icon name="uil:arrow-right" class="h-4 w-4" />
+          </button>
+        </section>
+
+        <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-black text-slate-950">Chờ admin duyệt</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">Các tin đang ở trạng thái PENDING.</p>
+            </div>
+            <span class="rounded-md bg-amber-50 px-2.5 py-1 text-sm font-black text-amber-700">{{ pendingJobs.length }}</span>
+          </div>
+
+          <div v-if="isLoading" class="mt-5 space-y-3">
+            <div v-for="index in 3" :key="index" class="h-16 animate-pulse rounded-md bg-slate-100" />
+          </div>
+          <div v-else-if="pendingJobs.length === 0" class="mt-5 rounded-md bg-slate-50 px-4 py-5 text-sm text-slate-500">
+            Không có tin nào đang chờ duyệt.
+          </div>
+          <div v-else class="mt-5 space-y-3">
+            <article
+              v-for="(job, index) in pendingJobs.slice(0, 4)"
+              :key="job.id"
+              class="flex items-start gap-3 rounded-md border border-amber-100 bg-amber-50/60 px-4 py-3"
+            >
+              <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-xs font-black text-amber-700">
+                {{ index + 1 }}
+              </span>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-black text-slate-950">{{ job.title || 'Chưa có tiêu đề' }}</p>
+                <p class="mt-1 text-xs font-semibold text-amber-700">{{ formatDate(job.created_at) }}</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-black text-slate-950">Hoạt động gần đây</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">Sắp xếp theo ngày tạo trong hệ thống.</p>
+            </div>
+            <Icon name="uil:history" class="h-5 w-5 text-slate-400" />
+          </div>
+
+          <div v-if="isLoading" class="mt-5 space-y-3">
+            <div v-for="index in 4" :key="index" class="flex items-start gap-3">
+              <div class="mt-1 h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-slate-200" />
+              <div class="min-w-0 flex-1 space-y-2">
+                <div class="h-4 animate-pulse rounded bg-slate-100" />
+                <div class="h-3 w-2/3 animate-pulse rounded bg-slate-100" />
+              </div>
+            </div>
+          </div>
+          <div v-else-if="recentJobs.length === 0" class="mt-5 rounded-md bg-slate-50 px-4 py-5 text-sm text-slate-500">
+            Chưa có dữ liệu tin tuyển dụng.
+          </div>
+          <div v-else class="mt-5 space-y-3">
+            <article
+              v-for="(job, index) in recentJobs.slice(0, 5)"
+              :key="job.id"
+              class="flex items-start gap-3"
+            >
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-xs font-black text-slate-600">
+                {{ index + 1 }}
+              </span>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-bold text-slate-900">{{ job.title || 'Chưa có tiêu đề' }}</p>
+                <p class="mt-0.5 text-xs font-medium text-slate-500">
+                  {{ getStatusLabel(job.status) }} · {{ formatDate(job.created_at) }}
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <transition
+      enter-active-class="transition duration-150 ease-out"
+      enter-from-class="scale-95 opacity-0"
+      enter-to-class="scale-100 opacity-100"
+      leave-active-class="transition duration-100 ease-in"
+      leave-from-class="scale-100 opacity-100"
+      leave-to-class="scale-95 opacity-0"
+    >
+      <div v-if="createModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+        <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-2xl">
+          <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <div>
+              <h3 class="text-base font-black text-slate-950">Đăng tin tuyển dụng mới</h3>
+              <p class="mt-1 text-xs font-medium text-slate-500">Tin mới sẽ được gửi sang trạng thái chờ duyệt.</p>
+            </div>
+            <button class="rounded-md p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" type="button" @click="createModalOpen = false">
+              <Icon name="uil:multiply" class="h-5 w-5" />
+            </button>
+          </div>
+
+          <form class="space-y-4 px-5 py-5 text-sm" @submit.prevent="submitCreateJob">
+            <div>
+              <label class="mb-1.5 block font-bold text-slate-700">Tiêu đề tin tuyển dụng</label>
+              <input
+                v-model="newJobForm.title"
+                class="w-full rounded-md border border-slate-200 px-3 py-2.5 font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
+                placeholder="Nhập tiêu đề tin"
+                required
+                type="text"
+              />
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label class="mb-1.5 block font-bold text-slate-700">Địa điểm làm việc</label>
+                <input
+                  v-model="newJobForm.location"
+                  class="w-full rounded-md border border-slate-200 px-3 py-2.5 font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
+                  placeholder="Nhập địa điểm"
+                  required
+                  type="text"
+                />
+              </div>
+              <div>
+                <label class="mb-1.5 block font-bold text-slate-700">Mức lương</label>
+                <input
+                  v-model="newJobForm.salary"
+                  class="w-full rounded-md border border-slate-200 px-3 py-2.5 font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
+                  placeholder="Nhập mức lương"
+                  required
+                  type="text"
+                />
+              </div>
+              <div>
+                <label class="mb-1.5 block font-bold text-slate-700">Số lượng tuyển</label>
+                <input
+                  v-model.number="newJobForm.slots"
+                  class="w-full rounded-md border border-slate-200 px-3 py-2.5 font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
+                  min="1"
+                  required
+                  type="number"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="mb-1.5 block font-bold text-slate-700">Yêu cầu công việc</label>
+              <textarea
+                v-model="newJobForm.requirements"
+                class="min-h-24 w-full rounded-md border border-slate-200 px-3 py-2.5 font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
+                placeholder="Nhập yêu cầu công việc"
+                required
+                rows="3"
+              />
+            </div>
+
+            <div>
+              <label class="mb-1.5 block font-bold text-slate-700">Mô tả công việc</label>
+              <textarea
+                v-model="newJobForm.description"
+                class="min-h-28 w-full rounded-md border border-slate-200 px-3 py-2.5 font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
+                placeholder="Nhập mô tả nhiệm vụ, quyền lợi và ghi chú"
+                required
+                rows="4"
+              />
+            </div>
+
+            <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+              <button
+                class="rounded-md border border-slate-200 px-4 py-2.5 font-bold text-slate-700 transition hover:bg-slate-50"
+                type="button"
+                @click="createModalOpen = false"
               >
                 Hủy
               </button>
-              <button 
-                type="submit" 
-                class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-100 hover:bg-indigo-700 transition-all font-bold"
+              <button
+                class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 font-bold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                :disabled="submitting"
+                type="submit"
               >
-                Đăng tuyển
+                <Icon v-if="submitting" name="svg-spinners:180-ring" class="h-4 w-4" />
+                {{ submitting ? 'Đang lưu...' : 'Gửi duyệt' }}
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </transition>
-
-    <!-- General Action Modal Simulator -->
-    <transition 
-      enter-active-class="transition duration-150 ease-out"
-      enter-from-class="transform scale-95 opacity-0"
-      enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-100 ease-in"
-      leave-from-class="transform scale-100 opacity-100"
-      leave-to-class="transform scale-95 opacity-0"
-    >
-      <div v-if="actionModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-2xl max-w-sm w-full space-y-5 text-center">
-          <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl">
-            <Icon name="uil:info-circle" />
-          </div>
-          <div class="space-y-1">
-            <h3 class="font-extrabold text-slate-900 text-sm">Thông báo thao tác</h3>
-            <p class="text-slate-500 text-xs leading-normal">
-              Đã mô phỏng thành công hành động <span class="font-bold text-slate-800">{{ activeAction }}</span> đối với tin tuyển dụng <span class="font-bold text-slate-800">{{ activeActionJob?.title }}</span>.
-            </p>
-          </div>
-          <button 
-            @click="actionModalOpen = false" 
-            class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition-all"
-          >
-            Đồng ý
-          </button>
         </div>
       </div>
     </transition>
@@ -366,8 +433,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { JobService } from '~/services/job.service'
+
+type StatusKey = 'ALL' | 'APPROVED' | 'PENDING' | 'DRAFT' | 'REJECTED' | 'CLOSED'
+type BreakdownStatusKey = Exclude<StatusKey, 'ALL'>
 
 definePageMeta({
   layout: 'enterprise',
@@ -377,124 +448,270 @@ definePageMeta({
 const authStore = useAuthStore()
 
 const isLoading = ref(true)
+const submitting = ref(false)
 const searchQuery = ref('')
+const activeStatus = ref('ALL')
 const createModalOpen = ref(false)
-const actionModalOpen = ref(false)
-const activeAction = ref('')
-const activeActionJob = ref<any>(null)
+const errorMessage = ref('')
+const jobs = ref<any[]>([])
 
-const userName = computed(() => authStore.user?.name || authStore.user?.email?.split('@')[0] || 'Doanh nghiệp')
+const userName = computed(() => authStore.user?.name?.trim() || authStore.user?.email?.split('@')[0] || 'Doanh nghiệp')
 
 const newJobForm = ref({
   title: '',
   location: '',
   salary: '',
-  type: 'Thực tập',
-  description: ''
+  requirements: '',
+  description: '',
+  slots: 1
 })
 
-const stats = [
-  { title: 'Tổng số tin đã đăng', value: '14', trend: '+2 trong tháng', trendClass: 'bg-green-50 text-green-600' },
-  { title: 'Tin đang hiển thị', value: '8', trend: 'Hoạt động', trendClass: 'bg-indigo-50 text-indigo-600' },
-  { title: 'Tin đang chờ duyệt', value: '3', trend: 'Cần xử lý', trendClass: 'bg-amber-50 text-amber-600' },
-  { title: 'Tin tuyển đã đóng', value: '3', trend: 'Lưu trữ', trendClass: 'bg-slate-100 text-slate-600' },
-  { title: 'Tổng số ứng viên', value: '86', trend: '+14% tuần này', trendClass: 'bg-green-50 text-green-600' },
-  { title: 'Lượt xem tin tuyển', value: '1,240', trend: '+8.3% ngày', trendClass: 'bg-green-50 text-green-600' }
-]
+const statusLabels: Record<BreakdownStatusKey, string> = {
+  DRAFT: 'Bản nháp',
+  PENDING: 'Chờ duyệt',
+  APPROVED: 'Đã duyệt',
+  REJECTED: 'Bị từ chối',
+  CLOSED: 'Đã đóng'
+}
 
-const recentJobs = ref([
-  {
-    id: 1,
-    title: 'Thực tập sinh Golang Backend (Go/SQL)',
-    type: 'Thực tập',
-    location: 'Hà Nội',
-    salary: '5 - 8 triệu',
-    status: 'Đang tuyển',
-    statusClass: 'bg-green-50 text-green-600 border-green-100/50',
-    createdAt: '01/07/2026',
-    applicantsCount: 18
+const statusMeta: Record<StatusKey, { label: string; description: string; icon: string; iconClass: string }> = {
+  ALL: {
+    label: 'Tổng tin',
+    description: 'Tất cả tin của tài khoản này',
+    icon: 'uil:briefcase-alt',
+    iconClass: 'bg-slate-100 text-slate-700'
   },
-  {
-    id: 2,
-    title: 'Thực tập sinh Frontend Developer (VueJS/Nuxt)',
-    type: 'Thực tập',
-    location: 'TP. HCM',
-    salary: '6 - 9 triệu',
-    status: 'Đang tuyển',
-    statusClass: 'bg-green-50 text-green-600 border-green-100/50',
-    createdAt: '30/06/2026',
-    applicantsCount: 14
+  APPROVED: {
+    label: 'Đã duyệt',
+    description: 'Tin đang được hiển thị',
+    icon: 'uil:check-circle',
+    iconClass: 'bg-emerald-50 text-emerald-700'
   },
-  {
-    id: 3,
-    title: 'Content Creator Part-time',
-    type: 'Bán thời gian',
-    location: 'Đà Nẵng',
-    salary: '4 - 6 triệu',
-    status: 'Chờ duyệt',
-    statusClass: 'bg-amber-50 text-amber-600 border-amber-100/50',
-    createdAt: '29/06/2026',
-    applicantsCount: 5
+  PENDING: {
+    label: 'Chờ duyệt',
+    description: 'Đang chờ admin xử lý',
+    icon: 'uil:clock',
+    iconClass: 'bg-amber-50 text-amber-700'
   },
-  {
-    id: 4,
-    title: 'Mobile Engineer Intern (React Native)',
-    type: 'Thực tập',
-    location: 'TP. HCM',
-    salary: 'Thỏa thuận',
-    status: 'Đã đóng',
-    statusClass: 'bg-slate-50 text-slate-400 border-slate-100',
-    createdAt: '15/06/2026',
-    applicantsCount: 22
+  DRAFT: {
+    label: 'Bản nháp',
+    description: 'Chưa gửi duyệt',
+    icon: 'uil:edit-alt',
+    iconClass: 'bg-sky-50 text-sky-700'
+  },
+  REJECTED: {
+    label: 'Bị từ chối',
+    description: 'Cần xem lại nội dung',
+    icon: 'uil:times-circle',
+    iconClass: 'bg-rose-50 text-rose-700'
+  },
+  CLOSED: {
+    label: 'Đã đóng',
+    description: 'Tin đã ngừng tuyển',
+    icon: 'uil:archive',
+    iconClass: 'bg-slate-100 text-slate-600'
   }
-])
+}
+
+const statusOrder: StatusKey[] = ['ALL', 'APPROVED', 'PENDING', 'DRAFT', 'REJECTED', 'CLOSED']
+
+const totalJobs = computed(() => jobs.value.length)
+
+const countByStatus = computed<Record<string, number>>(() => {
+  return jobs.value.reduce((counts, job) => {
+    const status = normalizeStatus(job.status)
+    counts[status] = (counts[status] || 0) + 1
+    return counts
+  }, {} as Record<string, number>)
+})
+
+const statusCards = computed(() => {
+  return statusOrder.map((key) => ({
+    key,
+    value: key === 'ALL' ? totalJobs.value : countByStatus.value[key] || 0,
+    ...statusMeta[key]
+  }))
+})
+
+const statusFilters = computed(() => {
+  return statusCards.value.map((card) => ({
+    value: card.key,
+    label: card.label,
+    count: card.value
+  }))
+})
+
+const sortedJobs = computed(() => {
+  return [...jobs.value].sort((a, b) => getDateTime(b.created_at) - getDateTime(a.created_at))
+})
 
 const filteredJobs = computed(() => {
-  if (!searchQuery.value) return recentJobs.value
-  const query = searchQuery.value.toLowerCase()
-  return recentJobs.value.filter(job => 
-    job.title.toLowerCase().includes(query) ||
-    job.location.toLowerCase().includes(query) ||
-    job.status.toLowerCase().includes(query)
-  )
+  const query = searchQuery.value.trim().toLowerCase()
+
+  return sortedJobs.value.filter((job) => {
+    const status = normalizeStatus(job.status)
+    const matchesStatus = activeStatus.value === 'ALL' || status === activeStatus.value
+    const searchable = [
+      job.title,
+      job.location,
+      job.salary,
+      job.requirements,
+      job.description,
+      getStatusLabel(status)
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return matchesStatus && (!query || searchable.includes(query))
+  })
 })
 
-const openCreateJobModal = () => {
+const pendingJobs = computed(() => sortedJobs.value.filter((job) => normalizeStatus(job.status) === 'PENDING'))
+const rejectedJobs = computed(() => sortedJobs.value.filter((job) => normalizeStatus(job.status) === 'REJECTED'))
+const recentJobs = computed(() => sortedJobs.value.slice(0, 5))
+
+const approvalRate = computed(() => {
+  if (totalJobs.value === 0) return 0
+  return Math.round(((countByStatus.value.APPROVED || 0) / totalJobs.value) * 100)
+})
+
+const latestJobDateLabel = computed(() => {
+  if (sortedJobs.value.length === 0) return 'Chưa có dữ liệu'
+  return `Mới nhất ${formatDate(sortedJobs.value[0]?.created_at)}`
+})
+
+const emptyTitle = computed(() => {
+  if (searchQuery.value) return 'Không tìm thấy tin phù hợp'
+  if (activeStatus.value !== 'ALL') return `Không có tin ở trạng thái ${getStatusLabel(activeStatus.value)}`
+  return 'Chưa có tin tuyển dụng'
+})
+
+const emptyMessage = computed(() => {
+  if (searchQuery.value || activeStatus.value !== 'ALL') {
+    return 'Thử đổi từ khóa tìm kiếm hoặc chọn trạng thái khác để xem dữ liệu đang có trong hệ thống.'
+  }
+  return 'Tạo tin tuyển dụng đầu tiên để gửi admin duyệt và bắt đầu hiển thị trên hệ thống.'
+})
+
+const statusClasses: Record<string, string> = {
+  DRAFT: 'border-sky-100 bg-sky-50 text-sky-700',
+  PENDING: 'border-amber-100 bg-amber-50 text-amber-700',
+  APPROVED: 'border-emerald-100 bg-emerald-50 text-emerald-700',
+  REJECTED: 'border-rose-100 bg-rose-50 text-rose-700',
+  CLOSED: 'border-slate-200 bg-slate-100 text-slate-600'
+}
+
+function normalizeStatus(status?: string) {
+  return (status || '').toUpperCase()
+}
+
+function isKnownStatus(status: string): status is BreakdownStatusKey {
+  return status in statusLabels
+}
+
+function getStatusLabel(status?: string) {
+  const normalized = normalizeStatus(status)
+  return isKnownStatus(normalized) ? statusLabels[normalized] : normalized || 'Chưa có trạng thái'
+}
+
+function getStatusClass(status?: string) {
+  return statusClasses[normalizeStatus(status)] || 'border-slate-200 bg-slate-50 text-slate-600'
+}
+
+function getDateTime(value?: string) {
+  if (!value) return 0
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+}
+
+function formatDate(value?: string) {
+  if (!value) return 'Chưa cập nhật'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Chưa cập nhật'
+  return date.toLocaleDateString('vi-VN')
+}
+
+function formatSlots(value?: number | string) {
+  const slots = Number(value)
+  if (!Number.isFinite(slots) || slots <= 0) return 'Chưa cập nhật'
+  return `${slots} vị trí`
+}
+
+function resetCreateForm() {
   newJobForm.value = {
     title: '',
     location: '',
     salary: '',
-    type: 'Thực tập',
-    description: ''
+    requirements: '',
+    description: '',
+    slots: 1
   }
+}
+
+async function fetchJobs() {
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+    const response: any = await JobService.getEnterpriseJobs()
+    jobs.value = response?.success && Array.isArray(response.data) ? response.data : []
+  } catch (error: any) {
+    jobs.value = []
+    errorMessage.value = error?.data?.message || error?.message || 'Không thể tải danh sách tin tuyển dụng.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+function openCreateJobModal() {
+  resetCreateForm()
+  errorMessage.value = ''
   createModalOpen.value = true
 }
 
-const submitCreateJob = () => {
-  const newJob = {
-    id: Date.now(),
-    title: newJobForm.value.title,
-    type: newJobForm.value.type,
-    location: newJobForm.value.location,
-    salary: newJobForm.value.salary,
-    status: 'Chờ duyệt',
-    statusClass: 'bg-amber-50 text-amber-600 border-amber-100/50',
-    createdAt: new Date().toLocaleDateString('vi-VN'),
-    applicantsCount: 0
+async function submitCreateJob() {
+  try {
+    submitting.value = true
+    errorMessage.value = ''
+    const payload = {
+      title: newJobForm.value.title.trim(),
+      location: newJobForm.value.location.trim(),
+      salary: newJobForm.value.salary.trim(),
+      requirements: newJobForm.value.requirements.trim(),
+      description: newJobForm.value.description.trim(),
+      slots: Number(newJobForm.value.slots),
+      status: 'PENDING'
+    }
+    const response: any = await JobService.createEnterpriseJob(payload)
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể lưu tin tuyển dụng.')
+    }
+    createModalOpen.value = false
+    activeStatus.value = 'PENDING'
+    await fetchJobs()
+  } catch (error: any) {
+    errorMessage.value = error?.data?.message || error?.message || 'Có lỗi xảy ra khi tạo tin tuyển dụng.'
+  } finally {
+    submitting.value = false
   }
-  recentJobs.value.unshift(newJob)
-  createModalOpen.value = false
 }
 
-const openActionDemo = (action: string, job: any) => {
-  activeAction.value = action
-  activeActionJob.value = job
-  actionModalOpen.value = true
+async function closeJob(id: number) {
+  if (!confirm('Bạn có chắc chắn muốn đóng tin tuyển dụng này?')) return
+
+  try {
+    errorMessage.value = ''
+    const response: any = await JobService.deleteEnterpriseJob(id)
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể đóng tin tuyển dụng.')
+    }
+    await fetchJobs()
+  } catch (error: any) {
+    errorMessage.value = error?.data?.message || error?.message || 'Không thể đóng tin tuyển dụng.'
+  }
 }
 
 onMounted(() => {
-  setTimeout(() => {
-    isLoading.value = false
-  }, 1000)
+  fetchJobs()
 })
 </script>

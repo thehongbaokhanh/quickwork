@@ -17,6 +17,10 @@
       </div>
     </div>
 
+    <div v-if="errorMessage" class="bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl px-4 py-3 text-sm font-semibold">
+      {{ errorMessage }}
+    </div>
+
     <!-- Filter Toolbar -->
     <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="flex items-center gap-2">
@@ -65,16 +69,21 @@
     <!-- Jobs Grid -->
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div 
-        v-for="job in jobs" 
+        v-for="(job, index) in jobs" 
         :key="job.id"
         class="bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/30 transition-all flex flex-col justify-between overflow-hidden"
       >
         <!-- Body -->
         <div class="p-6 space-y-4 flex-1">
           <div class="flex items-center justify-between">
-            <span :class="['text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border', getStatusBadge(job.status)]">
-              {{ getStatusLabel(job.status) }}
-            </span>
+            <div class="flex items-center gap-2">
+              <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-extrabold uppercase text-slate-500">
+                Tin số {{ index + 1 }}
+              </span>
+              <span :class="['text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border', getStatusBadge(job.status)]">
+                {{ getStatusLabel(job.status) }}
+              </span>
+            </div>
             <span class="text-[10px] font-bold text-slate-400">
               Số lượng: {{ job.slots }}
             </span>
@@ -87,6 +96,10 @@
             <p class="text-[11px] text-slate-400 font-medium line-clamp-2 leading-relaxed">
               {{ job.description || 'Không có mô tả chi tiết.' }}
             </p>
+            <div v-if="job.status === 'REJECTED' && job.reject_reason" class="mt-2.5 p-2.5 bg-rose-50 border border-rose-100 rounded-xl text-[10px] text-rose-600 font-bold leading-normal flex items-start gap-1.5 animate-fadeIn">
+              <Icon name="uil:exclamation-octagon" class="w-4 h-4 shrink-0" />
+              <span><strong>Lý do từ chối:</strong> {{ job.reject_reason }}</span>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-50 text-[11px] font-semibold text-slate-500">
@@ -209,6 +222,7 @@ const loading = ref(true)
 const activeFilter = ref('')
 const editModalOpen = ref(false)
 const editForm = ref<any>({})
+const errorMessage = ref('')
 
 const statusOptions = [
   { value: '', label: 'Tất cả' },
@@ -244,11 +258,17 @@ const getStatusLabel = (status: string) => {
 const fetchJobs = async () => {
   try {
     loading.value = true
+    errorMessage.value = ''
     const response = await JobService.getEnterpriseJobs({ status: activeFilter.value })
     if (response && response.success) {
-      jobs.value = response.data
+      jobs.value = Array.isArray(response.data) ? response.data : []
+    } else {
+      jobs.value = []
+      errorMessage.value = response?.message || 'Không thể tải danh sách tin tuyển dụng.'
     }
-  } catch (error) {
+  } catch (error: any) {
+    jobs.value = []
+    errorMessage.value = error?.data?.message || error?.message || 'Không thể tải danh sách tin tuyển dụng.'
     console.error('Failed to fetch jobs:', error)
   } finally {
     loading.value = false
@@ -264,11 +284,15 @@ const closeJob = async (id: number) => {
   if (!confirm('Bạn có chắc chắn muốn đóng tin tuyển dụng này?')) return
 
   try {
-    await JobService.deleteEnterpriseJob(id)
+    errorMessage.value = ''
+    const response: any = await JobService.deleteEnterpriseJob(id)
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể đóng tin tuyển dụng.')
+    }
     alert('Đã đóng tin tuyển dụng thành công!')
     fetchJobs()
-  } catch (error) {
-    alert('Không thể đóng tin tuyển dụng.')
+  } catch (error: any) {
+    errorMessage.value = error?.data?.message || error?.message || 'Không thể đóng tin tuyển dụng.'
   }
 }
 
@@ -279,12 +303,16 @@ const editJob = (job: any) => {
 
 const saveJobEdit = async () => {
   try {
-    await JobService.updateEnterpriseJob(editForm.value.id, editForm.value)
+    errorMessage.value = ''
+    const response: any = await JobService.updateEnterpriseJob(editForm.value.id, editForm.value)
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể cập nhật tin tuyển dụng.')
+    }
     alert('Đã cập nhật tin tuyển dụng thành công!')
     editModalOpen.value = false
     fetchJobs()
-  } catch (error) {
-    alert('Không thể cập nhật tin tuyển dụng.')
+  } catch (error: any) {
+    errorMessage.value = error?.data?.message || error?.message || 'Không thể cập nhật tin tuyển dụng.'
   }
 }
 

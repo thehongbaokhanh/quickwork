@@ -33,6 +33,7 @@ type Job struct {
 
 	Skills            []Skill            `gorm:"many2many:job_skills;" json:"skills,omitempty"`
 	EnterpriseProfile *EnterpriseProfile `gorm:"foreignKey:EnterpriseID;references:UserID" json:"enterprise_profile,omitempty"`
+	RejectReason      string             `gorm:"type:text" json:"reject_reason,omitempty"`
 
 	CreatedAt time.Time `json:"created_at"`
 

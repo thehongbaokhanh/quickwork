@@ -1,7 +1,6 @@
 package response
 
 type LoginResponse struct {
-
 	AccessToken string `json:"access_token"`
 
 	RefreshToken string `json:"refresh_token"`
@@ -11,4 +10,10 @@ type LoginResponse struct {
 	Email string `json:"email"`
 
 	Role string `json:"role"`
+
+	EnterpriseKYBStatus string `json:"enterprise_kyb_status,omitempty"`
+
+	EnterpriseApproved bool `json:"enterprise_approved"`
+
+	BusinessLicenseURL string `json:"business_license_url,omitempty"`
 }

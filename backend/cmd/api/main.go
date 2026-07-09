@@ -30,8 +30,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("ADMIN_SECRET =", cfg.AdminSecret)
-
 	// Khởi tạo Cloudinary
 	config.InitCloudinary()
 
@@ -73,11 +71,11 @@ func main() {
 		enterpriseRepo,
 		authRedisRepo,
 	)
-
 	// Handler
 	authHandler := handlers.NewAuthHandler(authService)
 	testHandler := handlers.NewTestHandler()
 	enterpriseJobHandler := handlers.NewEnterpriseJobHandler(jobRepo)
+	adminHandler := handlers.NewAdminHandler(db)
 
 	app := fiber.New()
 
@@ -101,8 +99,11 @@ func main() {
 
 	routes.RegisterTestRoutes(protected, testHandler)
 
-	enterpriseGroup := protected.Group("/enterprise", middleware.RoleMiddleware("ENTERPRISE"))
+	enterpriseGroup := protected.Group("/enterprise", middleware.RoleMiddleware("ENTERPRISE"), middleware.EnterpriseApprovedMiddleware(db))
 	routes.RegisterEnterpriseJobRoutes(enterpriseGroup, enterpriseJobHandler)
+
+	adminGroup := protected.Group("/admin", middleware.RoleMiddleware("ADMIN"))
+	routes.RegisterAdminRoutes(adminGroup, adminHandler)
 
 	// Swagger
 	app.Get("/swagger/*", swagger.HandlerDefault)

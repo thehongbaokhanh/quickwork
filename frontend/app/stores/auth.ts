@@ -9,6 +9,9 @@ interface UserProfile {
   email: string
   name: string
   role: 'STUDENT' | 'ENTERPRISE' | 'ADMIN'
+  enterpriseKybStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | null
+  enterpriseApproved?: boolean
+  businessLicenseUrl?: string
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -73,6 +76,10 @@ export const useAuthStore = defineStore('auth', () => {
   // --- GETTERS (COMPUTED) ---
   const isAuthenticated = computed(() => !!token.value)
   const userRole = computed(() => user.value?.role || null)
+  const enterpriseKybStatus = computed(() => user.value?.enterpriseKybStatus || null)
+  const enterpriseApproved = computed(() => user.value?.role === 'ENTERPRISE' && user.value?.enterpriseApproved === true)
+  const canAccessEnterprise = computed(() => user.value?.role === 'ENTERPRISE' && enterpriseApproved.value)
+  const canAccessStudentArea = computed(() => user.value?.role === 'STUDENT' || (user.value?.role === 'ENTERPRISE' && !enterpriseApproved.value))
 
   // --- ACTIONS ---
   /**
@@ -92,7 +99,10 @@ export const useAuthStore = defineStore('auth', () => {
         id: String(data.user_id),
         email: data.email,
         name: "",
-        role: data.role
+        role: data.role,
+        enterpriseKybStatus: data.enterprise_kyb_status || null,
+        enterpriseApproved: data.enterprise_approved === true,
+        businessLicenseUrl: data.business_license_url || ''
     }
     userProfileCookie.value = user.value
 
@@ -141,6 +151,10 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     isAuthenticated,
     userRole,
+    enterpriseKybStatus,
+    enterpriseApproved,
+    canAccessEnterprise,
+    canAccessStudentArea,
     login,
     logout,
     setCurrentUser,

@@ -28,7 +28,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   // Nếu truy cập lại trang đăng nhập / đăng ký thì điều hướng về dashboard tương ứng
   if (['/auth/login', '/auth/register'].includes(to.path)) {
     if (role === 'ADMIN') return navigateTo('/admin')
-    if (role === 'ENTERPRISE') return navigateTo('/enterprise')
+    if (role === 'ENTERPRISE') return navigateTo(authStore.enterpriseApproved ? '/enterprise' : '/student')
     if (role === 'STUDENT') return navigateTo('/student')
   }
 
@@ -37,8 +37,12 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return navigateTo('/403')
   }
 
-  if (to.path.startsWith('/student') && role !== 'STUDENT') {
+  if (to.path.startsWith('/student') && !authStore.canAccessStudentArea) {
     return navigateTo('/403')
+  }
+
+  if (to.path.startsWith('/enterprise') && role === 'ENTERPRISE' && !authStore.enterpriseApproved) {
+    return navigateTo('/student')
   }
 
   if (to.path.startsWith('/enterprise') && role !== 'ENTERPRISE') {

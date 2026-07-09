@@ -128,6 +128,11 @@ func (s *authService) RegisterStudent(req *request.RegisterStudentRequest) (*res
 }
 
 func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest) (*response.RegisterResponse, error) {
+	req.GPKDURL = strings.TrimSpace(req.GPKDURL)
+	if req.GPKDURL == "" {
+		return nil, ErrBusinessLicenseRequired
+	}
+
 	// 1. Kiểm tra email trùng lặp
 	_, err := s.userRepo.FindByEmail(s.db, req.Email)
 	if err == nil {
@@ -223,13 +228,13 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 	}
 
 	// 5. Trả Response
-	return &response.LoginResponse{
+	return s.buildLoginResponse(&response.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		UserID:       user.ID,
 		Email:        user.Email,
 		Role:         string(user.Role),
-	}, nil
+	}, user), nil
 }
 
 func (s *authService) Logout(
@@ -513,13 +518,13 @@ func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*
 		return nil, err
 	}
 
-	return &response.LoginResponse{
+	return s.buildLoginResponse(&response.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		UserID:       user.ID,
 		Email:        user.Email,
 		Role:         string(user.Role),
-	}, nil
+	}, user), nil
 }
 
 func (s *authService) GetGoogleConfig() map[string]string {
@@ -527,4 +532,30 @@ func (s *authService) GetGoogleConfig() map[string]string {
 		"client_id":    s.cfg.GoogleClientID,
 		"redirect_uri": s.cfg.GoogleRedirectURI,
 	}
+}
+
+func (s *authService) buildLoginResponse(res *response.LoginResponse, user *models.User) *response.LoginResponse {
+	if user.Role != models.RoleEnterprise {
+		return res
+	}
+
+	res.EnterpriseKYBStatus = string(models.KYBPending)
+
+	var profile models.EnterpriseProfile
+	if err := s.db.Where("user_id = ?", user.ID).First(&profile).Error; err != nil {
+		return res
+	}
+
+	kybStatus := profile.KYBStatus
+	if kybStatus == "" {
+		kybStatus = profile.StatusKYB
+	}
+	if kybStatus == "" {
+		kybStatus = models.KYBPending
+	}
+
+	res.EnterpriseKYBStatus = string(kybStatus)
+	res.EnterpriseApproved = kybStatus == models.KYBApproved && strings.TrimSpace(profile.GPKDURL) != ""
+	res.BusinessLicenseURL = profile.GPKDURL
+	return res
 }

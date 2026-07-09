@@ -130,6 +130,12 @@ func (h *AuthHandler) RegisterEnterprise(c *fiber.Ctx) error {
 				"message": "Mã số thuế đã tồn tại.",
 			})
 
+		case service.ErrBusinessLicenseRequired:
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Doanh nghiệp bắt buộc phải tải lên giấy phép kinh doanh.",
+			})
+
 		default:
 			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 				"success": false,

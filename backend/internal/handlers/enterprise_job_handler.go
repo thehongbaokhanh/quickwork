@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -48,8 +49,16 @@ func (h *EnterpriseJobHandler) CreateJob(c *fiber.Ctx) error {
 	}
 
 	status := models.JobDraft
-	if req.Status == string(models.JobPending) {
+	switch strings.ToUpper(strings.TrimSpace(req.Status)) {
+	case "", string(models.JobDraft):
+		status = models.JobDraft
+	case string(models.JobPending):
 		status = models.JobPending
+	default:
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Status must be DRAFT or PENDING",
+		})
 	}
 
 	job := &models.Job{
@@ -66,7 +75,7 @@ func (h *EnterpriseJobHandler) CreateJob(c *fiber.Ctx) error {
 	if err := h.jobRepo.Create(job); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
-			"message": "Could not create job",
+			"message": "Could not create job: " + err.Error(),
 		})
 	}
 

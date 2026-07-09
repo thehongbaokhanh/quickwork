@@ -88,7 +88,10 @@ onMounted(async () => {
         id: String(data.user_id),
         email: data.email,
         name: data.email.split('@')[0], // placeholder name
-        role: data.role as 'STUDENT' | 'ENTERPRISE' | 'ADMIN'
+        role: data.role as 'STUDENT' | 'ENTERPRISE' | 'ADMIN',
+        enterpriseKybStatus: data.enterprise_kyb_status || null,
+        enterpriseApproved: data.enterprise_approved === true,
+        businessLicenseUrl: data.business_license_url || ''
       }
       authStore.user = userProfile
       userProfileCookie.value = userProfile
@@ -106,7 +109,7 @@ onMounted(async () => {
         if (data.role === 'ADMIN') {
           await navigateTo('/admin')
         } else if (data.role === 'ENTERPRISE') {
-          await navigateTo('/enterprise')
+          await navigateTo(data.enterprise_approved === true ? '/enterprise' : '/student')
         } else if (data.role === 'STUDENT') {
           await navigateTo('/student')
         } else {

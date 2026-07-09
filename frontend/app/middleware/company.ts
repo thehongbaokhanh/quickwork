@@ -10,4 +10,8 @@ export default defineNuxtRouteMiddleware(() => {
   if (authStore.userRole !== 'ENTERPRISE') {
     return navigateTo('/403')
   }
+
+  if (!authStore.enterpriseApproved) {
+    return navigateTo('/student')
+  }
 })

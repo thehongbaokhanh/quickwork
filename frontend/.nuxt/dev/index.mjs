@@ -2307,7 +2307,7 @@ const _tl6jxrqE9Ldd5xTfq0_jrw8VeEg9FXnB5qQAwMhz0OA = (function(nitro) {
 
 const rootDir = "D:/GOLANG/QuickWork/frontend";
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[],"style":[],"script":[],"noscript":[]};
+const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"}],"link":[],"style":[],"script":[],"noscript":[],"htmlAttrs":{"lang":"vi"}};
 
 const appRootTag = "div";
 

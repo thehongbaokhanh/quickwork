@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"quickwork.local/backend/internal/models"
 	"gorm.io/gorm"
+	"quickwork.local/backend/internal/models"
 )
 
 type UserRepository interface {
@@ -34,7 +34,7 @@ func (r *userRepository) CountAdmin(tx *gorm.DB) (int64, error) {
 	var count int64
 
 	err := tx.Model(&models.User{}).
-		Where("role = ?", "admin").
+		Where("role = ?", models.RoleAdmin).
 		Count(&count).Error
 
 	return count, err

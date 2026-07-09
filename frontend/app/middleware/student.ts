@@ -7,7 +7,7 @@ export default defineNuxtRouteMiddleware(() => {
     return navigateTo('/auth/login')
   }
 
-  if (authStore.userRole !== 'STUDENT') {
+  if (!authStore.canAccessStudentArea) {
     return navigateTo('/403')
   }
 })

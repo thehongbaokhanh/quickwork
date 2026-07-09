@@ -14,6 +14,10 @@
       </div>
     </div>
 
+    <div v-if="errorMessage" class="bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl px-4 py-3 text-sm font-semibold">
+      {{ errorMessage }}
+    </div>
+
     <!-- Form Container -->
     <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 space-y-6">
       <form @submit.prevent class="space-y-6">
@@ -25,7 +29,7 @@
               v-model="form.title" 
               type="text" 
               required
-              placeholder="Ví dụ: Thực tập sinh Golang Backend Developer"
+              placeholder="Nhập tiêu đề công việc"
               class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
@@ -36,7 +40,7 @@
               v-model="form.salary" 
               type="text" 
               required
-              placeholder="Ví dụ: 8 - 12 triệu, Thỏa thuận"
+              placeholder="Nhập mức lương"
               class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
@@ -48,7 +52,7 @@
               type="number" 
               min="1"
               required
-              placeholder="Ví dụ: 3"
+              placeholder="Nhập số lượng"
               class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
@@ -58,7 +62,7 @@
             <input 
               v-model="form.location" 
               type="text" 
-              placeholder="Ví dụ: Cầu Giấy, Hà Nội"
+              placeholder="Nhập địa điểm làm việc"
               class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
@@ -68,7 +72,7 @@
             <input 
               v-model="form.requirements" 
               type="text" 
-              placeholder="Ví dụ: Có kiến thức về Go, Git"
+              placeholder="Nhập yêu cầu công việc"
               class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
@@ -124,6 +128,7 @@ definePageMeta({
 
 const router = useRouter()
 const submitting = ref(false)
+const errorMessage = ref('')
 
 const form = ref({
   title: '',
@@ -143,12 +148,24 @@ const submitJob = async (status: 'DRAFT' | 'PENDING') => {
 
   try {
     submitting.value = true
-    form.value.status = status
-    await JobService.createEnterpriseJob(form.value)
+    errorMessage.value = ''
+    const payload = {
+      title: form.value.title.trim(),
+      salary: form.value.salary.trim(),
+      description: form.value.description.trim(),
+      requirements: form.value.requirements.trim(),
+      location: form.value.location.trim(),
+      slots: Number(form.value.slots),
+      status
+    }
+    const response: any = await JobService.createEnterpriseJob(payload)
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể lưu tin tuyển dụng.')
+    }
     alert(status === 'DRAFT' ? 'Đã lưu nháp tin tuyển dụng thành công!' : 'Đã gửi duyệt tin tuyển dụng thành công!')
     router.push('/enterprise/jobs')
   } catch (error: any) {
-    alert(error?.data?.message || 'Có lỗi xảy ra khi tạo tin tuyển dụng.')
+    errorMessage.value = error?.data?.message || error?.message || 'Có lỗi xảy ra khi tạo tin tuyển dụng.'
   } finally {
     submitting.value = false
   }

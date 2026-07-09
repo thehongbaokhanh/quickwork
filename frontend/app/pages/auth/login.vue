@@ -170,7 +170,7 @@ const handleLogin = async () => {
 if (role === "ADMIN") {
   await navigateTo("/admin")
 } else if (role === "ENTERPRISE") {
-  await navigateTo("/enterprise")
+  await navigateTo(authStore.enterpriseApproved ? "/enterprise" : "/student")
 } else if (role === "STUDENT") {
   await navigateTo("/student")
 } else {

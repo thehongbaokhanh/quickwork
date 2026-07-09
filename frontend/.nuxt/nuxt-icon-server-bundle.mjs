@@ -12,4 +12,6 @@ function createRemoteCollection(fetchEndpoint) {
 }
 
 export const collections = {
+  'svg-spinners': () => require('@iconify-json/svg-spinners/icons.json'),
+  'uil': () => require('@iconify-json/uil/icons.json'),
 }
