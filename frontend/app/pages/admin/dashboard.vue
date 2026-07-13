@@ -4,7 +4,7 @@
       <div class="grid gap-6 bg-slate-950 px-5 py-6 text-white lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-6">
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 rounded-md bg-sky-400/15 px-3 py-1 text-xs font-bold text-sky-100 ring-1 ring-sky-300/20">
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-teal-400/15 px-3 py-1 text-xs font-bold text-teal-100 ring-1 ring-teal-300/20">
               <Icon name="uil:shield-check" class="h-4 w-4" />
               Quản trị hệ thống
             </span>
@@ -29,7 +29,7 @@
         <div class="flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
           <NuxtLink
             to="/admin/jobs"
-            class="inline-flex items-center justify-center gap-2 rounded-md bg-sky-400 px-4 py-2.5 text-sm font-black text-slate-950 transition hover:bg-sky-300"
+            class="inline-flex items-center justify-center gap-2 rounded-md bg-teal-400 px-4 py-2.5 text-sm font-black text-slate-950 transition hover:bg-teal-300"
           >
             <Icon name="uil:briefcase-alt" class="h-5 w-5" />
             Duyệt việc làm
@@ -277,7 +277,8 @@ import { computed, onMounted, ref } from 'vue'
 import { AdminService } from '~/services/admin.service'
 
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'admin']
 })
 
 const stats = ref({
@@ -305,14 +306,14 @@ const dashboardCards = computed(() => [
     value: stats.value.total_students,
     helper: `${getShare(stats.value.total_students, totalUsers.value)}% tổng tài khoản`,
     icon: 'uil:graduation-cap',
-    iconClass: 'bg-indigo-50 text-indigo-700'
+    iconClass: 'bg-emerald-50 text-emerald-700'
   },
   {
     name: 'Doanh nghiệp',
     value: stats.value.total_enterprises,
     helper: `${getShare(stats.value.total_enterprises, totalUsers.value)}% tổng tài khoản`,
     icon: 'uil:building',
-    iconClass: 'bg-sky-50 text-sky-700'
+    iconClass: 'bg-teal-50 text-teal-700'
   },
   {
     name: 'Đang hiển thị',
@@ -332,8 +333,8 @@ const dashboardCards = computed(() => [
 
 const systemBars = computed(() => {
   const items = [
-    { label: 'Học viên', value: stats.value.total_students, dotClass: 'bg-indigo-500', barClass: 'bg-indigo-500' },
-    { label: 'Doanh nghiệp', value: stats.value.total_enterprises, dotClass: 'bg-sky-500', barClass: 'bg-sky-500' },
+    { label: 'Học viên', value: stats.value.total_students, dotClass: 'bg-emerald-500', barClass: 'bg-emerald-500' },
+    { label: 'Doanh nghiệp', value: stats.value.total_enterprises, dotClass: 'bg-teal-500', barClass: 'bg-teal-500' },
     { label: 'Tin đang hiển thị', value: stats.value.active_jobs, dotClass: 'bg-emerald-500', barClass: 'bg-emerald-500' },
     { label: 'Tin chờ duyệt', value: stats.value.pending_jobs, dotClass: 'bg-amber-500', barClass: 'bg-amber-500' }
   ]
@@ -346,8 +347,8 @@ const systemBars = computed(() => {
 })
 
 const roleColors: Record<string, string> = {
-  STUDENT: 'bg-indigo-50 text-indigo-700',
-  ENTERPRISE: 'bg-sky-50 text-sky-700',
+  STUDENT: 'bg-emerald-50 text-emerald-700',
+  ENTERPRISE: 'bg-teal-50 text-teal-700',
   ADMIN: 'bg-rose-50 text-rose-700'
 }
 
@@ -389,14 +390,14 @@ const accountTypeCards = computed(() => [
     label: 'Tài khoản Sinh viên',
     count: getRecentUserCountByRole('STUDENT'),
     icon: 'uil:graduation-cap',
-    iconClass: 'bg-indigo-50 text-indigo-700'
+    iconClass: 'bg-emerald-50 text-emerald-700'
   },
   {
     role: 'ENTERPRISE',
     label: 'Tài khoản Doanh nghiệp',
     count: getRecentUserCountByRole('ENTERPRISE'),
     icon: 'uil:building',
-    iconClass: 'bg-sky-50 text-sky-700'
+    iconClass: 'bg-teal-50 text-teal-700'
   }
 ])
 

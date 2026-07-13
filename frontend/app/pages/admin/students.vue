@@ -100,7 +100,7 @@
                   <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
                   <td class="px-5 py-4">
                     <div class="flex items-center gap-3">
-                      <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-indigo-50 text-sm font-black text-indigo-700">
+                      <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-emerald-50 text-sm font-black text-emerald-700">
                         <img v-if="student.student_profile?.avatar" :src="student.student_profile.avatar" alt="" class="h-full w-full object-cover">
                         <span v-else>{{ getInitial(student) }}</span>
                       </div>
@@ -123,7 +123,7 @@
                     </div>
                   </td>
                   <td class="px-5 py-4">
-                    <a v-if="student.student_profile?.cv_url" :href="student.student_profile.cv_url" target="_blank" class="qw-chip bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
+                    <a v-if="student.student_profile?.cv_url" :href="student.student_profile.cv_url" target="_blank" class="qw-chip bg-emerald-50 text-emerald-700 hover:bg-emerald-100">
                       <Icon name="uil:file-download" class="h-4 w-4" />
                       Xem CV
                     </a>
@@ -180,7 +180,7 @@
       </aside>
     </section>
 
-    <div v-if="selectedStudent" class="qw-detail-backdrop" @click.self="selectedStudent = null">
+    <div v-if="selectedStudent" class="qw-detail-backdrop" @click.self="closeStudentDetail">
       <section class="qw-detail-panel">
         <header class="qw-detail-header">
           <div class="qw-detail-identity">
@@ -193,35 +193,88 @@
               <h2 class="qw-detail-title">{{ getStudentName(selectedStudent) }}</h2>
               <p class="qw-detail-subtitle">{{ selectedStudent.email }}</p>
               <div class="qw-detail-badges">
-                <span class="qw-chip qw-chip--compact bg-indigo-50 text-indigo-700">Học viên</span>
+                <span class="qw-chip qw-chip--compact bg-emerald-50 text-emerald-700">Học viên</span>
                 <span :class="['qw-chip', statusClass(selectedStudent.status)]">{{ statusLabel(selectedStudent.status) }}</span>
               </div>
             </div>
           </div>
-          <button class="qw-detail-close" type="button" @click="selectedStudent = null">
-            <Icon name="uil:times" class="h-5 w-5" />
-          </button>
+          <div class="flex shrink-0 items-center gap-2">
+            <button
+              v-if="!isEditingStudent"
+              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-black text-emerald-700 transition hover:bg-emerald-100"
+              type="button"
+              @click="startEditStudent(selectedStudent)"
+            >
+              <Icon name="uil:edit" class="h-4 w-4" />
+              Chỉnh sửa
+            </button>
+            <button class="qw-detail-close" type="button" @click="closeStudentDetail">
+              <Icon name="uil:times" class="h-5 w-5" />
+            </button>
+          </div>
         </header>
         <div class="qw-detail-body">
-          <div class="qw-detail-grid">
+          <form v-if="isEditingStudent" class="space-y-4" @submit.prevent="saveSelectedStudent">
+            <div class="grid gap-3 md:grid-cols-2">
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Email</span>
+                <input v-model.trim="editStudentForm.email" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="email">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Trạng thái</span>
+                <select v-model="editStudentForm.status" class="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
+                  <option value="ACTIVE">Đang hoạt động</option>
+                  <option value="INACTIVE">Tạm khóa</option>
+                  <option value="BANNED">Bị cấm</option>
+                </select>
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Họ tên</span>
+                <input v-model.trim="editStudentForm.student_profile.name" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Số điện thoại</span>
+                <input v-model.trim="editStudentForm.student_profile.phone" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Avatar URL</span>
+                <input v-model.trim="editStudentForm.student_profile.avatar" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">CV URL</span>
+                <input v-model.trim="editStudentForm.student_profile.cv_url" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+              </label>
+            </div>
+          </form>
+          <div v-else class="qw-detail-grid">
             <div v-for="item in detailItems(selectedStudent)" :key="item.label" class="qw-detail-item">
               <p class="qw-detail-label">{{ item.label }}</p>
               <p class="qw-detail-value">{{ item.value }}</p>
             </div>
           </div>
         </div>
+        <footer v-if="isEditingStudent" class="qw-detail-footer">
+          <button type="button" class="inline-flex items-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-50" @click="cancelEditStudent">
+            Hủy
+          </button>
+          <button type="button" class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60" :disabled="savingStudent" @click="saveSelectedStudent">
+            <Icon name="uil:save" class="h-4 w-4" />
+            {{ savingStudent ? 'Đang lưu...' : 'Lưu thay đổi' }}
+          </button>
+        </footer>
       </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { AdminService } from '~/services/admin.service'
 import { useToast } from '~/composables/useToast'
 
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'admin']
 })
 
 type UserStatus = 'ACTIVE' | 'INACTIVE' | 'BANNED'
@@ -234,6 +287,18 @@ const searchQuery = ref('')
 const activeStatus = ref('ALL')
 const selectedStudent = ref<any | null>(null)
 const updatingUserId = ref<number | null>(null)
+const isEditingStudent = ref(false)
+const savingStudent = ref(false)
+const editStudentForm = reactive({
+  email: '',
+  status: 'ACTIVE' as UserStatus,
+  student_profile: {
+    name: '',
+    phone: '',
+    avatar: '',
+    cv_url: ''
+  }
+})
 
 const summaryCards = computed(() => [
   {
@@ -241,7 +306,7 @@ const summaryCards = computed(() => [
     value: students.value.length,
     helper: 'Tài khoản role STUDENT',
     icon: 'uil:graduation-cap',
-    iconClass: 'bg-indigo-50 text-indigo-700'
+    iconClass: 'bg-emerald-50 text-emerald-700'
   },
   {
     label: 'Đang hoạt động',
@@ -255,7 +320,7 @@ const summaryCards = computed(() => [
     value: students.value.filter((student) => Boolean(student?.student_profile?.phone)).length,
     helper: 'Đã cập nhật liên hệ',
     icon: 'uil:phone',
-    iconClass: 'bg-sky-50 text-sky-700'
+    iconClass: 'bg-teal-50 text-teal-700'
   },
   {
     label: 'Có CV',
@@ -288,12 +353,12 @@ const profileBars = computed(() => {
     {
       label: 'Có hồ sơ học viên',
       value: students.value.filter((student) => Boolean(student?.student_profile)).length,
-      className: 'bg-indigo-500'
+      className: 'bg-emerald-500'
     },
     {
       label: 'Có số điện thoại',
       value: students.value.filter((student) => Boolean(student?.student_profile?.phone)).length,
-      className: 'bg-sky-500'
+      className: 'bg-teal-500'
     },
     {
       label: 'Có kỹ năng',
@@ -351,6 +416,61 @@ function handleStatusChange(student: any, event: Event) {
 function clearFilters() {
   searchQuery.value = ''
   activeStatus.value = 'ALL'
+}
+
+function openStudentDetail(student: any) {
+  selectedStudent.value = student
+  cancelEditStudent()
+}
+
+function closeStudentDetail() {
+  selectedStudent.value = null
+  cancelEditStudent()
+}
+
+function startEditStudent(student: any) {
+  editStudentForm.email = student.email || ''
+  editStudentForm.status = normalizeStatus(student.status) as UserStatus
+  editStudentForm.student_profile.name = student?.student_profile?.name || ''
+  editStudentForm.student_profile.phone = student?.student_profile?.phone || ''
+  editStudentForm.student_profile.avatar = student?.student_profile?.avatar || ''
+  editStudentForm.student_profile.cv_url = student?.student_profile?.cv_url || ''
+  isEditingStudent.value = true
+}
+
+function cancelEditStudent() {
+  isEditingStudent.value = false
+  savingStudent.value = false
+}
+
+function replaceStudent(updatedStudent: any) {
+  const index = students.value.findIndex((student) => String(student.id) === String(updatedStudent.id))
+  if (index >= 0) {
+    students.value.splice(index, 1, updatedStudent)
+  }
+}
+
+async function saveSelectedStudent() {
+  if (!selectedStudent.value) return
+  try {
+    savingStudent.value = true
+    const response: any = await AdminService.updateUser(selectedStudent.value.id, {
+      email: editStudentForm.email,
+      status: editStudentForm.status,
+      student_profile: { ...editStudentForm.student_profile }
+    })
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể lưu thông tin học viên.')
+    }
+    replaceStudent(response.data)
+    selectedStudent.value = response.data
+    isEditingStudent.value = false
+    toast.success('Đã lưu học viên', `${getStudentName(response.data)} đã được cập nhật.`)
+  } catch (error: any) {
+    toast.error('Lưu thất bại', error?.data?.message || error?.message || 'Vui lòng kiểm tra lại dữ liệu.')
+  } finally {
+    savingStudent.value = false
+  }
 }
 
 function countByStatus(status: UserStatus) {

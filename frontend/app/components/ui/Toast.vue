@@ -20,7 +20,7 @@
                 <Icon v-if="toast.type === 'success'" name="uil:check-circle" class="h-6 w-6 text-green-400" />
                 <Icon v-else-if="toast.type === 'error'" name="uil:times-circle" class="h-6 w-6 text-red-400" />
                 <Icon v-else-if="toast.type === 'warning'" name="uil:exclamation-triangle" class="h-6 w-6 text-yellow-400" />
-                <Icon v-else name="uil:info-circle" class="h-6 w-6 text-blue-400" />
+                <Icon v-else name="uil:info-circle" class="h-6 w-6 text-emerald-400" />
               </div>
               <div class="ml-3 w-0 flex-1 pt-0.5">
                 <p class="text-sm font-medium text-slate-900">{{ toast.title }}</p>

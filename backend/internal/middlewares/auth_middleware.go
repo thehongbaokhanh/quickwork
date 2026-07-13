@@ -4,12 +4,18 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 
+	"quickwork.local/backend/internal/models"
 	jwtpkg "quickwork.local/backend/pkg/jwt"
 	redispkg "quickwork.local/backend/pkg/redis"
 )
 
-func AuthMiddleware() fiber.Handler {
+func AuthMiddleware(databases ...*gorm.DB) fiber.Handler {
+	var db *gorm.DB
+	if len(databases) > 0 {
+		db = databases[0]
+	}
 
 	return func(c *fiber.Ctx) error {
 
@@ -62,6 +68,36 @@ func AuthMiddleware() fiber.Handler {
 				"success": false,
 				"message": "Invalid Token",
 			})
+		}
+
+		if db != nil {
+			var user models.User
+			if err := db.Select("id", "status").First(&user, claims.UserID).Error; err != nil {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"success": false,
+					"message": "Phiên đăng nhập không còn hợp lệ.",
+				})
+			}
+
+			switch user.Status {
+			case models.UserStatusActive:
+				c.Locals("user_status", string(user.Status))
+			case models.UserStatusInactive:
+				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+					"success": false,
+					"message": "Tài khoản của bạn đang bị tạm khóa. Vui lòng liên hệ quản trị viên.",
+				})
+			case models.UserStatusBanned:
+				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+					"success": false,
+					"message": "Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên.",
+				})
+			default:
+				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+					"success": false,
+					"message": "Tài khoản của bạn chưa được kích hoạt.",
+				})
+			}
 		}
 
 		c.Locals("user_id", claims.UserID)

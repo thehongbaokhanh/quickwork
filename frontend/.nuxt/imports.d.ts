@@ -32,5 +32,6 @@ export { setInterval } from '#app/compat/interval';
 export { definePageMeta, PageMeta } from '#app/composables/pages';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
 export { useToast, ToastMessage } from '../app/composables/useToast';
+export { mapJobForDisplay, getDateTime, getSalaryRange, salaryRank, ApiSkill, ApiJob, DisplayJob } from '../app/utils/jobDisplay';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
 export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

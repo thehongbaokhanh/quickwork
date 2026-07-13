@@ -1,330 +1,399 @@
 <template>
-  <div class="space-y-6">
-      <div class="flex bg-gray-100 p-1 rounded-xl gap-1">
-        <button 
-          type="button"
-          @click="changeRole('STUDENT')"
-          :class="['flex-1 py-1.5 text-xs font-medium rounded-lg transition-all', role === 'STUDENT' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900']"
-        >
-          Tài khoản Sinh Viên
-        </button>
-        <button 
-          type="button"
-          @click="changeRole('COMPANY')"
-          :class="['flex-1 py-1.5 text-xs font-medium rounded-lg transition-all', role === 'COMPANY' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900']"
-        >
-          Tài khoản Doanh Nghiệp
-        </button>
-      </div>
+  <div class="min-h-screen bg-[#edf3fb] p-2 font-sans text-slate-950 sm:p-4">
+    <div class="relative mx-auto min-h-[calc(100vh-1rem)] max-w-[1320px] overflow-hidden rounded-[24px] border border-white bg-white shadow-2xl shadow-slate-200/90 sm:min-h-[calc(100vh-2rem)]">
+      <header class="relative z-20 flex h-20 items-center justify-between border-b border-slate-100 bg-white px-5 sm:px-8 lg:px-10">
+        <NuxtLink to="/" class="inline-flex items-center gap-3">
+          <img src="/images/brand/quickwork-wordmark-transparent.png" alt="QuickWork" class="h-12 w-auto object-contain">
+        </NuxtLink>
 
-      <div v-if="successMessage" class="p-3 bg-green-50 border border-green-200 text-green-600 text-sm rounded-xl flex items-center gap-2">
-        <Icon name="uil:check-circle" class="w-5 h-5 shrink-0" />
-        <span>{{ successMessage }}</span>
-      </div>
+        <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-800 lg:flex">
+          <NuxtLink to="/student" class="transition hover:text-emerald-600">Việc làm</NuxtLink>
+          <a href="#" class="transition hover:text-emerald-600">Công ty</a>
+          <a href="#" class="transition hover:text-emerald-600">Mức lương</a>
+          <a href="#" class="transition hover:text-emerald-600">Blog</a>
+          <a href="#" class="transition hover:text-emerald-600">Khám phá</a>
+        </nav>
 
-      <div v-if="errorMessage" class="p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl flex items-center gap-2">
-        <Icon name="uil:exclamation-circle" class="w-5 h-5 shrink-0" />
-        <span>{{ errorMessage }}</span>
-      </div>
+        <div class="flex items-center gap-2">
+          <NuxtLink to="/auth/login" class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-emerald-200 hover:text-emerald-700">
+            Đăng nhập
+          </NuxtLink>
+          <NuxtLink to="/auth/register" class="hidden rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:inline-flex">
+            Đăng ký
+          </NuxtLink>
+        </div>
+      </header>
 
-      <!-- STUDENT FORM -->
-      <form v-if="role === 'STUDENT'" @submit.prevent="handleStudentRegister" class="space-y-4">
-        <div>
-          <label for="student-name" class="block text-sm font-medium text-gray-700">Họ và tên</label>
-          <div class="mt-1">
-            <input
-              id="student-name"
-              v-model="studentForm.name"
-              @blur="validateStudentName"
-              @input="validateStudentName"
-              type="text"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="studentErrors.name ? 'border-red-300' : 'border-gray-300'"
-              placeholder="Nguyễn Văn A"
-            />
+      <div class="relative grid min-h-[calc(100vh-6.5rem)] lg:grid-cols-[0.88fr_1.12fr]">
+        <section class="relative hidden overflow-hidden px-10 py-12 lg:flex lg:flex-col lg:justify-between">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(16,185,129,0.17),transparent_29%),linear-gradient(150deg,#ffffff_0%,#f2fbf8_50%,#e9f3fb_100%)]" />
+          <div class="absolute bottom-0 left-0 right-0 h-[44%] bg-[url('/images/quickwork-career-hero.png')] bg-cover bg-bottom opacity-38" />
+
+          <div class="relative z-10 max-w-lg">
+            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+              <Icon name="uil:user-plus" class="h-5 w-5" />
+              Tạo tài khoản mới
+            </span>
+            <h1 class="mt-8 text-4xl font-bold leading-tight tracking-tight text-slate-950 xl:text-5xl">
+              Bắt đầu hành trình sự nghiệp của bạn cùng <span class="text-emerald-700">QuickWork</span>
+            </h1>
+
+            <div class="mt-10 space-y-6">
+              <div v-for="item in benefits" :key="item.title" class="flex gap-4">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                  <Icon :name="item.icon" class="h-5 w-5" />
+                </span>
+                <span>
+                  <span class="block text-sm font-semibold text-slate-950">{{ item.title }}</span>
+                  <span class="mt-1 block text-sm leading-6 text-slate-700">{{ item.description }}</span>
+                </span>
+              </div>
+            </div>
           </div>
-          <p v-if="studentErrors.name" class="mt-1 text-xs text-red-500">{{ studentErrors.name }}</p>
-        </div>
 
-        <div>
-          <label for="student-phone" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
-          <div class="mt-1">
-            <input
-              id="student-phone"
-              v-model="studentForm.phone"
-              @blur="validateStudentPhone"
-              @input="validateStudentPhone"
-              type="text"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="studentErrors.phone ? 'border-red-300' : 'border-gray-300'"
-              placeholder="0987654321"
-            />
+          <div class="relative z-10 grid grid-cols-3 items-center gap-6 rounded-xl bg-slate-950 px-8 py-7 text-white shadow-2xl shadow-slate-300">
+            <div class="flex -space-x-3">
+              <span v-for="avatar in ['M', 'A', 'L', '+2K']" :key="avatar" class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-950 bg-white text-xs font-bold text-slate-800">
+                {{ avatar }}
+              </span>
+            </div>
+            <div class="border-l border-white/10 pl-6">
+              <p class="text-xl font-bold">4.8/5</p>
+              <p class="mt-1 text-xs text-slate-300">Đánh giá từ người dùng</p>
+            </div>
+            <div class="border-l border-white/10 pl-6">
+              <p class="text-xl font-bold">10.000+</p>
+              <p class="mt-1 text-xs text-slate-300">Người dùng đã tin tưởng</p>
+            </div>
           </div>
-          <p v-if="studentErrors.phone" class="mt-1 text-xs text-red-500">{{ studentErrors.phone }}</p>
-        </div>
+        </section>
 
-        <div>
-          <label for="student-email" class="block text-sm font-medium text-gray-700">Email học viên</label>
-          <div class="mt-1">
-            <input
-              id="student-email"
-              v-model="studentForm.email"
-              @blur="validateStudentEmail"
-              @input="validateStudentEmail"
-              type="email"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="studentErrors.email ? 'border-red-300' : 'border-gray-300'"
-              placeholder="student@example.com"
-            />
-          </div>
-          <p v-if="studentErrors.email" class="mt-1 text-xs text-red-500">{{ studentErrors.email }}</p>
-        </div>
+        <main class="relative flex items-center justify-center px-5 py-8 sm:px-8 lg:px-12">
+          <div class="w-full max-w-[660px] rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl shadow-slate-200/80 sm:p-8">
+            <div class="mb-6 lg:hidden">
+              <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+                <Icon name="uil:user-plus" class="h-5 w-5" />
+                Tạo tài khoản mới
+              </span>
+              <h1 class="mt-5 text-3xl font-bold leading-tight text-slate-950">
+                Bắt đầu cùng <span class="text-emerald-700">QuickWork</span>
+              </h1>
+            </div>
 
-        <div>
-          <label for="student-password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-          <div class="mt-1">
-            <input
-              id="student-password"
-              v-model="studentForm.password"
-              @blur="validateStudentPassword"
-              @input="validateStudentPassword"
-              type="password"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="studentErrors.password ? 'border-red-300' : 'border-gray-300'"
-              placeholder="••••••••"
-            />
-          </div>
-          <p v-if="studentErrors.password" class="mt-1 text-xs text-red-500">{{ studentErrors.password }}</p>
-        </div>
+            <div class="grid rounded-xl bg-slate-100 p-1 sm:grid-cols-2">
+              <button type="button" :class="tabClass(role === 'STUDENT')" @click="changeRole('STUDENT')">
+                Tài khoản Sinh viên
+              </button>
+              <button type="button" :class="tabClass(role === 'COMPANY')" @click="changeRole('COMPANY')">
+                Tài khoản Doanh nghiệp
+              </button>
+            </div>
 
-        <div>
-          <label for="student-confirm-password" class="block text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
-          <div class="mt-1">
-            <input
-              id="student-confirm-password"
-              v-model="studentForm.confirmPassword"
-              @blur="validateStudentConfirmPassword"
-              @input="validateStudentConfirmPassword"
-              type="password"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="studentErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'"
-              placeholder="••••••••"
-            />
-          </div>
-          <p v-if="studentErrors.confirmPassword" class="mt-1 text-xs text-red-500">{{ studentErrors.confirmPassword }}</p>
-        </div>
+            <div v-if="successMessage" class="mt-5 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
+              <Icon name="uil:check-circle" class="mt-0.5 h-5 w-5 shrink-0" />
+              <span>{{ successMessage }}</span>
+            </div>
 
-        <div>
-          <button
-            type="submit"
-            :disabled="isLoading"
-            class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
-          >
-            {{ isLoading ? 'Đang đăng ký...' : 'Đăng ký tài khoản' }}
-          </button>
-        </div>
-      </form>
+            <div v-if="errorMessage" class="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+              <Icon name="uil:exclamation-circle" class="mt-0.5 h-5 w-5 shrink-0" />
+              <span>{{ errorMessage }}</span>
+            </div>
 
-      <!-- COMPANY FORM -->
-      <form v-else @submit.prevent="handleCompanyRegister" class="space-y-4">
-        <div>
-          <label for="company-name" class="block text-sm font-medium text-gray-700">Tên doanh nghiệp</label>
-          <div class="mt-1">
-            <input
-              id="company-name"
-              v-model="companyForm.company_name"
-              @blur="validateCompanyName"
-              @input="validateCompanyName"
-              type="text"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="companyErrors.company_name ? 'border-red-300' : 'border-gray-300'"
-              placeholder="Công ty TNHH QuickWork"
-            />
-          </div>
-          <p v-if="companyErrors.company_name" class="mt-1 text-xs text-red-500">{{ companyErrors.company_name }}</p>
-        </div>
+            <form v-if="role === 'STUDENT'" class="mt-8 space-y-5" @submit.prevent="handleStudentRegister">
+              <div class="grid gap-5 sm:grid-cols-2">
+                <AuthField label="Họ và tên" icon="uil:user" :error="studentErrors.name">
+                  <input
+                    v-model="studentForm.name"
+                    type="text"
+                    required
+                    class="qw-auth-input"
+                    placeholder="Nhập họ và tên của bạn"
+                    @blur="validateStudentName"
+                    @input="validateStudentName"
+                  >
+                </AuthField>
 
-        <div>
-          <label for="company-tax" class="block text-sm font-medium text-gray-700">Mã số thuế</label>
-          <div class="mt-1">
-            <input
-              id="company-tax"
-              v-model="companyForm.tax_code"
-              @blur="validateCompanyTax"
-              @input="validateCompanyTax"
-              type="text"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="companyErrors.tax_code ? 'border-red-300' : 'border-gray-300'"
-              placeholder="0123456789"
-            />
-          </div>
-          <p v-if="companyErrors.tax_code" class="mt-1 text-xs text-red-500">{{ companyErrors.tax_code }}</p>
-        </div>
+                <AuthField label="Số điện thoại" icon="uil:phone" :error="studentErrors.phone">
+                  <input
+                    v-model="studentForm.phone"
+                    type="text"
+                    required
+                    class="qw-auth-input"
+                    placeholder="Nhập số điện thoại"
+                    @blur="validateStudentPhone"
+                    @input="validateStudentPhone"
+                  >
+                </AuthField>
+              </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Giấy phép kinh doanh (GPKD)</label>
-          <div class="mt-1 flex items-center gap-4">
-            <label
-              for="gpkd-file"
-              class="cursor-pointer flex items-center justify-center px-4 py-2 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus-within:ring-2 focus-within:ring-blue-500"
+              <AuthField label="Email học viên" icon="uil:envelope" :error="studentErrors.email">
+                <input
+                  v-model="studentForm.email"
+                  type="email"
+                  required
+                  class="qw-auth-input"
+                  placeholder="Nhập email của bạn"
+                  @blur="validateStudentEmail"
+                  @input="validateStudentEmail"
+                >
+              </AuthField>
+
+              <div class="grid gap-5 sm:grid-cols-2">
+                <AuthField label="Mật khẩu" icon="uil:lock" :error="studentErrors.password">
+                  <input
+                    v-model="studentForm.password"
+                    :type="showStudentPassword ? 'text' : 'password'"
+                    required
+                    class="qw-auth-input"
+                    placeholder="Tạo mật khẩu ít nhất 6 ký tự"
+                    @blur="validateStudentPassword"
+                    @input="validateStudentPassword"
+                  >
+                  <button type="button" class="text-slate-500 transition hover:text-slate-900" @click="showStudentPassword = !showStudentPassword">
+                    <Icon :name="showStudentPassword ? 'uil:eye-slash' : 'uil:eye'" class="h-5 w-5" />
+                  </button>
+                </AuthField>
+
+                <AuthField label="Xác nhận mật khẩu" icon="uil:lock" :error="studentErrors.confirmPassword">
+                  <input
+                    v-model="studentForm.confirmPassword"
+                    :type="showStudentConfirmPassword ? 'text' : 'password'"
+                    required
+                    class="qw-auth-input"
+                    placeholder="Nhập lại mật khẩu"
+                    @blur="validateStudentConfirmPassword"
+                    @input="validateStudentConfirmPassword"
+                  >
+                  <button type="button" class="text-slate-500 transition hover:text-slate-900" @click="showStudentConfirmPassword = !showStudentConfirmPassword">
+                    <Icon :name="showStudentConfirmPassword ? 'uil:eye-slash' : 'uil:eye'" class="h-5 w-5" />
+                  </button>
+                </AuthField>
+              </div>
+
+              <button type="submit" :disabled="isLoading" class="qw-auth-submit">
+                <Icon name="uil:user-plus" class="h-5 w-5" />
+                {{ isLoading ? 'Đang đăng ký...' : 'Đăng ký tài khoản' }}
+              </button>
+            </form>
+
+            <form v-else class="mt-8 space-y-5" @submit.prevent="handleCompanyRegister">
+              <div class="grid gap-5 sm:grid-cols-2">
+                <AuthField label="Tên doanh nghiệp" icon="uil:building" :error="companyErrors.company_name">
+                  <input
+                    v-model="companyForm.company_name"
+                    type="text"
+                    required
+                    class="qw-auth-input"
+                    placeholder="Nhập tên doanh nghiệp"
+                    @blur="validateCompanyName"
+                    @input="validateCompanyName"
+                  >
+                </AuthField>
+
+                <AuthField label="Mã số thuế" icon="uil:receipt" :error="companyErrors.tax_code">
+                  <input
+                    v-model="companyForm.tax_code"
+                    type="text"
+                    required
+                    class="qw-auth-input"
+                    placeholder="Nhập mã số thuế"
+                    @blur="validateCompanyTax"
+                    @input="validateCompanyTax"
+                  >
+                </AuthField>
+              </div>
+
+              <AuthField label="Email doanh nghiệp" icon="uil:envelope" :error="companyErrors.email">
+                <input
+                  v-model="companyForm.email"
+                  type="email"
+                  required
+                  class="qw-auth-input"
+                  placeholder="Nhập email doanh nghiệp"
+                  @blur="validateCompanyEmail"
+                  @input="validateCompanyEmail"
+                >
+              </AuthField>
+
+              <label class="block">
+                <span class="text-sm font-semibold text-slate-900">Giấy phép kinh doanh (GPKD)</span>
+                <span class="mt-2 flex flex-col gap-3 rounded-lg border px-4 py-3 transition sm:flex-row sm:items-center" :class="companyErrors.gpkd_url ? 'border-rose-300 bg-rose-50/50' : 'border-slate-200 bg-white'">
+                  <label for="gpkd-file" class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+                    <Icon name="uil:upload" class="h-4 w-4" />
+                    Chọn file GPKD
+                    <input id="gpkd-file" type="file" class="sr-only" accept=".jpg,.jpeg,.png,.pdf,.docx" @change="handleFileUpload">
+                  </label>
+                  <span class="text-sm font-medium" :class="companyForm.gpkd_url ? 'text-emerald-700' : 'text-slate-600'">
+                    <span v-if="uploadingFile">Đang tải lên...</span>
+                    <span v-else-if="companyForm.gpkd_url">Đã tải lên giấy phép</span>
+                    <span v-else>Chưa có file nào được chọn</span>
+                  </span>
+                </span>
+                <span v-if="companyErrors.gpkd_url" class="mt-1 block text-xs font-medium text-rose-600">{{ companyErrors.gpkd_url }}</span>
+              </label>
+
+              <div class="grid gap-5 sm:grid-cols-2">
+                <AuthField label="Mật khẩu" icon="uil:lock" :error="companyErrors.password">
+                  <input
+                    v-model="companyForm.password"
+                    :type="showCompanyPassword ? 'text' : 'password'"
+                    required
+                    class="qw-auth-input"
+                    placeholder="Tạo mật khẩu ít nhất 6 ký tự"
+                    @blur="validateCompanyPassword"
+                    @input="validateCompanyPassword"
+                  >
+                  <button type="button" class="text-slate-500 transition hover:text-slate-900" @click="showCompanyPassword = !showCompanyPassword">
+                    <Icon :name="showCompanyPassword ? 'uil:eye-slash' : 'uil:eye'" class="h-5 w-5" />
+                  </button>
+                </AuthField>
+
+                <AuthField label="Xác nhận mật khẩu" icon="uil:lock" :error="companyErrors.confirmPassword">
+                  <input
+                    v-model="companyForm.confirmPassword"
+                    :type="showCompanyConfirmPassword ? 'text' : 'password'"
+                    required
+                    class="qw-auth-input"
+                    placeholder="Nhập lại mật khẩu"
+                    @blur="validateCompanyConfirmPassword"
+                    @input="validateCompanyConfirmPassword"
+                  >
+                  <button type="button" class="text-slate-500 transition hover:text-slate-900" @click="showCompanyConfirmPassword = !showCompanyConfirmPassword">
+                    <Icon :name="showCompanyConfirmPassword ? 'uil:eye-slash' : 'uil:eye'" class="h-5 w-5" />
+                  </button>
+                </AuthField>
+              </div>
+
+              <button type="submit" :disabled="isLoading || uploadingFile" class="qw-auth-submit">
+                <Icon name="uil:user-plus" class="h-5 w-5" />
+                {{ isLoading ? 'Đang đăng ký...' : 'Đăng ký tài khoản doanh nghiệp' }}
+              </button>
+            </form>
+
+            <div class="my-7 flex items-center gap-4">
+              <span class="h-px flex-1 bg-slate-200" />
+              <span class="text-xs font-semibold uppercase text-slate-500">Hoặc</span>
+              <span class="h-px flex-1 bg-slate-200" />
+            </div>
+
+            <button
+              type="button"
+              :disabled="isLoading || uploadingFile"
+              class="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              @click="handleGoogleLogin"
             >
-              <span>Chọn file GPKD</span>
-              <input
-                id="gpkd-file"
-                type="file"
-                class="sr-only"
-                accept=".jpg,.jpeg,.png,.pdf,.docx"
-                @change="handleFileUpload"
-              />
-            </label>
-            <div v-if="uploadingFile" class="text-xs text-gray-500 flex items-center gap-1.5">
-              <span class="animate-spin inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></span>
-              Đang tải lên...
-            </div>
-            <div v-else-if="companyForm.gpkd_url" class="text-xs text-green-600 flex items-center gap-1">
-              <Icon name="uil:check" class="w-4 h-4" />
-              Đã tải lên giấy phép
-            </div>
-            <div v-else class="text-xs text-gray-400">
-              Chưa có file nào được chọn
-            </div>
+              <span class="text-lg font-bold text-[#4285F4]">G</span>
+              Đăng ký với Google
+            </button>
+
+            <p class="mt-7 text-center text-sm font-medium text-slate-700">
+              Đã có tài khoản?
+              <NuxtLink to="/auth/login" class="font-semibold text-emerald-600 transition hover:text-emerald-700">
+                Đăng nhập ngay
+              </NuxtLink>
+            </p>
           </div>
-          <p v-if="companyErrors.gpkd_url" class="mt-1 text-xs text-red-500">{{ companyErrors.gpkd_url }}</p>
-        </div>
-
-        <div>
-          <label for="company-email" class="block text-sm font-medium text-gray-700">Email doanh nghiệp</label>
-          <div class="mt-1">
-            <input
-              id="company-email"
-              v-model="companyForm.email"
-              @blur="validateCompanyEmail"
-              @input="validateCompanyEmail"
-              type="email"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="companyErrors.email ? 'border-red-300' : 'border-gray-300'"
-              placeholder="recruiter@company.com"
-            />
-          </div>
-          <p v-if="companyErrors.email" class="mt-1 text-xs text-red-500">{{ companyErrors.email }}</p>
-        </div>
-
-        <div>
-          <label for="company-password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-          <div class="mt-1">
-            <input
-              id="company-password"
-              v-model="companyForm.password"
-              @blur="validateCompanyPassword"
-              @input="validateCompanyPassword"
-              type="password"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="companyErrors.password ? 'border-red-300' : 'border-gray-300'"
-              placeholder="••••••••"
-            />
-          </div>
-          <p v-if="companyErrors.password" class="mt-1 text-xs text-red-500">{{ companyErrors.password }}</p>
-        </div>
-
-        <div>
-          <label for="company-confirm-password" class="block text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
-          <div class="mt-1">
-            <input
-              id="company-confirm-password"
-              v-model="companyForm.confirmPassword"
-              @blur="validateCompanyConfirmPassword"
-              @input="validateCompanyConfirmPassword"
-              type="password"
-              required
-              class="appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              :class="companyErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'"
-              placeholder="••••••••"
-            />
-          </div>
-          <p v-if="companyErrors.confirmPassword" class="mt-1 text-xs text-red-500">{{ companyErrors.confirmPassword }}</p>
-        </div>
-
-        <div>
-          <button
-            type="submit"
-            :disabled="isLoading || uploadingFile"
-            class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
-          >
-            {{ isLoading ? 'Đang đăng ký...' : 'Đăng ký tài khoản Doanh nghiệp' }}
-          </button>
-        </div>
-      </form>
-
-      <div class="relative flex items-center justify-center my-4">
-        <div class="border-t border-gray-200 w-full"></div>
-        <span class="absolute bg-white px-3 text-xs text-gray-400 uppercase font-semibold">Hoặc</span>
-      </div>
-
-      <div>
-        <button
-          type="button"
-          @click="handleGoogleLogin"
-          :disabled="isLoading || uploadingFile"
-          class="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-all disabled:opacity-50"
-        >
-          <svg class="w-5 h-5" viewBox="0 0 24 24">
-            <path
-              fill="#EA4335"
-              d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.54 15.02 1 12 1 7.24 1 3.19 3.73 1.24 7.74l3.96 3.07C6.18 7.74 8.85 5.04 12 5.04z"
-            />
-            <path
-              fill="#4285F4"
-              d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.44c-.28 1.48-1.12 2.73-2.38 3.58l3.7 2.87c2.16-1.99 3.43-4.92 3.43-8.6z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.2 14.81c-.24-.72-.38-1.49-.38-2.31s.14-1.59.38-2.31L1.24 7.12C.45 8.7.01 10.47.01 12.31c0 1.84.44 3.61 1.23 5.19l3.96-3.07z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.7-2.87c-1.18.79-2.69 1.27-4.26 1.27-3.15 0-5.82-2.7-6.8-5.77L1.24 15.8C3.19 19.8 7.24 23 12 23z"
-            />
-          </svg>
-          Tiếp tục với Google
-        </button>
-      </div>
-
-      <div class="text-center text-sm text-gray-500 pt-2">
-        <NuxtLink to="/auth/login" class="text-blue-600 font-medium hover:underline">Quay lại Đăng nhập</NuxtLink>
+        </main>
       </div>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({
-  layout: 'auth'
+  layout: false
 })
 
-import { ref, reactive } from 'vue'
+import { defineComponent, h, reactive, ref, resolveComponent, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { AuthService } from '~/services/auth.service'
 
-const role = ref<'STUDENT' | 'COMPANY'>('STUDENT')
+type RegisterRole = 'STUDENT' | 'COMPANY'
+
+const route = useRoute()
+const role = ref<RegisterRole>('STUDENT')
 const isLoading = ref(false)
 const uploadingFile = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const showStudentPassword = ref(false)
+const showStudentConfirmPassword = ref(false)
+const showCompanyPassword = ref(false)
+const showCompanyConfirmPassword = ref(false)
 
-const changeRole = (newRole: 'STUDENT' | 'COMPANY') => {
+const benefits = [
+  { title: 'Ứng tuyển dễ dàng', description: 'Tìm việc phù hợp và ứng tuyển chỉ với vài bước đơn giản.', icon: 'uil:check' },
+  { title: 'Nhiều cơ hội việc làm', description: 'Hàng nghìn việc làm từ các công ty uy tín đang chờ bạn.', icon: 'uil:star' },
+  { title: 'Quản lý hồ sơ chuyên nghiệp', description: 'Tạo hồ sơ nổi bật và quản lý mọi hoạt động tuyển dụng.', icon: 'uil:file-alt' }
+]
+
+const AuthField = defineComponent({
+  props: {
+    label: {
+      type: String,
+      required: true
+    },
+    icon: {
+      type: String,
+      required: true
+    },
+    error: {
+      type: String,
+      default: ''
+    }
+  },
+  setup(props, { slots }) {
+    const Icon = resolveComponent('Icon')
+
+    return () => h('label', { class: 'block' }, [
+      h('span', { class: 'text-sm font-semibold text-slate-900' }, props.label),
+      h(
+        'span',
+        {
+          class: [
+            'mt-2 flex items-center gap-3 rounded-lg border bg-white px-4 py-3.5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-100',
+            props.error ? 'border-rose-300' : 'border-slate-200'
+          ]
+        },
+        [
+          h(Icon, { name: props.icon, class: 'h-5 w-5 text-slate-500' }),
+          ...(slots.default?.() || [])
+        ]
+      ),
+      props.error ? h('span', { class: 'mt-1 block text-xs font-medium text-rose-600' }, props.error) : null
+    ])
+  }
+})
+
+const tabClass = (active: boolean) => [
+  'rounded-lg px-4 py-3 text-sm font-semibold transition',
+  active ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200' : 'text-slate-600 hover:text-slate-900'
+]
+
+const changeRole = (newRole: RegisterRole) => {
   role.value = newRole
   errorMessage.value = ''
   successMessage.value = ''
 }
 
-// --- STUDENT FORM DATA & VALIDATION ---
+const queryToRole = () => {
+  const raw = route.query.role || route.query.type || route.query.account
+  const value = Array.isArray(raw) ? raw[0] : raw
+  const normalized = String(value || '').toLowerCase()
+
+  if (['enterprise', 'company', 'employer', 'recruiter', 'business', 'doanh-nghiep', 'nha-tuyen-dung'].includes(normalized)) {
+    return 'COMPANY'
+  }
+
+  return 'STUDENT'
+}
+
+watch(
+  () => [route.query.role, route.query.type, route.query.account],
+  () => changeRole(queryToRole()),
+  { immediate: true }
+)
+
 const studentForm = reactive({
   name: '',
   phone: '',
@@ -415,18 +484,16 @@ const handleStudentRegister = async () => {
   successMessage.value = ''
 
   try {
-    const payload = {
+    const res: any = await AuthService.registerStudent({
       email: studentForm.email,
       password: studentForm.password,
       name: studentForm.name,
       phone: studentForm.phone
-    }
-    const res: any = await AuthService.registerStudent(payload)
+    })
+
     if (res.success) {
-      successMessage.value = 'Đăng ký tài khoản Sinh viên thành công! Đang chuyển hướng sang Đăng nhập...'
-      setTimeout(() => {
-        navigateTo('/auth/login')
-      }, 2000)
+      successMessage.value = 'Đăng ký tài khoản sinh viên thành công. Đang chuyển hướng sang đăng nhập...'
+      setTimeout(() => navigateTo('/auth/login'), 2000)
     } else {
       errorMessage.value = res.message || 'Đăng ký thất bại. Vui lòng thử lại.'
     }
@@ -437,7 +504,6 @@ const handleStudentRegister = async () => {
   }
 }
 
-// --- COMPANY FORM DATA & VALIDATION ---
 const companyForm = reactive({
   company_name: '',
   tax_code: '',
@@ -538,11 +604,7 @@ const handleCompanyRegister = async () => {
   validateCompanyPassword()
   validateCompanyConfirmPassword()
 
-  if (!companyForm.gpkd_url) {
-    companyErrors.gpkd_url = 'Vui lòng tải lên giấy phép kinh doanh (GPKD).'
-  } else {
-    companyErrors.gpkd_url = ''
-  }
+  companyErrors.gpkd_url = companyForm.gpkd_url ? '' : 'Vui lòng tải lên giấy phép kinh doanh (GPKD).'
 
   if (
     companyErrors.company_name ||
@@ -560,19 +622,17 @@ const handleCompanyRegister = async () => {
   successMessage.value = ''
 
   try {
-    const payload = {
+    const res: any = await AuthService.registerEnterprise({
       email: companyForm.email,
       password: companyForm.password,
       company_name: companyForm.company_name,
       tax_code: companyForm.tax_code,
       gpkd_url: companyForm.gpkd_url
-    }
-    const res: any = await AuthService.registerEnterprise(payload)
+    })
+
     if (res.success) {
-      successMessage.value = 'Đăng ký tài khoản Doanh nghiệp thành công! Đang chuyển hướng sang Đăng nhập...'
-      setTimeout(() => {
-        navigateTo('/auth/login')
-      }, 2000)
+      successMessage.value = 'Đăng ký tài khoản doanh nghiệp thành công. Đang chuyển hướng sang đăng nhập...'
+      setTimeout(() => navigateTo('/auth/login'), 2000)
     } else {
       errorMessage.value = res.message || 'Đăng ký thất bại. Vui lòng thử lại.'
     }
@@ -587,23 +647,61 @@ const handleGoogleLogin = async () => {
   try {
     isLoading.value = true
     errorMessage.value = ''
-    
-    // Fetch Google config from backend
+
     const configResponse: any = await $fetch('http://localhost:8080/api/v1/auth/google/config')
     const config = configResponse.data
-    
+
     if (config && config.client_id) {
-      // Real Google flow
       const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${config.client_id}&redirect_uri=${encodeURIComponent(config.redirect_uri)}&response_type=code&scope=openid%20email%20profile`
       window.location.href = googleAuthUrl
     } else {
-      // Mock Google flow
       const mockRedirectUri = config.redirect_uri || 'http://localhost:3000/auth/google/callback'
       window.location.href = `${mockRedirectUri}?code=mock_google_code_${Date.now()}`
     }
   } catch (err: any) {
-    errorMessage.value = 'Không thể kết nối cấu hình đăng nhập Google: ' + (err.message || err)
+    errorMessage.value = 'Không thể kết nối cấu hình đăng ký Google: ' + (err.message || err)
     isLoading.value = false
   }
 }
 </script>
+
+<style scoped>
+.qw-auth-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0f172a;
+  outline: none;
+}
+
+.qw-auth-input::placeholder {
+  color: #94a3b8;
+}
+
+.qw-auth-submit {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  background: #059669;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 18px 32px rgba(5, 150, 105, 0.22);
+  transition: background 150ms ease, opacity 150ms ease;
+}
+
+.qw-auth-submit:hover {
+  background: #047857;
+}
+
+.qw-auth-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+</style>

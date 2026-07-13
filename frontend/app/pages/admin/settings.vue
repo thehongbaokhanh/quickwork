@@ -19,6 +19,7 @@ import UiButton from '~/components/ui/Button.vue'
 import EmptyState from '~/components/EmptyState.vue'
 
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'admin']
 })
 </script>

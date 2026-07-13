@@ -109,6 +109,59 @@ func (h *EnterpriseJobHandler) ListJobs(c *fiber.Ctx) error {
 	})
 }
 
+func (h *EnterpriseJobHandler) ListPublicJobs(c *fiber.Ctx) error {
+	filters := map[string]any{
+		"status": models.JobApproved,
+	}
+
+	if q := strings.TrimSpace(c.Query("q")); q != "" {
+		filters["q"] = q
+	}
+	if location := strings.TrimSpace(c.Query("location")); location != "" {
+		filters["location"] = location
+	}
+	if salary := strings.TrimSpace(c.Query("salary")); salary != "" {
+		filters["salary"] = salary
+	}
+
+	jobs, err := h.jobRepo.FindJobs(filters)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Could not fetch public jobs",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    jobs,
+	})
+}
+
+func (h *EnterpriseJobHandler) GetPublicJob(c *fiber.Ctx) error {
+	idParam := c.Params("id")
+	jobID, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Invalid job ID",
+		})
+	}
+
+	job, err := h.jobRepo.FindByID(uint(jobID))
+	if err != nil || job.Status != models.JobApproved {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"success": false,
+			"message": "Job not found",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    job,
+	})
+}
+
 func (h *EnterpriseJobHandler) UpdateJob(c *fiber.Ctx) error {
 	enterpriseID, ok := c.Locals("user_id").(uint)
 	if !ok {

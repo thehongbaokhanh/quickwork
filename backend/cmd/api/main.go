@@ -55,6 +55,12 @@ func main() {
 
 	log.Println("✅ Database migration completed")
 
+	if err := database.Seed(db); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("✅ Database seed completed")
+
 	// Repository
 	userRepo := repositories.NewUserRepository()
 	studentRepo := repositories.NewStudentRepository()
@@ -92,8 +98,10 @@ func main() {
 	api := app.Group("/api/v1")
 
 	routes.RegisterAuthRoutes(api, authHandler)
+	api.Get("/jobs", enterpriseJobHandler.ListPublicJobs)
+	api.Get("/jobs/:id", enterpriseJobHandler.GetPublicJob)
 
-	protected := api.Group("/", middleware.AuthMiddleware())
+	protected := api.Group("/", middleware.AuthMiddleware(db))
 
 	protected.Get("/profile", testHandler.Profile)
 

@@ -59,7 +59,7 @@ const sizeClasses = {
 }
 
 const variantClasses = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm focus:ring-blue-500',
+  primary: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm focus:ring-emerald-500',
   secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200 focus:ring-slate-500',
   outline: 'border border-slate-300 bg-transparent text-slate-700 hover:bg-slate-50 focus:ring-slate-500',
   danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm focus:ring-red-500',

@@ -56,11 +56,11 @@ func (r *jobRepository) FindJobs(filters map[string]any) ([]models.Job, error) {
 	var jobs []models.Job
 	query := r.db.Model(&models.Job{})
 
-	// Optimize payload for list queries by selecting only requested columns
-	query = query.Select("id, title, salary, location, enterprise_id")
+	// Optimize payload for list queries while keeping every field the frontend displays.
+	query = query.Select("id, enterprise_id, title, description, requirements, salary, location, slots, status, created_at, updated_at")
 
 	// Resolve N+1 issues using Preload
-	query = query.Preload("EnterpriseProfile").Preload("Skills")
+	query = query.Preload("EnterpriseProfile").Preload("Skills").Preload("Skills.Category")
 
 	// Dynamic filters
 	for key, val := range filters {
@@ -91,10 +91,14 @@ func (r *jobRepository) FindJobs(filters map[string]any) ([]models.Job, error) {
 			if strVal, ok := val.(string); ok && strVal != "" {
 				query = query.Where("salary LIKE ?", "%"+strVal+"%")
 			}
+		case "q":
+			if strVal, ok := val.(string); ok && strVal != "" {
+				like := "%" + strVal + "%"
+				query = query.Where("title LIKE ? OR description LIKE ? OR requirements LIKE ? OR location LIKE ? OR salary LIKE ?", like, like, like, like, like)
+			}
 		}
 	}
 
-	err := query.Find(&jobs).Error
+	err := query.Order("created_at DESC").Find(&jobs).Error
 	return jobs, err
 }
-

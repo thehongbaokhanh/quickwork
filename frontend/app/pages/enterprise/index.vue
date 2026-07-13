@@ -442,7 +442,7 @@ type BreakdownStatusKey = Exclude<StatusKey, 'ALL'>
 
 definePageMeta({
   layout: 'enterprise',
-  middleware: ['auth']
+  middleware: ['company']
 })
 
 const authStore = useAuthStore()
@@ -497,7 +497,7 @@ const statusMeta: Record<StatusKey, { label: string; description: string; icon: 
     label: 'Bản nháp',
     description: 'Chưa gửi duyệt',
     icon: 'uil:edit-alt',
-    iconClass: 'bg-sky-50 text-sky-700'
+    iconClass: 'bg-teal-50 text-teal-700'
   },
   REJECTED: {
     label: 'Bị từ chối',
@@ -595,7 +595,7 @@ const emptyMessage = computed(() => {
 })
 
 const statusClasses: Record<string, string> = {
-  DRAFT: 'border-sky-100 bg-sky-50 text-sky-700',
+  DRAFT: 'border-teal-100 bg-teal-50 text-teal-700',
   PENDING: 'border-amber-100 bg-amber-50 text-amber-700',
   APPROVED: 'border-emerald-100 bg-emerald-50 text-emerald-700',
   REJECTED: 'border-rose-100 bg-rose-50 text-rose-700',

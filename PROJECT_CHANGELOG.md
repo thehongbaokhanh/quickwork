@@ -16,13 +16,301 @@ Tai lieu nay dung de ghi lai loi, thay doi, cach sua va ket qua kiem tra cua du 
   - Lenh kiem tra.
   - Trang thai.
 - Neu mot loi cu da het, khong de no o muc dang mo nua; chuyen sang `Da xu ly` va ghi ngay sua.
-- Khi thay doi kien truc/route/model/luong nghiep vu, dong thoi cap nhat `NBLM_PROJECT_CONTEXT.md`.
+- Khi thay doi kien truc/route/model/luong nghiep vu, dong thoi cap nhat tai lieu lien quan trong `docs/`.
 
 ## Dang mo / Can theo doi
 
 - Chua co loi dang mo duoc ghi nhan sau cac thay doi ngay 2026-07-09.
 
 ## Da xu ly
+
+### 2026-07-10 - Tinh chinh lai giao dien dang nhap/dang ky sat anh mau hon
+
+Hien tuong / Yeu cau:
+
+- Ban lam moi truoc cua trang dang nhap/dang ky van khac anh thiet ke, font qua day/khong deu va mot so mau chu/nen bi mo.
+- Can phoi mau theo phong cach trang chu: trang sang, slate/navy va emerald.
+
+Cach sua:
+
+- Dieu chinh lai `login.vue` thanh bo cuc sang hon: header logo/pill dang ky, cot visual ben trai, card form trang ben phai va feature bar navy o day.
+- Dieu chinh lai `register.vue` theo anh mau: header trang, vung loi ich ben trai, form card ben phai, tab sinh vien/doanh nghiep ro hon va stat bar navy.
+- Ha cac font `font-black` trong auth ve `font-semibold`/`font-bold`, tang do tuong phan text label/body va giu mau nhan emerald.
+
+File lien quan:
+
+- `frontend/app/pages/auth/login.vue`
+- `frontend/app/pages/auth/register.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- `git -c safe.directory=D:/GOLANG/QuickWork diff --check -- frontend/app/pages/auth/login.vue frontend/app/pages/auth/register.vue` pass.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-10 - Lam moi trang dang nhap/dang ky va dieu huong dung loai tai khoan
+
+Hien tuong / Yeu cau:
+
+- Trang dang nhap va dang ky can duoc setup lai theo anh mau sang, hien dai hon voi tone trang/xanh la/den.
+- Khi bam CTA tren trang chu, `Toi la sinh vien` phai mo dung form dang ky sinh vien va `Toi la nha tuyen dung` phai mo dung form dang ky doanh nghiep.
+
+Cach sua:
+
+- Doi `frontend/app/pages/auth/login.vue` sang trang xac thuc full-page, co khu gioi thieu QuickWork, logo, form dang nhap, Google button va cac diem tin cay.
+- Doi `frontend/app/pages/auth/register.vue` sang trang dang ky full-page voi header, khu loi ich, card form va tab Sinh vien/Doanh nghiep.
+- Them doc query `role=student` / `role=enterprise` de trang dang ky tu chon dung tab.
+- Doi CTA tren trang chu sang route object co query role tuong ung.
+
+File lien quan:
+
+- `frontend/app/pages/auth/login.vue`
+- `frontend/app/pages/auth/register.vue`
+- `frontend/app/pages/index.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- `git -c safe.directory=D:/GOLANG/QuickWork diff --check -- frontend/app/pages/auth/login.vue frontend/app/pages/auth/register.vue frontend/app/pages/index.vue` pass.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-10 - Dong bo header admin theo header doanh nghiep
+
+Hien tuong / Yeu cau:
+
+- Header khu admin dang khac khu doanh nghiep, gom breadcrumb/search va dropdown hover-only nen cam giac chua dong bo.
+
+Cach sua:
+
+- Doi top header admin sang bo cuc giong enterprise: logo QuickWork, nhan khu vuc, chip route hien tai, nut thong bao co dropdown va user menu co avatar/ten/email.
+- User menu admin dung click toggle, transition va spacing/button style tuong tu header doanh nghiep.
+
+File lien quan:
+
+- `frontend/app/layouts/admin.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass khi chay ngoai sandbox. Lan chay trong sandbox gap loi duong dan `@nuxt/icon`, khong phai loi code.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-10 - Gan logo QuickWork, seed du lieu mau va chuyen trang viec lam sang du lieu DB
+
+Hien tuong / Yeu cau:
+
+- Can dua logo QuickWork moi vao website, dung wordmark/icon theo vi tri phu hop.
+- Trang chu va trang sinh vien khong duoc hien thong so/card viec lam gia; can lay cac thong so that tu DB.
+- Can co du lieu mau trong database de dung thu app, gom ca file GPKD mau.
+- Trang admin can dong bo hon voi theme den/xanh la va cac nut trong modal chi tiet can deu, thoang hon.
+
+Cach sua:
+
+- Tao bo asset logo tu anh nguoi dung cung cap va dat trong `frontend/public/images/brand/`.
+- Gan logo vao header/footer public, layout student/default/auth/enterprise/admin.
+- Them public API `GET /api/v1/jobs` va `GET /api/v1/jobs/:id`, chi tra job `APPROVED`.
+- Mo rong job repository de preload enterprise profile, skills va ho tro filter/search public.
+- Trang chu va trang sinh vien dung `JobService.getAllJobs()` de tinh job cards, thong ke, nganh nghe, cong ty noi bat, goi y va filter tu du lieu DB.
+- Them seed idempotent cho admin, enterprise, student, categories, skills, approved/pending/rejected jobs va GPKD mau trong `backend/uploads/sample/`.
+- Cap nhat admin layout sang theme slate/emerald va sua spacing/font nut trong footer modal chi tiet.
+- Cap nhat `docs/api.md`, `docs/database.md`, `docs/architecture.md` va `docs/business-rules.md`.
+
+File lien quan:
+
+- `backend/cmd/api/main.go`
+- `backend/database/seed.go`
+- `backend/internal/handlers/enterprise_job_handler.go`
+- `backend/internal/repositories/job_repository.go`
+- `backend/uploads/sample/*`
+- `frontend/app/pages/index.vue`
+- `frontend/app/pages/student/index.vue`
+- `frontend/app/layouts/*.vue`
+- `frontend/app/pages/admin/*.vue`
+- `frontend/app/assets/css/main.css`
+- `frontend/app/utils/jobDisplay.ts`
+- `frontend/public/images/brand/*`
+- `docs/api.md`
+- `docs/database.md`
+- `docs/architecture.md`
+- `docs/business-rules.md`
+
+Kiem tra:
+
+- `go test ./...` pass voi `GOCACHE` trong workspace.
+- `npm.cmd run build` pass.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-10 - Doi theme den/xanh la va hanh vi dang phat trien cho trang tuyen dung
+
+Hien tuong / Yeu cau:
+
+- Cac trang can dong nhat hon ve header, footer va cach phoi mau den/xanh la nhu anh tham khao moi.
+- Trang sinh vien nen gan voi bo cuc job board trong anh tham khao: hero xanh, search, filter trai, danh sach viec giua va goi y ben phai.
+- Cac hanh dong chua lam duoc khong nen im lang hoac dieu huong lung tung; can hien thong bao `Tinh nang dang phat trien` nhu khu admin.
+
+Cach sua:
+
+- Dong bo lai student layout voi header trang, active nav xanh la, dropdown thong bao/tai khoan va footer den/xanh la gon hon.
+- Lam moi trang sinh vien theo bo cuc job board day du filter, quick tag, job card, sidebar goi y va CTA ho so.
+- Chuyen cac nut/hanh dong chua noi backend sang toast `Tinh nang dang phat trien`.
+- Chuyen trang ho so va cai dat sinh vien sang `EmptyState` dang phat trien thay vi placeholder trang.
+- Trang chu da duoc cap nhat theo he mau slate/den voi emerald/teal lam mau nhan.
+- Cac layout, trang auth, admin, enterprise va shared UI control duoc doi cac tone blue/indigo/sky/cyan/purple/violet sang emerald/teal/slate de dong nhat.
+- Sua cac chuoi tieng Viet bi mojibake trong qua trinh rewrite giao dien.
+
+File lien quan:
+
+- `frontend/app/pages/index.vue`
+- `frontend/app/pages/student/index.vue`
+- `frontend/app/layouts/student.vue`
+- `frontend/app/pages/profile.vue`
+- `frontend/app/pages/settings.vue`
+- `frontend/app/layouts/*.vue`
+- `frontend/app/pages/auth/*.vue`
+- `frontend/app/pages/admin/*.vue`
+- `frontend/app/pages/enterprise/*.vue`
+- `frontend/app/components/**/*.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- `rg -n "blue-|indigo-|sky-|cyan-|purple-|violet-" frontend/app --glob "*.vue"` khong con ket qua.
+- `rg -n "�|Chua|chua|nghi\?p|tuy\?n|duy\?t|Ch\?nh|H\?y|L\?u|S\? \?i\?n|T\? ch|M\?i|Kh\?ng|C\?p|\?ang|\?\?" frontend/app --glob "*.vue"` khong con ket qua.
+- `git -c safe.directory=D:/GOLANG/QuickWork diff --check -- frontend/app PROJECT_CHANGELOG.md` pass.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-10 - Lam moi giao dien trang chu va trang sinh vien theo huong job board
+
+Hien tuong / Yeu cau:
+
+- Can tham khao cac trang tuyen dung public nhu TopCV, VietnamWorks, ITviec, Indeed va LinkedIn Jobs.
+- Trang chu va trang sinh vien can dep hon, ro tinh chat tuyen dung hon va uu tien hanh dong tim viec/ung tuyen.
+
+Cach sua:
+
+- Thay landing page cu bang trang chu job board co hero anh career fair, thanh tim viec, keyword trend, job card, nganh nghe, cong ty KYB va FAQ.
+- Lam moi dashboard sinh vien voi search/filter dau trang, job matching, checklist ho so, pipeline ung tuyen, cong ty noi bat va modal ung tuyen nhanh.
+- Cap nhat student layout de co nav viec phu hop/ho so/cai dat va dropdown thong bao gon hon.
+- Them asset anh hero noi bo `frontend/public/images/quickwork-career-hero.png`.
+
+File lien quan:
+
+- `frontend/app/pages/index.vue`
+- `frontend/app/pages/student/index.vue`
+- `frontend/app/layouts/student.vue`
+- `frontend/public/images/quickwork-career-hero.png`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap module preload va dependency deprecation.
+- Browser check `http://127.0.0.1:3000/`: hero image load thanh cong, search input hien thi, khong co console error.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-09 - Chan doanh nghiep chua duyet login va them sua thong tin tai khoan cho admin
+
+Hien tuong / Yeu cau:
+
+- Doanh nghiep chua duoc duyet dang bi day sang trang sinh vien sau khi dang nhap.
+- Tai khoan bi cam hoac tam khoa can co thong bao va khong duoc vao trang.
+- Admin can xem chi tiet va sua thong tin tai khoan/hoc vien/doanh nghiep.
+
+Cach sua:
+
+- Backend login chi cho doanh nghiep qua khi KYB `APPROVED`; `PENDING`/`REJECTED` tra 403 voi thong bao ro.
+- Backend `AuthMiddleware(db)` kiem tra lai status trong DB de token cu cua tai khoan `INACTIVE`/`BANNED` bi tu choi.
+- Frontend enterprise pages dung middleware `company`; student page dung middleware `student`.
+- Them endpoint `PUT /api/v1/admin/users/:id` de sua email/status va profile theo role.
+- Them form chinh sua trong modal chi tiet cua admin users, students va enterprises.
+- Cap nhat `docs/api.md` va `docs/business-rules.md`.
+
+File lien quan:
+
+- `backend/internal/services/auth_service.go`
+- `backend/internal/handlers/auth_handler.go`
+- `backend/internal/handlers/admin_handler.go`
+- `backend/internal/middlewares/auth_middleware.go`
+- `backend/routes/admin_routes.go`
+- `frontend/app/middleware/company.ts`
+- `frontend/app/middleware/student.ts`
+- `frontend/app/pages/auth/login.vue`
+- `frontend/app/pages/auth/google/callback.vue`
+- `frontend/app/pages/admin/users.vue`
+- `frontend/app/pages/admin/students.vue`
+- `frontend/app/pages/admin/enterprises.vue`
+- `frontend/app/services/admin.service.ts`
+- `docs/api.md`
+- `docs/business-rules.md`
+
+Kiem tra:
+
+- `go test ./...` pass.
+- `npm.cmd run build` pass.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-09 - Thiet lap AI-first documentation trong `docs/`
+
+Hien tuong / Yeu cau:
+
+- Can bo tai lieu Markdown mo ta kien truc, nghiep vu, API, database va quy uoc lam viec.
+- Tai lieu can phu hop cach lam AI-first documentation de AI agent doc va cap nhat an toan.
+
+Cach sua:
+
+- Tao root `README.md` lam muc luc nhanh.
+- Tao thu muc `docs/` voi cac tai lieu:
+  - `docs/README.md`
+  - `docs/ai-first-documentation.md`
+  - `docs/architecture.md`
+  - `docs/business-rules.md`
+  - `docs/api.md`
+  - `docs/database.md`
+  - `docs/conventions.md`
+- Sua `AGENTS.md` bi loi encoding va chuyen thanh bo quy tac agent ro rang.
+- Cap nhat `frontend/README.md` de bo noi dung starter mac dinh va tro ve docs du an.
+- Cap nhat changelog de tro den `docs/` thay vi file NBLM tam.
+
+File lien quan:
+
+- `README.md`
+- `AGENTS.md`
+- `frontend/README.md`
+- `docs/README.md`
+- `docs/ai-first-documentation.md`
+- `docs/architecture.md`
+- `docs/business-rules.md`
+- `docs/api.md`
+- `docs/database.md`
+- `docs/conventions.md`
+- `PROJECT_CHANGELOG.md`
+
+Kiem tra:
+
+- Da doc lai danh sach file Markdown va kiem tra noi dung sau khi ghi file.
+
+Trang thai:
+
+- Da xu ly.
 
 ### 2026-07-09 - Them quy tac AGENTS.md cho CodeGraph + AI-first documentation
 
@@ -34,13 +322,12 @@ Hien tuong / Yeu cau:
 Cach sua:
 
 - Tao file `AGENTS.md` tai root repo.
-- Cap nhat `NBLM_PROJECT_CONTEXT.md` de ghi nho quy uoc nay.
+- Cap nhat tai lieu du an de ghi nho quy uoc nay.
 - Cap nhat `PROJECT_CHANGELOG.md` de ghi lai thay doi tai lieu.
 
 File lien quan:
 
 - `AGENTS.md`
-- `NBLM_PROJECT_CONTEXT.md`
 - `PROJECT_CHANGELOG.md`
 
 Kiem tra:

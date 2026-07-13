@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,6 +19,27 @@ type adminUserQuery struct {
 	role   string
 	status string
 	search string
+}
+
+type updateUserRequest struct {
+	Email             *string                         `json:"email"`
+	Status            *string                         `json:"status"`
+	StudentProfile    *updateStudentProfileRequest    `json:"student_profile"`
+	EnterpriseProfile *updateEnterpriseProfileRequest `json:"enterprise_profile"`
+}
+
+type updateStudentProfileRequest struct {
+	Name   *string `json:"name"`
+	Phone  *string `json:"phone"`
+	Avatar *string `json:"avatar"`
+	CVURL  *string `json:"cv_url"`
+}
+
+type updateEnterpriseProfileRequest struct {
+	CompanyName *string `json:"company_name"`
+	TaxCode     *string `json:"tax_code"`
+	GPKDURL     *string `json:"gpkd_url"`
+	KYBStatus   *string `json:"kyb_status"`
 }
 
 func NewAdminHandler(db *gorm.DB) *AdminHandler {
@@ -130,6 +152,153 @@ func (h *AdminHandler) UpdateUserStatus(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
 			"message": "Failed to update user status",
+		})
+	}
+
+	if err := h.db.Preload("StudentProfile.Skills").Preload("EnterpriseProfile").First(&user, user.ID).Error; err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to reload user",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    user,
+	})
+}
+
+func (h *AdminHandler) UpdateUser(c *fiber.Ctx) error {
+	userID, err := strconv.ParseUint(c.Params("id"), 10, 32)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+	}
+
+	var req updateUserRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Invalid request body",
+		})
+	}
+
+	var user models.User
+	if err := h.db.Preload("StudentProfile.Skills").Preload("EnterpriseProfile").First(&user, uint(userID)).Error; err != nil {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"success": false,
+			"message": "User not found",
+		})
+	}
+
+	tx := h.db.Begin()
+	if tx.Error != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Could not start update transaction",
+		})
+	}
+
+	if req.Email != nil {
+		email := strings.TrimSpace(*req.Email)
+		if email == "" {
+			tx.Rollback()
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Email is required",
+			})
+		}
+
+		if !strings.EqualFold(email, user.Email) {
+			var count int64
+			if err := tx.Model(&models.User{}).
+				Where("LOWER(email) = ? AND id <> ?", strings.ToLower(email), user.ID).
+				Count(&count).Error; err != nil {
+				tx.Rollback()
+				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+					"success": false,
+					"message": "Failed to check email",
+				})
+			}
+			if count > 0 {
+				tx.Rollback()
+				return c.Status(http.StatusConflict).JSON(fiber.Map{
+					"success": false,
+					"message": "Email already exists",
+				})
+			}
+		}
+
+		user.Email = email
+	}
+
+	if req.Status != nil {
+		status := models.UserStatus(strings.ToUpper(strings.TrimSpace(*req.Status)))
+		if status != models.UserStatusActive && status != models.UserStatusInactive && status != models.UserStatusBanned {
+			tx.Rollback()
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Status must be ACTIVE, INACTIVE or BANNED",
+			})
+		}
+		if user.Role == models.RoleAdmin && status != user.Status {
+			tx.Rollback()
+			return c.Status(http.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"message": "Admin account status is protected",
+			})
+		}
+		user.Status = status
+	}
+
+	if err := tx.Save(&user).Error; err != nil {
+		tx.Rollback()
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to update user",
+		})
+	}
+
+	if req.StudentProfile != nil {
+		if user.Role != models.RoleStudent {
+			tx.Rollback()
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "User is not a student account",
+			})
+		}
+		if err := h.updateStudentProfile(tx, &user, req.StudentProfile); err != nil {
+			tx.Rollback()
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": err.Error(),
+			})
+		}
+	}
+
+	if req.EnterpriseProfile != nil {
+		if user.Role != models.RoleEnterprise {
+			tx.Rollback()
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "User is not an enterprise account",
+			})
+		}
+		if err := h.updateEnterpriseProfile(tx, &user, req.EnterpriseProfile); err != nil {
+			tx.Rollback()
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": err.Error(),
+			})
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to commit user update",
 		})
 	}
 
@@ -433,6 +602,104 @@ func (h *AdminHandler) GetDashboardStats(c *fiber.Ctx) error {
 			"pending_jobs":      pendingJobs,
 		},
 	})
+}
+
+func (h *AdminHandler) updateStudentProfile(tx *gorm.DB, user *models.User, req *updateStudentProfileRequest) error {
+	profile := user.StudentProfile
+	if profile == nil {
+		profile = &models.StudentProfile{UserID: user.ID}
+		if req.Name == nil || strings.TrimSpace(*req.Name) == "" {
+			return errors.New("student name is required when creating profile")
+		}
+	}
+
+	if req.Name != nil {
+		name := strings.TrimSpace(*req.Name)
+		if name == "" {
+			return errors.New("student name is required")
+		}
+		profile.Name = name
+	}
+	if req.Phone != nil {
+		profile.Phone = strings.TrimSpace(*req.Phone)
+	}
+	if req.Avatar != nil {
+		profile.Avatar = strings.TrimSpace(*req.Avatar)
+	}
+	if req.CVURL != nil {
+		profile.CVURL = strings.TrimSpace(*req.CVURL)
+	}
+
+	if err := tx.Save(profile).Error; err != nil {
+		return errors.New("failed to update student profile")
+	}
+
+	return nil
+}
+
+func (h *AdminHandler) updateEnterpriseProfile(tx *gorm.DB, user *models.User, req *updateEnterpriseProfileRequest) error {
+	profile := user.EnterpriseProfile
+	if profile == nil {
+		profile = &models.EnterpriseProfile{
+			UserID:    user.ID,
+			KYBStatus: models.KYBPending,
+			StatusKYB: models.KYBPending,
+		}
+		if req.CompanyName == nil || strings.TrimSpace(*req.CompanyName) == "" {
+			return errors.New("company name is required when creating profile")
+		}
+	}
+
+	if req.CompanyName != nil {
+		companyName := strings.TrimSpace(*req.CompanyName)
+		if companyName == "" {
+			return errors.New("company name is required")
+		}
+		profile.CompanyName = companyName
+	}
+	if req.TaxCode != nil {
+		taxCode := strings.TrimSpace(*req.TaxCode)
+		if taxCode == "" {
+			return errors.New("tax code is required")
+		}
+		if !strings.EqualFold(taxCode, profile.TaxCode) {
+			var count int64
+			if err := tx.Model(&models.EnterpriseProfile{}).
+				Where("tax_code = ? AND user_id <> ?", taxCode, user.ID).
+				Count(&count).Error; err != nil {
+				return errors.New("failed to check tax code")
+			}
+			if count > 0 {
+				return errors.New("tax code already exists")
+			}
+		}
+		profile.TaxCode = taxCode
+	}
+	if req.GPKDURL != nil {
+		profile.GPKDURL = strings.TrimSpace(*req.GPKDURL)
+	}
+	if req.KYBStatus != nil {
+		status := models.KYBStatus(strings.ToUpper(strings.TrimSpace(*req.KYBStatus)))
+		if status != models.KYBPending && status != models.KYBApproved && status != models.KYBRejected {
+			return errors.New("KYB status must be PENDING, APPROVED or REJECTED")
+		}
+		profile.KYBStatus = status
+		profile.StatusKYB = status
+	}
+
+	kybStatus := profile.KYBStatus
+	if kybStatus == "" {
+		kybStatus = profile.StatusKYB
+	}
+	if kybStatus == models.KYBApproved && strings.TrimSpace(profile.GPKDURL) == "" {
+		return errors.New("cannot approve enterprise without business license")
+	}
+
+	if err := tx.Save(profile).Error; err != nil {
+		return errors.New("failed to update enterprise profile")
+	}
+
+	return nil
 }
 
 func (h *AdminHandler) findUsers(filters adminUserQuery) ([]models.User, error) {

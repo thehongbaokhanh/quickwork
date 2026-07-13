@@ -1,7 +1,7 @@
 <template>
   <div v-if="show" class="flex flex-col items-center justify-center p-6 space-y-2">
     <div :class="[
-      'animate-spin rounded-full border-t-transparent border-blue-600',
+      'animate-spin rounded-full border-t-transparent border-emerald-600',
       sizeClasses[size]
     ]"></div>
     <span v-if="description" class="text-sm text-gray-500 font-medium animate-pulse">

@@ -79,13 +79,15 @@ export const useAuthStore = defineStore('auth', () => {
   const enterpriseKybStatus = computed(() => user.value?.enterpriseKybStatus || null)
   const enterpriseApproved = computed(() => user.value?.role === 'ENTERPRISE' && user.value?.enterpriseApproved === true)
   const canAccessEnterprise = computed(() => user.value?.role === 'ENTERPRISE' && enterpriseApproved.value)
-  const canAccessStudentArea = computed(() => user.value?.role === 'STUDENT' || (user.value?.role === 'ENTERPRISE' && !enterpriseApproved.value))
+  const canAccessStudentArea = computed(() => user.value?.role === 'STUDENT')
 
   // --- ACTIONS ---
   /**
    * Xử lý hành động Đăng nhập từ UI Form
    */
   async function login(credentials:any){
+
+    clearAuth()
 
     const response = await AuthService.login(credentials)
 

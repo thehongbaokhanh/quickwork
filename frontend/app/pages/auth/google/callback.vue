@@ -4,7 +4,7 @@
       <!-- Loading state -->
       <div v-if="status === 'loading'" class="space-y-4">
         <div class="flex justify-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent shadow-sm"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-600 border-t-transparent shadow-sm"></div>
         </div>
         <h2 class="text-xl font-bold text-slate-800">Đang xác thực Google</h2>
         <p class="text-sm text-slate-500">Vui lòng đợi trong giây lát trong khi chúng tôi đăng nhập vào hệ thống QuickWork...</p>
@@ -29,7 +29,7 @@
         <div class="pt-4">
           <NuxtLink 
             to="/auth/login" 
-            class="inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-all"
+            class="inline-flex items-center justify-center px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-all"
           >
             Quay lại Đăng nhập
           </NuxtLink>
@@ -109,7 +109,7 @@ onMounted(async () => {
         if (data.role === 'ADMIN') {
           await navigateTo('/admin')
         } else if (data.role === 'ENTERPRISE') {
-          await navigateTo(data.enterprise_approved === true ? '/enterprise' : '/student')
+          await navigateTo('/enterprise')
         } else if (data.role === 'STUDENT') {
           await navigateTo('/student')
         } else {

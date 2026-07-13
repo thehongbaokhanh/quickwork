@@ -1,428 +1,453 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-    <!-- Welcome Hero Section -->
-    <section class="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-3xl p-6 sm:p-8 md:p-10 text-white shadow-xl shadow-indigo-100/50 relative overflow-hidden">
-      <!-- Design circles overlay -->
-      <div class="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full transform translate-x-20 -translate-y-20"></div>
-      <div class="absolute left-1/3 bottom-0 w-48 h-48 bg-white/5 rounded-full transform translate-y-20"></div>
+  <div class="min-h-screen bg-slate-50">
+    <section class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-950 to-emerald-950 text-white">
+      <div class="absolute inset-0 opacity-30">
+        <div class="absolute -left-16 top-8 h-64 w-64 rounded-full bg-emerald-500 blur-3xl"></div>
+        <div class="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-teal-400 blur-3xl"></div>
+      </div>
 
-      <div class="max-w-xl space-y-4 relative">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
-          Xin chào, {{ userName }}! 👋
-        </h1>
-        <p class="text-indigo-100 text-xs sm:text-sm leading-relaxed font-normal">
-          Chào mừng bạn quay lại với hệ thống QuickWork. Hãy cập nhật CV cá nhân để lọt vào mắt xanh của hàng trăm doanh nghiệp uy tín hàng đầu.
-        </p>
-
-        <!-- Interactive Search & Filter Bar -->
-        <div class="pt-4 flex flex-col sm:flex-row gap-3">
-          <div class="flex items-center bg-white/10 backdrop-blur border border-white/20 rounded-xl px-3.5 py-2.5 flex-1 text-xs">
-            <Icon name="uil:search" class="text-white/70 mr-2 w-4.5 h-4.5" />
-            <input 
-              type="text" 
-              placeholder="Tìm vị trí thực tập, part-time..." 
-              v-model="searchQuery"
-              class="bg-transparent border-none text-white placeholder-white/60 focus:outline-none w-full"
-            />
+      <div class="relative mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_420px] lg:px-8">
+        <div class="flex flex-col justify-center">
+          <div class="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-100">
+            <Icon name="uil:bolt" class="h-4 w-4" />
+            Gợi ý việc làm cá nhân
           </div>
-          <button 
-            @click="clearFilters"
-            class="px-5 py-2.5 bg-white text-indigo-600 font-bold text-xs rounded-xl shadow hover:bg-slate-50 active:scale-98 transition-all shrink-0"
-          >
-            Xem tất cả
-          </button>
+          <h1 class="mt-6 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl">
+            Tìm công việc phù hợp với kỹ năng của bạn
+          </h1>
+          <p class="mt-4 max-w-xl text-base leading-8 text-emerald-50">
+            Chào {{ userName }}, QuickWork đang gợi ý các vị trí thực tập, part-time và junior job phù hợp với hồ sơ sinh viên của bạn.
+          </p>
         </div>
 
-        <!-- Quick Filters Tags -->
-        <div class="flex flex-wrap gap-2 pt-2">
-          <span 
-            v-for="tag in filterTags" 
-            :key="tag" 
-            @click="toggleFilterTag(tag)"
-            :class="['px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all border shadow-sm', activeTag === tag ? 'bg-white text-indigo-600 border-white' : 'bg-white/10 text-white border-white/10 hover:bg-white/20']"
-          >
-            {{ tag }}
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <!-- Stat item 1 -->
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
-        <div>
-          <span class="text-2xl font-black text-slate-900">850+</span>
-          <div class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Việc làm phù hợp</div>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
-          <Icon name="uil:briefcase-alt" />
-        </div>
-      </div>
-
-      <!-- Stat item 2 -->
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
-        <div>
-          <span class="text-2xl font-black text-slate-900">4,200+</span>
-          <div class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Đối tác doanh nghiệp</div>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
-          <Icon name="uil:building" />
-        </div>
-      </div>
-
-      <!-- Stat item 3 -->
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow transition-shadow flex items-center justify-between">
-        <div>
-          <span class="text-2xl font-black text-slate-900">12.5K+</span>
-          <div class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Ứng viên đã kết nối</div>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl">
-          <Icon name="uil:users-alt" />
-        </div>
-      </div>
-    </section>
-
-    <!-- Featured Jobs Grid -->
-    <section class="space-y-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-extrabold text-slate-900">Việc làm nổi bật</h2>
-          <p class="text-xs text-slate-400 font-medium">Được doanh nghiệp tài trợ tuyển dụng gấp</p>
-        </div>
-        <span class="text-xs font-bold text-indigo-600 cursor-pointer hover:underline">Xem thêm &rarr;</span>
-      </div>
-
-      <!-- Loading Skeleton State -->
-      <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div v-for="i in 4" :key="i" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm animate-pulse space-y-4">
-          <div class="flex gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-slate-100"></div>
-            <div class="flex-1 space-y-2 py-1">
-              <div class="h-4 bg-slate-100 rounded-lg w-3/4"></div>
-              <div class="h-3 bg-slate-100 rounded-lg w-1/2"></div>
-            </div>
-          </div>
-          <div class="space-y-2">
-            <div class="h-3 bg-slate-100 rounded-lg w-full"></div>
-            <div class="h-3 bg-slate-100 rounded-lg w-5/6"></div>
-          </div>
-          <div class="flex gap-2">
-            <div class="h-6 bg-slate-100 rounded-lg w-20"></div>
-            <div class="h-6 bg-slate-100 rounded-lg w-20"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="filteredFeaturedJobs.length === 0" class="bg-white p-12 rounded-3xl border border-slate-100 shadow-sm text-center space-y-4">
-        <div class="w-16 h-16 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center mx-auto text-3xl">
-          <Icon name="uil:frown" />
-        </div>
-        <h3 class="font-bold text-slate-900">Không tìm thấy việc làm phù hợp</h3>
-        <p class="text-slate-500 text-sm max-w-sm mx-auto">Chúng tôi không tìm thấy kết quả khớp với bộ lọc hoặc từ khóa hiện tại. Vui lòng thay đổi thông tin lọc tìm kiếm.</p>
-        <button @click="clearFilters" class="px-5 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl shadow transition-all hover:bg-indigo-700">Xóa bộ lọc</button>
-      </div>
-
-      <!-- Featured Jobs List -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div 
-          v-for="job in filteredFeaturedJobs" 
-          :key="job.id"
-          class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/50 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
-        >
-          <div class="space-y-4">
-            <div class="flex items-start gap-4">
-              <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-extrabold text-sm shrink-0 border border-indigo-100/40">
-                {{ job.logoFallback }}
+        <div class="hidden items-center justify-center lg:flex">
+          <div class="relative h-56 w-full max-w-sm rounded-xl border border-white/20 bg-white/12 p-5 shadow-2xl shadow-slate-950/30 backdrop-blur">
+            <div class="space-y-3">
+              <div v-for="row in 3" :key="row" class="rounded-lg bg-white p-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                  <div class="h-9 w-9 rounded-lg bg-emerald-100"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-2.5 w-2/3 rounded bg-emerald-200"></div>
+                    <div class="h-2 w-1/2 rounded bg-slate-200"></div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 class="font-bold text-slate-900 text-sm hover:text-indigo-600 transition-colors cursor-pointer">{{ job.title }}</h3>
-                <p class="text-xs text-slate-400 font-semibold mt-0.5">{{ job.company }}</p>
-              </div>
-              <span class="ml-auto bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border border-indigo-100/50 shrink-0">
-                {{ job.badge }}
-              </span>
             </div>
-            <p class="text-xs text-slate-500 leading-normal">{{ job.description }}</p>
+            <div class="absolute -bottom-5 -left-5 flex h-16 w-16 rotate-[-8deg] items-center justify-center rounded-xl bg-white text-emerald-700 shadow-xl">
+              <Icon name="uil:briefcase-alt" class="h-8 w-8" />
+            </div>
+            <div class="absolute -right-5 top-20 flex h-20 w-20 items-center justify-center rounded-full border-[10px] border-emerald-700 bg-white text-emerald-700 shadow-xl">
+              <Icon name="uil:search" class="h-8 w-8" />
+            </div>
           </div>
+        </div>
 
-          <div class="flex items-center justify-between border-t border-slate-50 mt-6 pt-4 text-xs font-semibold text-slate-500">
-            <div class="flex flex-wrap gap-3">
-              <span class="flex items-center gap-1"><Icon name="uil:usd-circle" class="text-indigo-500 w-4 h-4" />{{ job.salary }}</span>
-              <span class="flex items-center gap-1"><Icon name="uil:map-marker" class="text-indigo-500 w-4 h-4" />{{ job.location }}</span>
-            </div>
-            <button 
-              @click="openQuickApply(job)" 
-              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-xl shadow-md shadow-indigo-100/80 transition-all hover:scale-102"
+        <div class="lg:col-span-2">
+          <div class="grid gap-3 rounded-xl border border-white/20 bg-white p-3 text-slate-900 shadow-2xl shadow-slate-950/25 lg:grid-cols-[1.2fr_0.8fr_220px_130px]">
+            <label class="flex h-12 items-center gap-3 rounded-lg border border-slate-200 px-4">
+              <Icon name="uil:search" class="h-5 w-5 shrink-0 text-emerald-600" />
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Vị trí, kỹ năng hoặc công ty"
+                class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-400"
+              >
+            </label>
+            <label class="flex h-12 items-center gap-3 rounded-lg border border-slate-200 px-4">
+              <Icon name="uil:map-marker" class="h-5 w-5 shrink-0 text-emerald-600" />
+              <select v-model="activeLocation" class="w-full bg-transparent text-sm font-bold outline-none">
+                <option v-for="location in locationOptions" :key="location">{{ location }}</option>
+              </select>
+            </label>
+            <label class="flex h-12 items-center gap-3 rounded-lg border border-slate-200 px-4">
+              <Icon name="uil:briefcase-alt" class="h-5 w-5 shrink-0 text-emerald-600" />
+              <select v-model="activeType" class="w-full bg-transparent text-sm font-bold outline-none">
+                <option v-for="type in typeOptions" :key="type">{{ type }}</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-500 px-5 text-sm font-black text-slate-950 transition-colors hover:bg-emerald-400"
+              @click="notifyDevelopment('Tìm kiếm việc làm nâng cao')"
             >
-              Ứng tuyển
+              Tìm kiếm
+            </button>
+          </div>
+
+          <div class="mt-5 flex flex-wrap gap-3 text-sm">
+            <button
+              v-for="tag in quickTags"
+              :key="tag.value"
+              type="button"
+              :class="[
+                'inline-flex items-center gap-2 rounded-full px-4 py-2 font-black transition-colors',
+                activeQuickTag === tag.value
+                  ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-slate-950/20'
+                  : 'bg-white/90 text-slate-950 hover:bg-emerald-100'
+              ]"
+              @click="activeQuickTag = tag.value"
+            >
+              <Icon :name="tag.icon" class="h-4 w-4" />
+              {{ tag.label }}
             </button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- New Jobs & Featured Companies Row -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      <!-- New Jobs List (Left Col) -->
-      <div class="lg:col-span-8 space-y-6">
-        <div>
-          <h2 class="text-lg font-extrabold text-slate-900">Danh sách việc làm mới</h2>
-          <p class="text-xs text-slate-400 font-medium">Hồ sơ ứng tuyển được cập nhật trong ngày</p>
-        </div>
-
-        <div class="space-y-4">
-          <div 
-            v-for="job in newJobs" 
-            :key="job.id" 
-            class="bg-white p-5 rounded-2xl border border-slate-100 hover:border-indigo-100/50 shadow-sm hover:shadow hover:-translate-y-[1px] transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-          >
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center font-bold text-xs shrink-0">
-                {{ job.logoFallback }}
-              </div>
-              <div>
-                <h4 class="font-bold text-slate-900 text-sm hover:text-indigo-600 transition-colors cursor-pointer">{{ job.title }}</h4>
-                <p class="text-[11px] text-slate-400 font-semibold mt-0.5">{{ job.company }} • <span class="font-normal">{{ job.salary }}</span></p>
-              </div>
-            </div>
-            <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-slate-50 pt-2 sm:pt-0">
-              <div class="flex items-center gap-3 text-xs text-slate-400 font-medium">
-                <span class="flex items-center gap-1"><Icon name="uil:map-marker" class="w-4.5 h-4.5" />{{ job.location }}</span>
-                <span class="px-2 py-0.5 bg-slate-50 rounded text-[10px] font-bold text-slate-500 uppercase">{{ job.type }}</span>
-              </div>
-              <button 
-                @click="openQuickApply(job)"
-                class="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 text-[11px] font-bold rounded-xl transition-all"
-              >
-                Nộp đơn
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Featured Companies (Right Col) -->
-      <div class="lg:col-span-4 space-y-6">
-        <div>
-          <h2 class="text-lg font-extrabold text-slate-900">Doanh nghiệp nổi bật</h2>
-          <p class="text-xs text-slate-400 font-medium">Đối tác KYB xác thực chính thức</p>
-        </div>
-
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm divide-y divide-slate-50 overflow-hidden">
-          <div 
-            v-for="company in featuredCompanies" 
-            :key="company.name" 
-            class="p-5 flex items-center gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer"
-          >
-            <div class="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100/30 flex items-center justify-center font-bold text-indigo-600 text-xs shrink-0">
-              {{ company.initials }}
-            </div>
-            <div class="flex-1 min-w-0">
-              <h4 class="font-bold text-slate-900 text-xs truncate">{{ company.name }}</h4>
-              <p class="text-[10px] text-indigo-600 font-semibold mt-0.5">{{ company.openJobs }} việc làm đang mở</p>
-            </div>
-            <Icon name="uil:angle-right" class="text-slate-400 w-5 h-5 shrink-0" />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Quick Apply Modal Simulator -->
-    <transition 
-      enter-active-class="transition duration-150 ease-out"
-      enter-from-class="transform scale-95 opacity-0"
-      enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-100 ease-in"
-      leave-from-class="transform scale-100 opacity-100"
-      leave-to-class="transform scale-95 opacity-0"
-    >
-      <div v-if="applyModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-2xl max-w-sm w-full space-y-6 text-center">
-          <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl">
-            <Icon name="uil:check-circle" />
-          </div>
-          <div class="space-y-2">
-            <h3 class="font-extrabold text-slate-900 text-base">Ứng tuyển thành công!</h3>
-            <p class="text-slate-500 text-xs leading-normal">
-              CV cá nhân của bạn đã được gửi trực tiếp tới hòm thư của công ty <span class="font-bold text-slate-800">{{ activeApplyJob?.company }}</span> cho vị trí <span class="font-bold text-slate-800">{{ activeApplyJob?.title }}</span>.
-            </p>
-          </div>
-          <button 
-            @click="closeApplyModal" 
-            class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow"
-          >
-            Đóng cửa sổ
+    <section class="mx-auto grid max-w-7xl gap-5 px-4 py-6 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)_300px] lg:px-8">
+      <aside class="h-fit rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-black text-slate-950">Bộ lọc tìm kiếm</h2>
+          <button type="button" class="text-xs font-black text-emerald-700 hover:text-emerald-800" @click="clearFilters">
+            Xóa tất cả
           </button>
         </div>
-      </div>
-    </transition>
+
+        <div class="mt-5 space-y-6">
+          <div v-for="section in filterSections" :key="section.title">
+            <h3 class="mb-3 text-sm font-black text-slate-900">{{ section.title }}</h3>
+            <div class="space-y-2">
+              <label v-for="option in section.options" :key="option.label" class="flex items-center justify-between gap-3 text-sm">
+                <span class="flex items-center gap-2 font-semibold text-slate-600">
+                  <input
+                    v-model="selectedFilters[section.key]"
+                    :value="option.label"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  >
+                  {{ option.label }}
+                </span>
+                <span class="text-xs font-bold text-slate-400">{{ option.count }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="mb-3 text-sm font-black text-slate-900">Mức lương</h3>
+            <div class="space-y-2">
+              <label v-for="option in salaryOptions" :key="option.label" class="flex items-center justify-between gap-3 text-sm">
+                <span class="flex items-center gap-2 font-semibold text-slate-600">
+                  <input
+                    v-model="selectedSalary"
+                    :value="option.label"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  >
+                  {{ option.label }}
+                </span>
+                <span class="text-xs font-bold text-slate-400">{{ option.count }}</span>
+              </label>
+            </div>
+            <div class="mt-4">
+              <div class="h-1.5 rounded-full bg-emerald-100">
+                <div class="h-1.5 w-4/5 rounded-full bg-emerald-600"></div>
+              </div>
+              <div class="mt-2 flex justify-between text-xs font-semibold text-slate-400">
+                <span>Từ 0 đ</span>
+                <span>Trên 50 triệu</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="min-w-0">
+        <div class="mb-4 flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-xl font-black text-slate-950">{{ filteredJobs.length.toLocaleString('vi-VN') }} việc làm phù hợp</h2>
+            <p class="mt-1 text-sm font-semibold text-slate-500">Danh sách được lọc theo từ khóa, địa điểm và loại việc bạn chọn.</p>
+          </div>
+          <label class="flex items-center gap-2">
+            <span class="text-sm font-bold text-slate-500">Sắp xếp</span>
+            <select v-model="sortMode" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:border-slate-900">
+              <option value="newest">Mới nhất</option>
+              <option value="slots">Nhiều vị trí</option>
+              <option value="salary">Lương cao</option>
+            </select>
+          </label>
+        </div>
+
+        <div v-if="isLoading" class="space-y-3">
+          <div v-for="item in 4" :key="item" class="h-32 animate-pulse rounded-lg border border-slate-200 bg-white"></div>
+        </div>
+
+        <div v-else-if="filteredJobs.length === 0" class="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
+          <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+            <Icon name="uil:search-alt" class="h-7 w-7" />
+          </div>
+          <h3 class="mt-4 text-lg font-black text-slate-950">Không tìm thấy việc phù hợp</h3>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+            Thử đổi từ khóa, bỏ bớt bộ lọc hoặc chọn lại địa điểm để xem thêm cơ hội.
+          </p>
+          <button type="button" class="mt-5 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-black text-slate-950 hover:bg-emerald-400" @click="clearFilters">
+            Xóa bộ lọc
+          </button>
+        </div>
+
+        <div v-else class="space-y-3">
+          <article
+            v-for="job in filteredJobs"
+            :key="job.id"
+            class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md"
+          >
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <span :class="['flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-sm font-black text-white', job.logoClass]">
+                {{ job.logo }}
+              </span>
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p class="text-sm font-bold text-slate-700">{{ job.company }}</p>
+                    <h3 class="mt-1 text-lg font-black leading-6 text-emerald-700">{{ job.title }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-500">{{ job.description }}</p>
+                  </div>
+                  <div class="flex shrink-0 items-center gap-2">
+                    <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700">{{ job.badge }}</span>
+                    <button
+                      type="button"
+                      class="rounded-full p-2 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
+                      aria-label="Lưu việc"
+                      @click="notifyDevelopment('Lưu việc làm')"
+                    >
+                      <Icon name="uil:heart" class="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mt-4 flex flex-wrap gap-3 text-xs font-bold text-slate-500">
+                  <span class="inline-flex items-center gap-1">
+                    <Icon name="uil:map-marker" class="h-4 w-4" />
+                    {{ job.location }}
+                  </span>
+                  <span class="inline-flex items-center gap-1">
+                    <Icon name="uil:clock" class="h-4 w-4" />
+                    {{ job.type }}
+                  </span>
+                  <span class="inline-flex items-center gap-1">
+                    <Icon name="uil:money-bill" class="h-4 w-4" />
+                    {{ job.salary }}
+                  </span>
+                  <span>{{ job.posted }}</span>
+                </div>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span v-for="skill in job.skills" :key="skill" class="rounded bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{{ skill }}</span>
+                </div>
+
+                <div class="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700">{{ job.slots }} vị trí đang tuyển</span>
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700 transition-colors hover:bg-emerald-500 hover:text-slate-950"
+                    @click="notifyDevelopment('Ứng tuyển việc làm')"
+                  >
+                    Ứng tuyển
+                    <Icon name="uil:arrow-right" class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </main>
+
+      <aside class="space-y-5">
+        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex gap-4">
+            <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+              <Icon name="uil:file-check-alt" class="h-10 w-10" />
+            </div>
+            <div>
+              <h2 class="text-base font-black text-slate-950">Tạo hồ sơ nổi bật</h2>
+              <p class="mt-1 text-sm leading-6 text-slate-500">Nhà tuyển dụng sẽ dễ dàng tìm thấy bạn hơn.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-black text-slate-800 hover:border-emerald-200 hover:bg-emerald-50"
+            @click="notifyDevelopment('Tạo hồ sơ sinh viên')"
+          >
+            Tạo hồ sơ ngay
+          </button>
+        </div>
+
+        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-black text-slate-950">Việc làm gợi ý cho bạn</h2>
+            <Icon name="uil:star" class="h-5 w-5 text-emerald-600" />
+          </div>
+          <div class="mt-4 divide-y divide-slate-100">
+            <button
+              v-for="job in suggestedJobs"
+              :key="job.id"
+              type="button"
+              class="flex w-full gap-3 py-4 text-left"
+              @click="notifyDevelopment(`Xem ${job.title}`)"
+            >
+              <span :class="['flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xs font-black text-white', job.logoClass]">{{ job.logo }}</span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-sm font-black text-emerald-700">{{ job.title }}</span>
+                <span class="mt-1 block truncate text-xs font-semibold text-slate-500">{{ job.company }}</span>
+                <span class="mt-2 flex flex-wrap gap-2 text-[11px] font-bold text-slate-400">
+                  <span>{{ job.location }}</span>
+                  <span>{{ job.salary }}</span>
+                  <span class="rounded-full bg-emerald-50 px-2 text-emerald-700">Mới</span>
+                </span>
+              </span>
+            </button>
+          </div>
+          <button
+            type="button"
+            class="mt-4 inline-flex w-full items-center justify-center gap-2 text-sm font-black text-emerald-700 hover:text-emerald-800"
+            @click="notifyDevelopment('Xem tất cả gợi ý')"
+          >
+            Xem tất cả gợi ý
+            <Icon name="uil:arrow-right" class="h-4 w-4" />
+          </button>
+        </div>
+      </aside>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { useToast } from '~/composables/useToast'
+import { JobService } from '~/services/job.service'
+import { type ApiJob, type DisplayJob, mapJobForDisplay, salaryRank } from '~/utils/jobDisplay'
 
 definePageMeta({
   layout: 'student',
-  middleware: ['auth']
+  middleware: ['auth', 'student']
 })
 
+type FilterKey = 'types' | 'levels'
+
 const authStore = useAuthStore()
+const toast = useToast()
 
-// State management
 const searchQuery = ref('')
-const activeTag = ref<string | null>(null)
+const activeLocation = ref('Địa điểm')
+const activeType = ref('Tất cả loại hình')
+const activeQuickTag = ref('all')
+const sortMode = ref('newest')
 const isLoading = ref(true)
-const applyModalOpen = ref(false)
-const activeApplyJob = ref<any>(null)
+const jobs = ref<DisplayJob[]>([])
+const selectedSalary = ref<string[]>([])
+const selectedFilters = reactive<Record<FilterKey, string[]>>({
+  types: [],
+  levels: []
+})
 
-// Compute user details
 const userName = computed(() => authStore.user?.name || authStore.user?.email?.split('@')[0] || 'Học viên')
 
-const filterTags = ['Tất cả', 'Thực tập', 'Bán thời gian', 'Remote', 'Golang', 'VueJS']
+const locationOptions = computed(() => ['Địa điểm', ...uniqueValues(jobs.value.map((job) => job.location))])
+const typeOptions = computed(() => ['Tất cả loại hình', ...uniqueValues(jobs.value.map((job) => job.type))])
 
-// Test Mock Data representing Featured Jobs
-const featuredJobs = [
+const quickTags = [
+  { label: 'Tất cả', value: 'all', icon: 'uil:apps' },
+  { label: 'Remote', value: 'Remote', icon: 'uil:wifi' },
+  { label: 'Toàn thời gian', value: 'Toàn thời gian', icon: 'uil:clock' },
+  { label: 'Bán thời gian', value: 'Bán thời gian', icon: 'uil:history' },
+  { label: 'Thực tập', value: 'Thực tập', icon: 'uil:graduation-cap' },
+  { label: 'Mới đăng', value: 'new', icon: 'uil:bolt' },
+  { label: 'Lương cao', value: 'highSalary', icon: 'uil:money-bill' }
+]
+
+const filterSections = computed<Array<{ title: string; key: FilterKey; options: Array<{ label: string; count: number }> }>>(() => [
   {
-    id: 1,
-    title: 'Software Engineer Intern (Golang/Vue)',
-    company: 'FPT Software',
-    logoFallback: 'FS',
-    badge: 'Hot',
-    description: 'Thực tập sinh phát triển hệ thống backend sử dụng Go và viết giao diện Nuxt/Vue. Có cơ hội trở thành nhân viên chính thức.',
-    salary: '5 - 8 triệu',
-    location: 'Hà Nội',
-    type: 'Thực tập'
+    title: 'Loại việc làm',
+    key: 'types',
+    options: countOptions(jobs.value.map((job) => job.type))
   },
   {
-    id: 2,
-    title: 'Frontend Developer Intern (React/Vue)',
-    company: 'VNG Corporation',
-    logoFallback: 'VNG',
-    badge: 'Gấp',
-    description: 'Phát triển giao diện ứng dụng web cho các dịch vụ giải trí cốt lõi của VNG. Yêu cầu nắm vững HTML/CSS/Javascript.',
-    salary: '6 - 10 triệu',
-    location: 'TP. HCM',
-    type: 'Thực tập'
-  },
-  {
-    id: 3,
-    title: 'Marketing Executive - Part Time',
-    company: 'Shopee Vietnam',
-    logoFallback: 'SP',
-    badge: 'Mới',
-    description: 'Hỗ trợ lên kế hoạch chạy chiến dịch tiếp thị và quản trị cộng đồng người dùng Shopee Live. Thời gian làm việc linh hoạt.',
-    salary: '4 - 7 triệu',
-    location: 'TP. HCM',
-    type: 'Bán thời gian'
-  },
-  {
-    id: 4,
-    title: 'Content Creator Assistant',
-    company: 'TechCorp Asia',
-    logoFallback: 'TC',
-    badge: 'Hot',
-    description: 'Biên tập nội dung truyền thông mạng xã hội, viết bài blog chuẩn SEO và lên kịch bản video ngắn cho sản phẩm thương hiệu.',
-    salary: 'Thỏa thuận',
-    location: 'Đà Nẵng',
-    type: 'Bán thời gian'
+    title: 'Kinh nghiệm',
+    key: 'levels',
+    options: countOptions(jobs.value.map((job) => job.level))
   }
-]
+])
 
-// Mock Data for New Jobs
-const newJobs = [
-  {
-    id: 10,
-    title: 'Junior QA/QC Engineer',
-    company: 'Viettel Telecom',
-    logoFallback: 'VT',
-    salary: '8 - 12 triệu',
-    location: 'Hà Nội',
-    type: 'Full-time'
-  },
-  {
-    id: 11,
-    title: 'Graphic Designer Assistant',
-    company: 'Garena VN',
-    logoFallback: 'GR',
-    salary: '5 - 7 triệu',
-    location: 'TP. HCM',
-    type: 'Bán thời gian'
-  },
-  {
-    id: 12,
-    title: 'NodeJS Developer (Remote)',
-    company: 'VinGroup IT',
-    logoFallback: 'VG',
-    salary: '10 - 15 triệu',
-    location: 'Hà Nội',
-    type: 'Full-time'
-  }
-]
+const salaryOptions = computed(() => countOptions(jobs.value.map((job) => job.salaryRange)).sort((a, b) => salaryRank(a.label) - salaryRank(b.label)))
 
-// Mock Data for Featured Companies
-const featuredCompanies = [
-  { name: 'FPT Software', initials: 'FPT', openJobs: 12 },
-  { name: 'VNG Corporation', initials: 'VNG', openJobs: 8 },
-  { name: 'Shopee Vietnam', initials: 'SHO', openJobs: 15 },
-  { name: 'Viettel Group', initials: 'VT', openJobs: 9 }
-]
+const suggestedJobs = computed(() => [...jobs.value].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3))
 
-// Filter logic
-const filteredFeaturedJobs = computed(() => {
-  return featuredJobs.filter(job => {
-    if (activeTag.value && activeTag.value !== 'Tất cả') {
-      const tagLower = activeTag.value.toLowerCase()
-      const matchesTag = 
-        job.type.toLowerCase().includes(tagLower) || 
-        job.description.toLowerCase().includes(tagLower) ||
-        job.title.toLowerCase().includes(tagLower)
-      if (!matchesTag) return false
-    }
+const filteredJobs = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
 
-    if (searchQuery.value) {
-      const queryLower = searchQuery.value.toLowerCase()
-      const matchesQuery = 
-        job.title.toLowerCase().includes(queryLower) ||
-        job.company.toLowerCase().includes(queryLower) ||
-        job.description.toLowerCase().includes(queryLower) ||
-        job.location.toLowerCase().includes(queryLower)
-      if (!matchesQuery) return false
-    }
+  const filtered = jobs.value.filter((job) => {
+    const matchesQuery = !query || [
+      job.title,
+      job.company,
+      job.description,
+      job.location,
+      job.type,
+      job.level,
+      job.salary,
+      ...job.skills
+    ].join(' ').toLowerCase().includes(query)
 
-    return true
+    const matchesLocation = activeLocation.value === 'Địa điểm' || job.location === activeLocation.value
+    const matchesTypeSelect = activeType.value === 'Tất cả loại hình' || job.type === activeType.value
+    const matchesQuick =
+      activeQuickTag.value === 'all' ||
+      activeQuickTag.value === 'new' ||
+      (activeQuickTag.value === 'highSalary' && ['20 - 30 triệu', 'Trên 30 triệu'].includes(job.salaryRange)) ||
+      job.type === activeQuickTag.value
+    const matchesTypes = selectedFilters.types.length === 0 || selectedFilters.types.includes(job.type)
+    const matchesLevels = selectedFilters.levels.length === 0 || selectedFilters.levels.includes(job.level)
+    const matchesSalary = selectedSalary.value.length === 0 || selectedSalary.value.includes(job.salaryRange)
+
+    return matchesQuery && matchesLocation && matchesTypeSelect && matchesQuick && matchesTypes && matchesLevels && matchesSalary
+  })
+
+  return [...filtered].sort((a, b) => {
+    if (sortMode.value === 'slots') return b.slots - a.slots
+    if (sortMode.value === 'salary') return salaryRank(b.salaryRange) - salaryRank(a.salaryRange)
+    return b.createdAt - a.createdAt
   })
 })
 
-const toggleFilterTag = (tag: string) => {
-  if (tag === 'Tất cả') {
-    activeTag.value = null
-  } else {
-    activeTag.value = tag
+function clearFilters() {
+  searchQuery.value = ''
+  activeLocation.value = 'Địa điểm'
+  activeType.value = 'Tất cả loại hình'
+  activeQuickTag.value = 'all'
+  selectedFilters.types = []
+  selectedFilters.levels = []
+  selectedSalary.value = []
+}
+
+function notifyDevelopment(feature: string) {
+  toast.info('Tính năng đang phát triển', `${feature} sẽ được kết nối khi backend sẵn sàng.`)
+}
+
+function uniqueValues(values: string[]) {
+  return Array.from(new Set(values.filter(Boolean)))
+}
+
+function countOptions(values: string[]) {
+  const counts = new Map<string, number>()
+  for (const value of values.filter(Boolean)) {
+    counts.set(value, (counts.get(value) || 0) + 1)
+  }
+  return Array.from(counts.entries()).map(([label, count]) => ({ label, count }))
+}
+
+async function loadPublicJobs() {
+  try {
+    isLoading.value = true
+    const response: any = await JobService.getAllJobs()
+    const rawJobs: ApiJob[] = response?.success && Array.isArray(response.data) ? response.data : []
+    jobs.value = rawJobs.map(mapJobForDisplay)
+  } catch (error: any) {
+    jobs.value = []
+    toast.error('Không thể tải việc làm', error?.data?.message || error?.message || 'Vui lòng thử lại sau.')
+  } finally {
+    isLoading.value = false
   }
 }
 
-const clearFilters = () => {
-  searchQuery.value = ''
-  activeTag.value = null
-}
-
-const openQuickApply = (job: any) => {
-  activeApplyJob.value = job
-  applyModalOpen.value = true
-}
-
-const closeApplyModal = () => {
-  applyModalOpen.value = false
-  activeApplyJob.value = null
-}
-
-onMounted(() => {
-  setTimeout(() => {
-    isLoading.value = false
-  }, 1000)
-})
+onMounted(loadPublicJobs)
 </script>

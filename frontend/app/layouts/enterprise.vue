@@ -12,12 +12,10 @@
           </button>
 
           <NuxtLink to="/enterprise" class="flex items-center gap-3">
-            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950 text-white shadow-sm">
-              <Icon name="uil:briefcase" class="h-5 w-5" />
-            </span>
+            <img src="/images/brand/quickwork-icon-dark-transparent.png" alt="QuickWork" class="h-10 w-10 shrink-0 rounded-lg object-contain shadow-sm">
             <span class="min-w-0">
               <span class="block text-sm font-black leading-tight text-slate-950">
-                Quick<span class="text-indigo-600">Work</span>
+                Quick<span class="text-emerald-600">Work</span>
               </span>
               <span class="block text-[11px] font-semibold leading-tight text-slate-500">
                 Nhà tuyển dụng
@@ -56,7 +54,7 @@
               class="flex min-w-0 items-center gap-2 rounded-xl px-1.5 py-1 transition hover:bg-slate-100"
               @click.stop="toggleUserMenu"
             >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-xs font-black text-white">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-black text-white">
                 {{ companyInitials }}
               </span>
               <span class="hidden min-w-0 text-left sm:block">
@@ -135,7 +133,7 @@
               :key="item.to"
               :to="item.to"
               class="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-slate-600 transition hover:bg-slate-50 hover:text-slate-950"
-              active-class="border-indigo-100 bg-indigo-50 text-indigo-700"
+              active-class="border-emerald-100 bg-emerald-50 text-emerald-700"
               @click="isSidebarOpen = false"
             >
               <Icon :name="item.icon" class="h-5 w-5" />
@@ -159,7 +157,7 @@
 
           <div class="border-t border-slate-100 pt-5">
             <div class="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-3">
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-indigo-700 shadow-sm">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-emerald-700 shadow-sm">
                 {{ companyInitials }}
               </span>
               <div class="min-w-0">

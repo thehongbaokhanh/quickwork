@@ -7,7 +7,7 @@
         <div class="sm:flex sm:items-start">
           <div :class="[
             'mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10',
-            isDanger ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+            isDanger ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
           ]">
             <Icon :name="isDanger ? 'uil:exclamation-triangle' : 'uil:info-circle'" class="w-6 h-6" />
           </div>
@@ -23,7 +23,7 @@
             type="button"
             :class="[
               'inline-flex w-full justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm sm:w-auto transition-colors',
-              isDanger ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'
+              isDanger ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'
             ]"
             @click="emit('confirm')"
           >

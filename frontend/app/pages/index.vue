@@ -1,752 +1,482 @@
 <template>
-  <div class="min-h-screen bg-slate-50/50 font-sans text-slate-800 antialiased selection:bg-indigo-500 selection:text-white scroll-smooth">
-    <!-- Navbar -->
-    <header class="fixed top-0 inset-x-0 z-50 transition-all duration-300 backdrop-blur-xl bg-white/75 border-b border-slate-100/80 shadow-sm shadow-slate-100/50">
-      <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <!-- Logo -->
-        <NuxtLink to="/" class="flex items-center gap-2 font-bold text-xl hover:opacity-90 transition-opacity">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-indigo-200">
-            <Icon name="uil:briefcase" class="w-5 h-5 text-white" />
-          </div>
-          <span class="tracking-tight text-slate-900 font-extrabold text-lg">Quick<span class="text-indigo-600">Work</span></span>
+  <div class="min-h-screen bg-white font-sans text-slate-900 antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <header class="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <NuxtLink to="/" class="flex items-center">
+          <img src="/images/brand/quickwork-wordmark-transparent.png" alt="QuickWork" class="h-10 w-auto object-contain">
         </NuxtLink>
 
-        <!-- Desktop Menu Links -->
-        <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-          <a href="#features" class="hover:text-indigo-600 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 hover:after:w-full after:bg-indigo-600 after:transition-all after:duration-300">Tính năng</a>
-          <a href="#workflows" class="hover:text-indigo-600 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 hover:after:w-full after:bg-indigo-600 after:transition-all after:duration-300">Quy trình</a>
-          <a href="#testimonials" class="hover:text-indigo-600 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 hover:after:w-full after:bg-indigo-600 after:transition-all after:duration-300">Đánh giá</a>
-          <a href="#faq" class="hover:text-indigo-600 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 hover:after:w-full after:bg-indigo-600 after:transition-all after:duration-300">Giải đáp</a>
+        <div class="hidden items-center gap-8 text-sm font-bold text-slate-700 md:flex">
+          <a href="#jobs" class="text-emerald-700">Việc làm</a>
+          <a href="#companies" class="transition-colors hover:text-emerald-700">Công ty</a>
+          <a href="#salary" class="transition-colors hover:text-emerald-700">Mức lương</a>
+          <button type="button" class="transition-colors hover:text-emerald-700" @click="notifyDevelopment('Blog tuyển dụng')">Blog</button>
+          <a href="#explore" class="transition-colors hover:text-emerald-700">Khám phá</a>
         </div>
 
-        <!-- Desktop Action Buttons -->
-        <div class="hidden md:flex items-center gap-4">
-          <NuxtLink 
-            to="/auth/login" 
-            class="text-sm font-semibold text-slate-600 hover:text-indigo-600 px-4 py-2 rounded-xl hover:bg-slate-50 transition-all"
+        <div class="hidden items-center gap-3 md:flex">
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+            @click="notifyDevelopment('Danh sách việc đã lưu')"
           >
+            <Icon name="uil:heart" class="h-5 w-5" />
+            Đã lưu
+          </button>
+          <NuxtLink to="/auth/login" class="rounded-lg px-4 py-2 text-sm font-black text-slate-800 transition-colors hover:bg-slate-100">
             Đăng nhập
           </NuxtLink>
-          <NuxtLink 
-            to="/auth/register" 
-            class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md shadow-indigo-100 hover:shadow-lg hover:shadow-indigo-200 hover:-translate-y-[1px] active:translate-y-0 transition-all duration-200"
-          >
-            Đăng ký ngay
+          <NuxtLink to="/auth/register" class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-black text-slate-950 shadow-sm transition-colors hover:bg-emerald-400">
+            Đăng ký
           </NuxtLink>
         </div>
 
-        <!-- Mobile Menu Toggle Button -->
-        <div class="md:hidden">
-          <button 
-            @click="isMobileMenuOpen = !isMobileMenuOpen" 
-            class="p-2 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors focus:outline-none"
-            aria-label="Toggle menu"
-          >
-            <Icon :name="isMobileMenuOpen ? 'uil:multiply' : 'uil:bars'" class="w-6 h-6" />
-          </button>
-        </div>
+        <button type="button" class="rounded-lg p-2 text-slate-700 md:hidden" aria-label="Mở menu" @click="isMobileMenuOpen = !isMobileMenuOpen">
+          <Icon name="uil:bars" class="h-6 w-6" />
+        </button>
       </nav>
 
-      <!-- Mobile Menu Dropdown -->
-      <transition 
-        enter-active-class="transition duration-150 ease-out" 
-        enter-from-class="transform scale-95 opacity-0" 
-        enter-to-class="transform scale-100 opacity-100" 
-        leave-active-class="transition duration-100 ease-in" 
-        leave-from-class="transform scale-100 opacity-100" 
-        leave-to-class="transform scale-95 opacity-0"
-      >
-        <div v-if="isMobileMenuOpen" class="md:hidden border-b border-slate-100 bg-white/95 backdrop-blur-md">
-          <div class="px-4 pt-2 pb-6 space-y-4 text-slate-700 font-semibold text-sm">
-            <a href="#features" @click="isMobileMenuOpen = false" class="block py-2 hover:text-indigo-600 transition-colors">Tính năng</a>
-            <a href="#workflows" @click="isMobileMenuOpen = false" class="block py-2 hover:text-indigo-600 transition-colors">Quy trình</a>
-            <a href="#testimonials" @click="isMobileMenuOpen = false" class="block py-2 hover:text-indigo-600 transition-colors">Đánh giá</a>
-            <a href="#faq" @click="isMobileMenuOpen = false" class="block py-2 hover:text-indigo-600 transition-colors">Giải đáp</a>
-            <hr class="border-slate-100" />
-            <div class="flex flex-col gap-2 pt-2">
-              <NuxtLink 
-                to="/auth/login" 
-                @click="isMobileMenuOpen = false"
-                class="w-full text-center py-2.5 px-4 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-slate-50 transition-all"
-              >
-                Đăng nhập
-              </NuxtLink>
-              <NuxtLink 
-                to="/auth/register" 
-                @click="isMobileMenuOpen = false"
-                class="w-full text-center py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 font-bold text-white shadow-md transition-all"
-              >
-                Đăng ký ngay
-              </NuxtLink>
-            </div>
+      <div v-if="isMobileMenuOpen" class="border-t border-slate-200 bg-white px-4 py-4 text-sm font-bold text-slate-700 md:hidden">
+        <div class="space-y-1">
+          <a href="#jobs" class="block rounded-lg px-3 py-2 text-emerald-700" @click="isMobileMenuOpen = false">Việc làm</a>
+          <a href="#companies" class="block rounded-lg px-3 py-2 hover:bg-slate-50" @click="isMobileMenuOpen = false">Công ty</a>
+          <a href="#salary" class="block rounded-lg px-3 py-2 hover:bg-slate-50" @click="isMobileMenuOpen = false">Mức lương</a>
+          <a href="#explore" class="block rounded-lg px-3 py-2 hover:bg-slate-50" @click="isMobileMenuOpen = false">Khám phá</a>
+          <div class="grid grid-cols-2 gap-3 pt-3">
+            <NuxtLink to="/auth/login" class="rounded-lg bg-slate-100 px-3 py-2 text-center font-bold">Đăng nhập</NuxtLink>
+            <NuxtLink to="/auth/register" class="rounded-lg bg-emerald-500 px-3 py-2 text-center font-bold text-slate-950">Đăng ký</NuxtLink>
           </div>
         </div>
-      </transition>
+      </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-24 md:pt-44 md:pb-36 bg-gradient-to-b from-indigo-50/70 via-white to-slate-50/50 overflow-hidden">
-      <!-- Animated Gradient Blobs -->
-      <div class="absolute -top-40 -left-40 w-[500px] h-[500px] bg-indigo-200/40 rounded-full blur-[100px] -z-10 animate-pulse"></div>
-      <div class="absolute top-1/2 -right-40 w-[600px] h-[600px] bg-blue-200/30 rounded-full blur-[120px] -z-10 animate-pulse duration-7000"></div>
+    <main>
+      <section class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-950 to-emerald-950 pt-28 text-white sm:pt-32">
+        <img
+          src="/images/quickwork-career-hero.png"
+          alt="Sinh viên tham gia ngày hội tuyển dụng"
+          class="absolute inset-0 h-full w-full object-cover opacity-25"
+        >
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/95 to-emerald-950/70"></div>
+        <div class="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-emerald-500/25 blur-3xl"></div>
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          <!-- Text and Search Widget Column -->
-          <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50/80 border border-indigo-100/50 rounded-full text-xs font-bold text-indigo-600 shadow-sm">
-              <span class="flex h-2 w-2 relative">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
-              </span>
-              Kiến tạo cơ hội việc làm chất lượng cho sinh viên
+        <div class="relative mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
+          <div class="max-w-4xl">
+            <div class="inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-100">
+              <Icon name="uil:shield-check" class="h-4 w-4" />
+              Doanh nghiệp xác thực, việc làm chọn lọc
             </div>
-            
-            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.08] sm:leading-[1.12]">
-              Kết nối <span class="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent">Tài năng Sinh viên</span><br />
-              với Doanh nghiệp hàng đầu
+
+            <h1 class="mt-8 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
+              Tìm công việc phù hợp với kỹ năng của bạn
             </h1>
-            
-            <p class="text-base sm:text-lg md:text-xl text-slate-500 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              QuickWork là nền tảng kết nối thực tập và việc làm bán thời gian chuyên nghiệp, mang đến hàng ngàn cơ hội thực tiễn cho sinh viên và giải pháp nhân sự tối ưu cho doanh nghiệp.
+            <p class="mt-5 max-w-2xl text-base leading-8 text-emerald-50 sm:text-lg">
+              Khám phá cơ hội thực tập, part-time và junior job từ các công ty đã xác thực trên QuickWork.
             </p>
 
-            <!-- Modern Search Box Mock -->
-            <div class="bg-white p-2 rounded-2xl border border-slate-200/60 shadow-xl shadow-slate-100 max-w-xl mx-auto lg:mx-0 flex flex-col sm:flex-row items-center gap-2">
-              <div class="flex items-center gap-2 px-3 py-2 flex-1 w-full border-b sm:border-b-0 sm:border-r border-slate-100">
-                <Icon name="uil:search" class="text-indigo-500 w-5 h-5 shrink-0" />
-                <input 
-                  type="text" 
-                  placeholder="Kỹ năng, vị trí công việc..." 
-                  class="bg-transparent border-none text-sm text-slate-800 placeholder-slate-400 focus:outline-none w-full"
-                  disabled
-                />
-              </div>
-              <div class="flex items-center gap-2 px-3 py-2 flex-1 w-full">
-                <Icon name="uil:map-marker" class="text-indigo-500 w-5 h-5 shrink-0" />
-                <span class="text-sm text-slate-400">Toàn quốc</span>
-              </div>
-              <NuxtLink 
-                to="/auth/register"
-                class="w-full sm:w-auto bg-slate-900 hover:bg-indigo-600 text-white text-sm font-bold py-3 px-6 rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 shrink-0"
+            <form
+              class="mt-8 grid max-w-5xl gap-3 rounded-xl border border-white/20 bg-white p-3 text-slate-900 shadow-2xl shadow-slate-950/25 lg:grid-cols-[1.35fr_0.75fr_210px_130px]"
+              @submit.prevent="notifyDevelopment('Tìm kiếm việc làm')"
+            >
+              <label class="flex h-12 items-center gap-3 rounded-lg border border-slate-200 px-4">
+                <Icon name="uil:search" class="h-5 w-5 shrink-0 text-emerald-600" />
+                <input
+                  v-model="heroSearch.keyword"
+                  type="text"
+                  placeholder="Vị trí, kỹ năng, công ty"
+                  class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-400"
+                >
+              </label>
+              <label class="flex h-12 items-center gap-3 rounded-lg border border-slate-200 px-4">
+                <Icon name="uil:map-marker" class="h-5 w-5 shrink-0 text-emerald-600" />
+                <input
+                  v-model="heroSearch.location"
+                  type="text"
+                  placeholder="Địa điểm"
+                  class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-400"
+                >
+              </label>
+              <label class="flex h-12 items-center gap-3 rounded-lg border border-slate-200 px-4">
+                <Icon name="uil:briefcase-alt" class="h-5 w-5 shrink-0 text-emerald-600" />
+                <select v-model="heroSearch.type" class="w-full bg-transparent text-sm font-black outline-none">
+                  <option>Tất cả loại hình</option>
+                  <option>Toàn thời gian</option>
+                  <option>Bán thời gian</option>
+                  <option>Thực tập</option>
+                  <option>Remote</option>
+                </select>
+              </label>
+              <button
+                type="submit"
+                class="inline-flex h-12 items-center justify-center rounded-lg bg-emerald-500 px-5 text-sm font-black text-slate-950 transition-colors hover:bg-emerald-400"
               >
-                <span>Tìm kiếm</span>
-              </NuxtLink>
-            </div>
+                Tìm kiếm
+              </button>
+            </form>
 
-            <!-- Two Main Action CTA Buttons -->
-            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-              <NuxtLink 
-                to="/auth/register" 
-                class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-300 hover:-translate-y-[2px] active:translate-y-0 transition-all duration-200 flex items-center gap-2"
+            <div class="mt-6 flex flex-wrap gap-3 text-sm">
+              <button
+                v-for="tag in trendingKeywords"
+                :key="tag"
+                type="button"
+                class="rounded-full bg-white/90 px-4 py-2 font-black text-slate-950 transition-colors hover:bg-emerald-100"
+                @click="setHeroKeyword(tag)"
               >
-                <span>Bắt đầu miễn phí</span>
-                <Icon name="uil:arrow-right" class="w-5 h-5" />
-              </NuxtLink>
-              <a 
-                href="#features" 
-                class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold px-8 py-4 rounded-xl shadow-sm hover:shadow hover:-translate-y-[2px] active:translate-y-0 transition-all duration-200 flex items-center gap-2"
-              >
-                <span>Khám phá tính năng</span>
-              </a>
+                {{ tag }}
+              </button>
             </div>
           </div>
+        </div>
+      </section>
 
-          <!-- Premium Interactive Candidate Mockup Graphic -->
-          <div class="lg:col-span-5 relative mt-10 lg:mt-0 flex justify-center">
-            <!-- Decorative Back Grids -->
-            <div class="absolute -inset-4 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-3xl opacity-5 blur-2xl -z-10"></div>
-            
-            <!-- Dashboard Mock Box -->
-            <div class="w-full max-w-[420px] bg-white rounded-3xl shadow-2xl border border-slate-100/60 p-6 space-y-6 relative overflow-hidden">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+      <section class="relative -mt-10 bg-transparent px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto grid max-w-7xl gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/60 sm:grid-cols-2 lg:grid-cols-4">
+          <div v-for="stat in platformStats" :key="stat.label" class="flex items-center gap-3 rounded-lg bg-slate-50 p-4">
+            <span :class="['flex h-11 w-11 shrink-0 items-center justify-center rounded-lg', stat.iconClass]">
+              <Icon :name="stat.icon" class="h-5 w-5" />
+            </span>
+            <div>
+              <p class="text-2xl font-black text-slate-950">{{ stat.value }}</p>
+              <p class="text-xs font-black uppercase tracking-wide text-slate-500">{{ stat.label }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="jobs" class="bg-white py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p class="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">Gợi ý hôm nay</p>
+              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Việc làm nổi bật cho sinh viên</h2>
+              <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+                Card việc làm ưu tiên đúng thông tin ứng viên cần: công ty, lương, địa điểm, kỹ năng, độ phù hợp và hành động ứng tuyển.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-black text-slate-800 transition-colors hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+              @click="notifyDevelopment('Tải CV để ứng tuyển')"
+            >
+              <Icon name="uil:file-upload-alt" class="h-5 w-5 text-emerald-600" />
+              Tải CV để ứng tuyển
+            </button>
+          </div>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <button
+              v-for="category in jobCategories"
+              :key="category"
+              type="button"
+              :class="[
+                'rounded-full border px-4 py-2 text-sm font-black transition-colors',
+                activeCategory === category
+                  ? 'border-slate-950 bg-slate-950 text-white'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700'
+              ]"
+              @click="activeCategory = category"
+            >
+              {{ category }}
+            </button>
+          </div>
+
+          <div class="mt-8 grid gap-5 lg:grid-cols-3">
+            <article
+              v-for="job in filteredJobs"
+              :key="job.id"
+              class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg hover:shadow-slate-200/70"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex min-w-0 gap-3">
+                  <span :class="['flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-sm font-black text-white', job.logoClass]">
+                    {{ job.logo }}
+                  </span>
+                  <div class="min-w-0">
+                    <h3 class="text-base font-black leading-6 text-emerald-700">{{ job.title }}</h3>
+                    <p class="mt-1 truncate text-sm font-semibold text-slate-700">{{ job.company }}</p>
+                  </div>
+                </div>
+                <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700">{{ job.badge }}</span>
+              </div>
+
+              <p class="mt-4 min-h-[72px] text-sm leading-6 text-slate-600">{{ job.description }}</p>
+
+              <div class="mt-5 grid gap-2 text-sm font-bold text-slate-600">
                 <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full bg-red-400"></div>
-                  <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-                  <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                  <Icon name="uil:money-bill" class="h-4 w-4 text-emerald-600" />
+                  {{ job.salary }}
                 </div>
-                <span class="text-xs text-slate-400 font-bold tracking-tight">quickwork.vn/students</span>
+                <div class="flex items-center gap-2">
+                  <Icon name="uil:map-marker" class="h-4 w-4 text-emerald-600" />
+                  {{ job.location }}
+                </div>
+                <div class="flex items-center gap-2">
+                  <Icon name="uil:clock" class="h-4 w-4 text-emerald-600" />
+                  {{ job.type }}
+                </div>
               </div>
 
-              <!-- Main Student Profile Inside Mock -->
-              <div class="space-y-4">
+              <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Đang tuyển</p>
+                  <p class="text-lg font-black text-emerald-700">{{ job.slots }} vị trí</p>
+                </div>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-black text-slate-950 transition-colors hover:bg-emerald-400"
+                  @click="notifyDevelopment('Ứng tuyển việc làm')"
+                >
+                  Ứng tuyển
+                  <Icon name="uil:arrow-right" class="h-4 w-4" />
+                </button>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="explore" class="border-y border-slate-200 bg-slate-50 py-20">
+        <div class="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
+          <div class="space-y-4">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">Khám phá nhanh</p>
+            <h2 class="text-3xl font-black tracking-tight text-slate-950">Ngành nghề và kỹ năng đang tuyển</h2>
+            <p class="text-sm leading-7 text-slate-600">
+              QuickWork đưa nhóm kỹ năng lên sớm để sinh viên dễ tìm đúng cơ hội, giống cách các job board lớn dùng keyword trend.
+            </p>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div v-for="category in skillCategories" :key="category.title" class="rounded-lg border border-slate-200 bg-white p-5">
+              <div class="flex items-center justify-between gap-3">
+                <span :class="['flex h-11 w-11 items-center justify-center rounded-lg', category.iconClass]">
+                  <Icon :name="category.icon" class="h-5 w-5" />
+                </span>
+                <span class="text-sm font-black text-slate-400">{{ category.count }} việc</span>
+              </div>
+              <h3 class="mt-4 text-base font-black text-slate-950">{{ category.title }}</h3>
+              <p class="mt-2 text-sm leading-6 text-slate-500">{{ category.description }}</p>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <span v-for="skill in category.skills" :key="skill" class="rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">{{ skill }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="companies" class="bg-white py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-start">
+            <div class="space-y-4">
+              <p class="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">Doanh nghiệp xác thực</p>
+              <h2 class="text-3xl font-black tracking-tight text-slate-950">Tạo niềm tin trước khi sinh viên ứng tuyển</h2>
+              <p class="text-sm leading-7 text-slate-600">
+                Công ty, số vị trí mở và trạng thái xác thực cần xuất hiện rõ để sinh viên biết đây là cơ hội đáng tin.
+              </p>
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div v-for="point in trustPoints" :key="point.title" class="rounded-lg border border-slate-200 p-4">
+                  <Icon :name="point.icon" class="h-6 w-6 text-emerald-600" />
+                  <h3 class="mt-3 text-sm font-black text-slate-950">{{ point.title }}</h3>
+                  <p class="mt-1 text-xs leading-5 text-slate-500">{{ point.description }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <article v-for="company in featuredCompanies" :key="company.name" class="rounded-lg border border-slate-200 bg-slate-50 p-5">
                 <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 text-white flex items-center justify-center font-extrabold text-base shadow-md">
-                    HA
-                  </div>
+                  <span :class="['flex h-12 w-12 items-center justify-center rounded-lg text-sm font-black text-white', company.logoClass]">{{ company.logo }}</span>
                   <div>
-                    <h4 class="font-bold text-slate-900 text-sm">Hoàng Minh Anh</h4>
-                    <p class="text-[11px] text-slate-400 font-semibold">Sinh viên Đại học Bách Khoa</p>
-                  </div>
-                  <div class="ml-auto bg-green-50 text-green-600 px-2.5 py-1 rounded-full text-[10px] font-bold border border-green-100/50">
-                    Match 98%
+                    <h3 class="font-black text-slate-950">{{ company.name }}</h3>
+                    <p class="text-sm font-bold text-emerald-700">{{ company.openJobs }} việc đang mở</p>
                   </div>
                 </div>
-
-                <div class="flex flex-wrap gap-1.5">
-                  <span class="px-2 py-1 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-semibold">Golang</span>
-                  <span class="px-2 py-1 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-semibold">VueJS</span>
-                  <span class="px-2 py-1 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-semibold">Docker</span>
+                <p class="mt-4 text-sm leading-6 text-slate-600">{{ company.description }}</p>
+                <div class="mt-4 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-black text-slate-600">
+                  <Icon name="uil:shield-check" class="h-4 w-4 text-emerald-600" />
+                  KYB đã xác thực
                 </div>
-              </div>
-
-              <!-- Floating Active Job Post Mock -->
-              <div class="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-2xl p-4 border border-indigo-100/50 flex items-center justify-between transition-transform hover:scale-[1.02] duration-200">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-xl bg-white text-indigo-600 flex items-center justify-center shadow-sm">
-                    <Icon name="uil:bolt" class="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <h5 class="text-xs font-bold text-slate-800">Backend developer Intern</h5>
-                    <p class="text-[10px] text-slate-400 font-semibold">FPT Software • HN</p>
-                  </div>
-                </div>
-                <Icon name="uil:check-circle" class="text-green-500 w-5 h-5" />
-              </div>
-
-              <!-- Bottom Invitation Alert Mock -->
-              <div class="p-3 bg-indigo-600 rounded-2xl text-white flex items-center gap-3 shadow-lg shadow-indigo-100">
-                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                  <Icon name="uil:bell" class="w-4 h-4 text-white" />
-                </div>
-                <div class="text-[11px] leading-tight">
-                  <span class="font-bold">Shopee Vietnam</span> đã gửi yêu cầu kết nối học viên.
-                </div>
-              </div>
+              </article>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Company Showcase -->
-    <section class="py-12 bg-white border-y border-slate-100">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p class="text-center text-xs font-bold text-slate-400 tracking-widest uppercase mb-8">
-          Hơn 4,000+ doanh nghiệp hàng đầu tin tưởng tuyển dụng ứng viên
-        </p>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8 items-center justify-items-center opacity-70">
-          <div class="flex items-center gap-2 grayscale hover:grayscale-0 hover:scale-105 transition-all duration-300 cursor-pointer">
-            <Icon name="uil:cube" class="w-6 h-6 text-slate-900" />
-            <span class="font-bold text-slate-950 tracking-tight text-sm">VNG Corp</span>
-          </div>
-          <div class="flex items-center gap-2 grayscale hover:grayscale-0 hover:scale-105 transition-all duration-300 cursor-pointer">
-            <Icon name="uil:brackets-curly" class="w-6 h-6 text-slate-900" />
-            <span class="font-bold text-slate-950 tracking-tight text-sm">FPT Software</span>
-          </div>
-          <div class="flex items-center gap-2 grayscale hover:grayscale-0 hover:scale-105 transition-all duration-300 cursor-pointer">
-            <Icon name="uil:signal" class="w-6 h-6 text-slate-900" />
-            <span class="font-bold text-slate-950 tracking-tight text-sm">Viettel Group</span>
-          </div>
-          <div class="flex items-center gap-2 grayscale hover:grayscale-0 hover:scale-105 transition-all duration-300 cursor-pointer">
-            <Icon name="uil:compass" class="w-6 h-6 text-slate-900" />
-            <span class="font-bold text-slate-950 tracking-tight text-sm">Vingroup</span>
-          </div>
-          <div class="flex items-center gap-2 grayscale hover:grayscale-0 hover:scale-105 transition-all duration-300 cursor-pointer">
-            <Icon name="uil:shield" class="w-6 h-6 text-slate-900" />
-            <span class="font-bold text-slate-950 tracking-tight text-sm">Techcombank</span>
-          </div>
-          <div class="flex items-center gap-2 grayscale hover:grayscale-0 hover:scale-105 transition-all duration-300 cursor-pointer">
-            <Icon name="uil:shopping-bag" class="w-6 h-6 text-slate-900" />
-            <span class="font-bold text-slate-950 tracking-tight text-sm">Shopee VN</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-24 bg-slate-50/50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto space-y-4">
-          <span class="text-xs font-bold text-indigo-600 tracking-widest uppercase">Giải pháp toàn diện</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Nền tảng tuyển dụng sinh viên chất lượng nhất
-          </h2>
-          <p class="text-slate-500 max-w-2xl mx-auto text-base">
-            Tích hợp toàn bộ công cụ đắc lực nhất giúp ứng viên ứng tuyển thuận lợi và giúp doanh nghiệp sở hữu nguồn lực trẻ vượt trội.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-20">
-          <!-- Feature 1 -->
-          <div class="group bg-white p-8 rounded-3xl border border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/80 hover:-translate-y-1.5 transition-all duration-300">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-              <Icon name="uil:graduation-cap" class="w-6 h-6" />
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Tìm kiếm Thực tập</h3>
-            <p class="text-slate-500 text-sm leading-relaxed">
-              Khám phá hàng ngàn công việc thực tập chất lượng cao tại các doanh nghiệp lớn và cơ hội làm nhân viên chính thức.
+      <section id="salary" class="bg-slate-950 py-20 text-white">
+        <div class="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-8">
+          <div class="max-w-2xl space-y-4">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Bắt đầu</p>
+            <h2 class="text-3xl font-black tracking-tight sm:text-4xl">Sinh viên tìm việc, doanh nghiệp đăng tuyển trong cùng một hệ thống</h2>
+            <p class="text-sm leading-7 text-slate-300">
+              Đăng ký để lưu hồ sơ, ứng tuyển nhanh và theo dõi trạng thái tuyển dụng từ các doanh nghiệp đã kiểm duyệt.
             </p>
           </div>
-
-          <!-- Feature 2 -->
-          <div class="group bg-white p-8 rounded-3xl border border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/80 hover:-translate-y-1.5 transition-all duration-300">
-            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-              <Icon name="uil:clock" class="w-6 h-6" />
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Việc làm bán thời gian</h3>
-            <p class="text-slate-500 text-sm leading-relaxed">
-              Duyệt qua các công việc part-time đa dạng, thời gian linh hoạt để cân bằng tuyệt đối giữa việc học và làm.
-            </p>
-          </div>
-
-          <!-- Feature 3 -->
-          <div class="group bg-white p-8 rounded-3xl border border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/80 hover:-translate-y-1.5 transition-all duration-300">
-            <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
-              <Icon name="uil:building" class="w-6 h-6" />
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Tuyển dụng Doanh nghiệp</h3>
-            <p class="text-slate-500 text-sm leading-relaxed">
-              Kênh đăng tin và kết nối thông minh giúp HR lọc hồ sơ, xếp lịch phỏng vấn sinh viên nhanh chóng chỉ với vài giây.
-            </p>
-          </div>
-
-          <!-- Feature 4 -->
-          <div class="group bg-white p-8 rounded-3xl border border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/80 hover:-translate-y-1.5 transition-all duration-300">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-              <Icon name="uil:file-check-alt" class="w-6 h-6" />
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Nộp đơn nhanh chóng</h3>
-            <p class="text-slate-500 text-sm leading-relaxed">
-              Tải hồ sơ CV cá nhân lên và nhấn gửi trực tiếp ứng tuyển vào doanh nghiệp dễ dàng không thông qua trung gian.
-            </p>
-          </div>
-
-          <!-- Feature 5 -->
-          <div class="group bg-white p-8 rounded-3xl border border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/80 hover:-translate-y-1.5 transition-all duration-300">
-            <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl mb-6 group-hover:bg-red-600 group-hover:text-white transition-all duration-300">
-              <Icon name="uil:lock" class="w-6 h-6" />
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Bảo mật tuyệt đối</h3>
-            <p class="text-slate-500 text-sm leading-relaxed">
-              Mã hóa dữ liệu cá nhân, thông tin lý lịch và các tài liệu hồ sơ của bạn an toàn theo tiêu chuẩn bảo mật.
-            </p>
-          </div>
-
-          <!-- Feature 6 -->
-          <div class="group bg-white p-8 rounded-3xl border border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/80 hover:-translate-y-1.5 transition-all duration-300">
-            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl mb-6 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300">
-              <Icon name="uil:shield-check" class="w-6 h-6" />
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Xác thực doanh nghiệp</h3>
-            <p class="text-slate-500 text-sm leading-relaxed">
-              Doanh nghiệp bắt buộc tải lên giấy phép kinh doanh (GPKD) để loại bỏ tin giả và dự án không uy tín.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Workflows Section (Interactive Tabs) -->
-    <section id="workflows" class="py-24 bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto space-y-4">
-          <span class="text-xs font-bold text-indigo-600 tracking-widest uppercase">Các bước vận hành</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Quy trình tuyển dụng đơn giản hơn bao giờ hết
-          </h2>
-          
-          <!-- Interactive Selector Tab Buttons -->
-          <div class="inline-flex bg-slate-100 p-1.5 rounded-2xl gap-2 mt-8">
-            <button 
-              @click="activeWorkflowTab = 'student'" 
-              type="button"
-              :class="['px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200', activeWorkflowTab === 'student' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-800']"
-            >
-              Học viên tìm việc
-            </button>
-            <button 
-              @click="activeWorkflowTab = 'company'" 
-              type="button"
-              :class="['px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200', activeWorkflowTab === 'company' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-800']"
-            >
-              Doanh nghiệp tuyển dụng
-            </button>
-          </div>
-        </div>
-
-        <!-- tabbed workflows container -->
-        <div class="mt-16 max-w-4xl mx-auto">
-          <!-- Student Workflow tab contents -->
-          <div v-if="activeWorkflowTab === 'student'" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Step 1 -->
-            <div class="text-center space-y-4">
-              <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xl mx-auto shadow-sm">
-                1
-              </div>
-              <h3 class="font-bold text-slate-900">Đăng ký tài khoản</h3>
-              <p class="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
-                Khai báo thông tin cá nhân và tạo tài khoản trực tuyến miễn phí chỉ trong 30 giây.
-              </p>
-            </div>
-            <!-- Step 2 -->
-            <div class="text-center space-y-4">
-              <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xl mx-auto shadow-sm">
-                2
-              </div>
-              <h3 class="font-bold text-slate-900">Tìm kiếm việc làm</h3>
-              <p class="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
-                Khám phá công việc thực tập/bán thời gian thích hợp với bộ lọc kỹ năng thông minh.
-              </p>
-            </div>
-            <!-- Step 3 -->
-            <div class="text-center space-y-4">
-              <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xl mx-auto shadow-sm">
-                3
-              </div>
-              <h3 class="font-bold text-slate-900">Nộp đơn ứng tuyển</h3>
-              <p class="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
-                Gửi CV của bạn trực tiếp tới nhà tuyển dụng và nhận phản hồi thời gian thực qua hệ thống.
-              </p>
-            </div>
-          </div>
-
-          <!-- Company Workflow tab contents -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Step 1 -->
-            <div class="text-center space-y-4">
-              <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xl mx-auto shadow-sm">
-                1
-              </div>
-              <h3 class="font-bold text-slate-900">Đăng ký hồ sơ</h3>
-              <p class="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
-                Tạo hồ sơ nhà tuyển dụng và khai báo thông tin cơ bản của công ty.
-              </p>
-            </div>
-            <!-- Step 2 -->
-            <div class="text-center space-y-4">
-              <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xl mx-auto shadow-sm">
-                2
-              </div>
-              <h3 class="font-bold text-slate-900">Tải lên file GPKD</h3>
-              <p class="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
-                Gửi file giấy phép kinh doanh hợp lệ lên hệ thống để xác thực tài khoản KYB.
-              </p>
-            </div>
-            <!-- Step 3 -->
-            <div class="text-center space-y-4">
-              <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xl mx-auto shadow-sm">
-                3
-              </div>
-              <h3 class="font-bold text-slate-900">Đăng tuyển vị trí</h3>
-              <p class="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
-                Đăng vị trí tuyển dụng mới và tiếp nhận hàng loạt hồ sơ CV chất lượng từ sinh viên.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Statistics Section -->
-    <section id="stats" class="py-24 bg-slate-900 text-white relative overflow-hidden">
-      <!-- Background glows -->
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-indigo-600/10 rounded-full blur-[120px] -z-10"></div>
-      
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center items-center justify-center">
-          <div class="space-y-3 p-4 rounded-2xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/10">
-            <div class="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-              12,000+
-            </div>
-            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Học viên hoạt động</div>
-          </div>
-          <div class="space-y-3 p-4 rounded-2xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/10">
-            <div class="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-              4,000+
-            </div>
-            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Doanh nghiệp đã kiểm chứng</div>
-          </div>
-          <div class="space-y-3 p-4 rounded-2xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/10">
-            <div class="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-              850+
-            </div>
-            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Việc làm mới mỗi ngày</div>
-          </div>
-          <div class="space-y-3 p-4 rounded-2xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/10">
-            <div class="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-              24,000+
-            </div>
-            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Lượt kết nối ứng tuyển</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Student Testimonials Section -->
-    <section id="testimonials" class="py-24 bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto space-y-4">
-          <span class="text-xs font-bold text-indigo-600 tracking-widest uppercase">Đánh giá thực tế</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Sinh viên nói gì về QuickWork?
-          </h2>
-          <p class="text-slate-500 max-w-2xl mx-auto text-base">
-            Khám phá những trải nghiệm thực tế từ các ứng viên sinh viên đã ứng tuyển thành công các vị trí thực tập mong muốn.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-          <!-- Testimonial 1 -->
-          <div class="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 space-y-6 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div class="space-y-4">
-              <div class="flex items-center gap-1 text-amber-400">
-                <Icon name="uil:star" class="w-4 h-4" v-for="i in 5" :key="i" />
-              </div>
-              <p class="text-slate-600 text-sm leading-relaxed italic">
-                "Nhờ có QuickWork, mình đã nhanh chóng tìm được vị trí thực tập Golang tại VNG Corp chỉ sau 1 tuần gửi CV. Đặc biệt là thông tin công ty rất rõ ràng nên mình thấy rất yên tâm khi phỏng vấn."
-              </p>
-            </div>
-            <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
-              <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-600 text-xs shrink-0">
-                MA
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-slate-950">Lê Minh Anh</h4>
-                <p class="text-[10px] text-slate-400 font-semibold">Software Intern @ VNG</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Testimonial 2 -->
-          <div class="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 space-y-6 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div class="space-y-4">
-              <div class="flex items-center gap-1 text-amber-400">
-                <Icon name="uil:star" class="w-4 h-4" v-for="i in 5" :key="i" />
-              </div>
-              <p class="text-slate-600 text-sm leading-relaxed italic">
-                "Công cụ ứng tuyển nhanh trên QuickWork cực kỳ tiện lợi. Giao diện trực quan và phản hồi từ phía HR doanh nghiệp được tự động cập nhật liên tục qua thông báo thời gian thực."
-              </p>
-            </div>
-            <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
-              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 text-xs shrink-0">
-                HY
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-slate-950">Nguyễn Hải Yến</h4>
-                <p class="text-[10px] text-slate-400 font-semibold">Content Creator @ Shopee</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Testimonial 3 -->
-          <div class="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 space-y-6 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div class="space-y-4">
-              <div class="flex items-center gap-1 text-amber-400">
-                <Icon name="uil:star" class="w-4 h-4" v-for="i in 5" :key="i" />
-              </div>
-              <p class="text-slate-600 text-sm leading-relaxed italic">
-                "Tôi đã đăng ký với vai trò Nhà tuyển dụng doanh nghiệp và rất bất ngờ trước lượng CV chất lượng gửi về từ sinh viên các trường Đại học danh tiếng. Quy trình xác thực KYB giúp nền tảng rất sạch."
-              </p>
-            </div>
-            <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
-              <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center font-bold text-purple-600 text-xs shrink-0">
-                HD
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-slate-950">Trần Hoàng Dương</h4>
-                <p class="text-[10px] text-slate-400 font-semibold">HR Manager @ TechCorp</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section id="faq" class="py-24 bg-slate-50/50">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center space-y-4 mb-16">
-          <span class="text-xs font-bold text-indigo-600 tracking-widest uppercase">Giải đáp thắc mắc</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Câu hỏi thường gặp
-          </h2>
-        </div>
-
-        <!-- FAQ list accordion -->
-        <div class="space-y-4">
-          <!-- Item 1 -->
-          <div class="bg-white rounded-2xl border border-slate-150 shadow-sm overflow-hidden">
-            <button 
-              @click="toggleFaq(0)" 
-              class="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-slate-900 hover:bg-slate-50 transition-colors focus:outline-none"
-            >
-              <span>QuickWork có mất phí đối với sinh viên không?</span>
-              <Icon :name="activeFaqIndex === 0 ? 'uil:angle-up' : 'uil:angle-down'" class="w-5 h-5 text-indigo-600 shrink-0" />
-            </button>
-            <div v-show="activeFaqIndex === 0" class="px-6 pb-5 text-slate-500 text-sm leading-relaxed border-t border-slate-100 pt-3">
-              Hoàn toàn miễn phí! QuickWork không thu bất kỳ khoản phí nào đối với học viên/sinh viên khi tạo tài khoản, tải lên CV và nộp đơn tuyển dụng.
-            </div>
-          </div>
-
-          <!-- Item 2 -->
-          <div class="bg-white rounded-2xl border border-slate-150 shadow-sm overflow-hidden">
-            <button 
-              @click="toggleFaq(1)" 
-              class="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-slate-900 hover:bg-slate-50 transition-colors focus:outline-none"
-            >
-              <span>Làm thế nào để doanh nghiệp được xác thực hồ sơ?</span>
-              <Icon :name="activeFaqIndex === 1 ? 'uil:angle-up' : 'uil:angle-down'" class="w-5 h-5 text-indigo-600 shrink-0" />
-            </button>
-            <div v-show="activeFaqIndex === 1" class="px-6 pb-5 text-slate-500 text-sm leading-relaxed border-t border-slate-100 pt-3">
-              Sau khi tạo tài khoản Doanh nghiệp, nhà tuyển dụng cần tải lên bản sao Giấy phép Kinh doanh (GPKD) hợp pháp thông qua hệ thống quản lý. Ban quản trị QuickWork sẽ tiến hành phê duyệt và cấp nhãn xác thực KYB trong vòng 24 giờ làm việc.
-            </div>
-          </div>
-
-          <!-- Item 3 -->
-          <div class="bg-white rounded-2xl border border-slate-150 shadow-sm overflow-hidden">
-            <button 
-              @click="toggleFaq(2)" 
-              class="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-slate-900 hover:bg-slate-50 transition-colors focus:outline-none"
-            >
-              <span>Sinh viên chưa có kinh nghiệm có tìm được việc không?</span>
-              <Icon :name="activeFaqIndex === 2 ? 'uil:angle-up' : 'uil:angle-down'" class="w-5 h-5 text-indigo-600 shrink-0" />
-            </button>
-            <div v-show="activeFaqIndex === 2" class="px-6 pb-5 text-slate-500 text-sm leading-relaxed border-t border-slate-100 pt-3">
-              Được! QuickWork được thành lập nhằm tập trung hỗ trợ các công việc thực tập (internship), công việc bán thời gian (part-time) và công việc dành cho lập trình viên junior chưa đòi hỏi nhiều số năm kinh nghiệm.
-            </div>
-          </div>
-
-          <!-- Item 4 -->
-          <div class="bg-white rounded-2xl border border-slate-150 shadow-sm overflow-hidden">
-            <button 
-              @click="toggleFaq(3)" 
-              class="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-slate-900 hover:bg-slate-50 transition-colors focus:outline-none"
-            >
-              <span>Nhà tuyển dụng có liên hệ trực tiếp với ứng viên không?</span>
-              <Icon :name="activeFaqIndex === 3 ? 'uil:angle-up' : 'uil:angle-down'" class="w-5 h-5 text-indigo-600 shrink-0" />
-            </button>
-            <div v-show="activeFaqIndex === 3" class="px-6 pb-5 text-slate-500 text-sm leading-relaxed border-t border-slate-100 pt-3">
-              Có. Toàn bộ thông tin CV của học viên sau khi ứng tuyển sẽ được gửi trực tiếp tới hòm thư quản lý của nhà tuyển dụng tương ứng, giúp hai bên liên lạc trao đổi trực tiếp không qua trung gian.
-            </div>
-          </div>
-
-          <!-- Item 5 -->
-          <div class="bg-white rounded-2xl border border-slate-150 shadow-sm overflow-hidden">
-            <button 
-              @click="toggleFaq(4)" 
-              class="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-slate-900 hover:bg-slate-50 transition-colors focus:outline-none"
-            >
-              <span>Hồ sơ CV của tôi có được bảo mật không?</span>
-              <Icon :name="activeFaqIndex === 4 ? 'uil:angle-up' : 'uil:angle-down'" class="w-5 h-5 text-indigo-600 shrink-0" />
-            </button>
-            <div v-show="activeFaqIndex === 4" class="px-6 pb-5 text-slate-500 text-sm leading-relaxed border-t border-slate-100 pt-3">
-              Có. Hệ thống của chúng tôi được bảo mật nâng cao. Chỉ những nhà tuyển dụng doanh nghiệp sở hữu các tin tuyển dụng bạn nộp hồ sơ mới có đặc quyền duyệt xem thông tin chi tiết và tải xuống CV của bạn.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sleek CTA Card Section -->
-    <section class="py-20 bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="relative rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 px-6 py-16 sm:px-12 sm:py-20 shadow-2xl overflow-hidden text-center space-y-6">
-          <!-- Graphic background circle effects -->
-          <div class="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full transform translate-x-12 -translate-y-12 blur-2xl"></div>
-          <div class="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/10 rounded-full transform -translate-x-16 translate-y-16 blur-2xl"></div>
-
-          <span class="text-xs font-bold text-indigo-400 tracking-widest uppercase">Trải nghiệm hệ thống ngay</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight max-w-2xl mx-auto">
-            Sẵn sàng bắt đầu hành trình tuyển dụng chất lượng cao?
-          </h2>
-          <p class="text-slate-400 max-w-lg mx-auto text-sm sm:text-base leading-relaxed">
-            Đăng ký tài khoản QuickWork hôm nay để đón nhận những cơ hội việc làm và thu hút ứng viên tài năng đột phá nhất.
-          </p>
-          <div class="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4">
-            <NuxtLink 
-              to="/auth/register" 
-              class="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-transform hover:-translate-y-[1px] active:translate-y-0 duration-200"
-            >
-              Đăng ký tài khoản miễn phí
+          <div class="flex flex-col gap-3 sm:flex-row lg:flex-col">
+            <NuxtLink :to="{ path: '/auth/register', query: { role: 'student' } }" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-5 py-3 text-sm font-black text-slate-950 transition-colors hover:bg-emerald-400">
+              <Icon name="uil:graduation-cap" class="h-5 w-5" />
+              Tôi là sinh viên
             </NuxtLink>
-            <NuxtLink 
-              to="/auth/login" 
-              class="w-full sm:w-auto text-white font-bold border border-white/20 hover:bg-white/5 px-8 py-4 rounded-xl transition-colors"
-            >
-              Đăng nhập hệ thống
+            <NuxtLink :to="{ path: '/auth/register', query: { role: 'enterprise' } }" class="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-white/10">
+              <Icon name="uil:building" class="h-5 w-5" />
+              Tôi là nhà tuyển dụng
             </NuxtLink>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-16 border-t border-slate-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-10">
-        <!-- Col 1 -->
-        <div class="md:col-span-4 space-y-4">
-          <div class="flex items-center gap-2 font-bold text-xl text-white">
-            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-              <Icon name="uil:briefcase" class="w-4 h-4 text-white" />
-            </div>
-            <span class="tracking-tight font-extrabold">Quick<span class="text-blue-500">Work</span></span>
+    <footer class="border-t border-slate-800 bg-slate-950 py-12 text-slate-400">
+      <div class="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 md:grid-cols-4 lg:px-8">
+        <div class="space-y-3 md:col-span-2">
+          <div class="flex items-center">
+            <img src="/images/brand/quickwork-logo-dark-banner.png" alt="QuickWork" class="h-14 w-auto rounded-lg object-contain">
           </div>
-          <p class="text-sm leading-relaxed">
-            QuickWork kết nối hiệu quả nguồn năng lực trẻ sinh viên tới hàng ngàn công ty, dự án công nghệ và văn phòng đại diện trên toàn quốc.
+          <p class="max-w-md text-sm leading-7">
+            Nền tảng tuyển dụng dành cho sinh viên, thực tập sinh và doanh nghiệp cần nguồn nhân lực trẻ đã xác thực.
           </p>
         </div>
-
-        <!-- Col 2 -->
-        <div class="md:col-span-2 space-y-4">
-          <h4 class="text-white font-bold text-sm">Về chúng tôi</h4>
-          <ul class="space-y-2 text-sm">
-            <li><a href="#features" class="hover:text-white transition-colors">Tính năng chính</a></li>
-            <li><a href="#workflows" class="hover:text-white transition-colors">Quy trình</a></li>
-            <li><a href="#stats" class="hover:text-white transition-colors">Số liệu</a></li>
-          </ul>
+        <div>
+          <h3 class="text-sm font-black text-white">Sản phẩm</h3>
+          <div class="mt-3 space-y-2 text-sm">
+            <a href="#jobs" class="block hover:text-white">Việc làm</a>
+            <a href="#explore" class="block hover:text-white">Ngành nghề</a>
+            <a href="#companies" class="block hover:text-white">Công ty</a>
+          </div>
         </div>
-
-        <!-- Col 3 -->
-        <div class="md:col-span-3 space-y-4">
-          <h4 class="text-white font-bold text-sm">Điều khoản bảo mật</h4>
-          <ul class="space-y-2 text-sm">
-            <li><a href="#" class="hover:text-white transition-colors">Điều khoản sử dụng</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Chính sách bảo mật</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Hỗ trợ khẩn cấp</a></li>
-          </ul>
-        </div>
-
-        <!-- Col 4 -->
-        <div class="md:col-span-3 space-y-4">
-          <h4 class="text-white font-bold text-sm">Liên hệ hỗ trợ</h4>
-          <p class="text-sm">Trụ sở: Hà Nội, Việt Nam</p>
-          <p class="text-sm">Email: support@quickwork.vn</p>
-          <p class="text-sm">Hotline: 1900 1234 (8h - 18h)</p>
+        <div>
+          <h3 class="text-sm font-black text-white">Liên hệ</h3>
+          <div class="mt-3 space-y-2 text-sm">
+            <p>support@quickwork.vn</p>
+            <p>Hà Nội, Việt Nam</p>
+            <p>1900 1234</p>
+          </div>
         </div>
       </div>
-
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-        <p>&copy; 2026 QuickWork. Kết nối tri thức, kiến tạo tương lai. All rights reserved.</p>
+      <div class="mx-auto mt-8 max-w-7xl px-4 text-xs font-semibold text-slate-500 sm:px-6 lg:px-8">
+        © 2026 QuickWork. Kết nối cơ hội việc làm chất lượng cho sinh viên Việt Nam.
       </div>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useToast } from '~/composables/useToast'
+import { JobService } from '~/services/job.service'
+import { type ApiJob, type DisplayJob, mapJobForDisplay } from '~/utils/jobDisplay'
 
 definePageMeta({
   layout: false
 })
 
+const toast = useToast()
 const isMobileMenuOpen = ref(false)
-const activeWorkflowTab = ref<'student' | 'company'>('student')
-const activeFaqIndex = ref<number | null>(null)
+const activeCategory = ref('Tất cả')
+const isJobsLoading = ref(true)
+const jobs = ref<DisplayJob[]>([])
+const heroSearch = ref({
+  keyword: '',
+  location: '',
+  type: 'Tất cả loại hình'
+})
 
-const toggleFaq = (index: number) => {
-  if (activeFaqIndex.value === index) {
-    activeFaqIndex.value = null
-  } else {
-    activeFaqIndex.value = index
+const platformStats = computed(() => [
+  { label: 'Việc đang mở', value: formatCount(jobs.value.length), icon: 'uil:briefcase-alt', iconClass: 'bg-emerald-50 text-emerald-700' },
+  { label: 'Doanh nghiệp đang tuyển', value: formatCount(uniqueValues(jobs.value.map((job) => job.company)).length), icon: 'uil:building', iconClass: 'bg-emerald-50 text-emerald-700' },
+  { label: 'Kỹ năng trong tin', value: formatCount(uniqueValues(jobs.value.flatMap((job) => job.skills)).length), icon: 'uil:graduation-cap', iconClass: 'bg-teal-50 text-teal-700' },
+  { label: 'Địa điểm tuyển', value: formatCount(uniqueValues(jobs.value.map((job) => job.location)).length), icon: 'uil:map-marker', iconClass: 'bg-slate-100 text-slate-700' }
+])
+
+const trendingKeywords = computed(() => uniqueValues(jobs.value.flatMap((job) => [job.type, job.category, ...job.skills])).slice(0, 6))
+const jobCategories = computed(() => ['Tất cả', ...uniqueValues(jobs.value.flatMap((job) => [job.type, job.category])).slice(0, 8)])
+
+const skillCategories = computed(() => {
+  const groups = new Map<string, DisplayJob[]>()
+  for (const job of jobs.value) {
+    groups.set(job.category, [...(groups.get(job.category) || []), job])
+  }
+
+  return Array.from(groups.entries()).map(([title, group], index) => ({
+    title,
+    count: group.length,
+    icon: getCategoryIcon(title),
+    iconClass: index % 2 === 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-teal-50 text-teal-700',
+    description: `Có ${group.length.toLocaleString('vi-VN')} tin đang mở từ dữ liệu tuyển dụng đã duyệt.`,
+    skills: uniqueValues(group.flatMap((job) => job.skills)).slice(0, 4)
+  }))
+})
+
+const featuredCompanies = computed(() => {
+  const companies = new Map<string, DisplayJob[]>()
+  for (const job of jobs.value) {
+    companies.set(job.company, [...(companies.get(job.company) || []), job])
+  }
+
+  return Array.from(companies.entries()).map(([name, companyJobs], index) => ({
+    name,
+    logo: companyJobs[0]?.logo || 'QW',
+    logoClass: companyJobs[0]?.logoClass || 'bg-emerald-600',
+    openJobs: companyJobs.length,
+    description: `Đang tuyển ${companyJobs.map((job) => job.title).slice(0, 2).join(', ')}${companyJobs.length > 2 ? '...' : '.'}`
+  })).slice(0, 4)
+})
+
+const trustPoints = [
+  { title: 'Doanh nghiệp có KYB', description: 'Hồ sơ công ty được admin kiểm duyệt trước khi đăng tuyển.', icon: 'uil:shield-check' },
+  { title: 'Tin tuyển dụng rõ ràng', description: 'Card việc làm ưu tiên lương, địa điểm, loại hình và kỹ năng.', icon: 'uil:list-ui-alt' },
+  { title: 'Ứng tuyển nhanh', description: 'Sinh viên có thể dùng CV đã lưu để gửi hồ sơ trong một bước.', icon: 'uil:bolt' },
+  { title: 'Theo dõi trạng thái', description: 'Luồng sinh viên nên thấy việc đã lưu, đã ứng tuyển và lời mời.', icon: 'uil:bell' }
+]
+
+const filteredJobs = computed(() => {
+  const keyword = heroSearch.value.keyword.trim().toLowerCase()
+  const location = heroSearch.value.location.trim().toLowerCase()
+  const selectedType = heroSearch.value.type
+
+  return jobs.value.filter((job) => {
+    const matchesCategory = activeCategory.value === 'Tất cả' || job.type === activeCategory.value || job.category === activeCategory.value
+    const matchesKeyword = !keyword || [job.title, job.company, job.description, job.location, job.type, job.category, job.salary, ...job.skills].join(' ').toLowerCase().includes(keyword)
+    const matchesLocation = !location || job.location.toLowerCase().includes(location)
+    const matchesType = selectedType === 'Tất cả loại hình' || job.type === selectedType
+    return matchesCategory && matchesKeyword && matchesLocation && matchesType
+  })
+})
+
+function setHeroKeyword(tag: string) {
+  heroSearch.value.keyword = tag
+}
+
+function notifyDevelopment(feature: string) {
+  toast.info('Tính năng đang phát triển', `${feature} sẽ được kết nối khi backend sẵn sàng.`)
+}
+
+function formatCount(value: number) {
+  return value.toLocaleString('vi-VN')
+}
+
+function uniqueValues(values: string[]) {
+  return Array.from(new Set(values.filter(Boolean)))
+}
+
+function getCategoryIcon(category: string) {
+  if (category === 'Marketing') return 'uil:megaphone'
+  if (category === 'Kinh doanh') return 'uil:chart-growth'
+  if (category === 'Thiết kế') return 'uil:palette'
+  return 'uil:brackets-curly'
+}
+
+async function loadPublicJobs() {
+  try {
+    isJobsLoading.value = true
+    const response: any = await JobService.getAllJobs()
+    const rawJobs: ApiJob[] = response?.success && Array.isArray(response.data) ? response.data : []
+    jobs.value = rawJobs.map(mapJobForDisplay)
+  } catch (error: any) {
+    jobs.value = []
+    toast.error('Không thể tải việc làm', error?.data?.message || error?.message || 'Vui lòng thử lại sau.')
+  } finally {
+    isJobsLoading.value = false
   }
 }
+
+onMounted(loadPublicJobs)
 </script>
-
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-.font-sans {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-</style>

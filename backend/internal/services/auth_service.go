@@ -212,8 +212,8 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 	}
 
 	// 3. Kiểm tra Status
-	if user.Status != models.UserStatusActive {
-		return nil, ErrAccountBanned
+	if err := s.ensureCanLogin(user); err != nil {
+		return nil, err
 	}
 
 	// 4. Sinh JWT
@@ -487,8 +487,8 @@ func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*
 		}
 	} else {
 		// User exists, if it is active, we just log them in. But we also update their name/avatar if empty/changed
-		if user.Status != models.UserStatusActive {
-			return nil, ErrAccountBanned
+		if err := s.ensureCanLogin(user); err != nil {
+			return nil, err
 		}
 
 		// Update profile photo if empty
@@ -555,7 +555,44 @@ func (s *authService) buildLoginResponse(res *response.LoginResponse, user *mode
 	}
 
 	res.EnterpriseKYBStatus = string(kybStatus)
-	res.EnterpriseApproved = kybStatus == models.KYBApproved && strings.TrimSpace(profile.GPKDURL) != ""
+	res.EnterpriseApproved = kybStatus == models.KYBApproved
 	res.BusinessLicenseURL = profile.GPKDURL
 	return res
+}
+
+func (s *authService) ensureCanLogin(user *models.User) error {
+	switch user.Status {
+	case models.UserStatusActive:
+	case models.UserStatusInactive:
+		return ErrAccountInactive
+	case models.UserStatusBanned:
+		return ErrAccountBanned
+	default:
+		return ErrAccountInactive
+	}
+
+	if user.Role != models.RoleEnterprise {
+		return nil
+	}
+
+	var profile models.EnterpriseProfile
+	if err := s.db.Where("user_id = ?", user.ID).First(&profile).Error; err != nil {
+		return ErrEnterpriseNotVerify
+	}
+
+	kybStatus := profile.KYBStatus
+	if kybStatus == "" {
+		kybStatus = profile.StatusKYB
+	}
+	if kybStatus == "" {
+		kybStatus = models.KYBPending
+	}
+
+	if kybStatus == models.KYBApproved {
+		return nil
+	}
+	if kybStatus == models.KYBRejected {
+		return ErrEnterpriseRejected
+	}
+	return ErrEnterpriseNotVerify
 }

@@ -19,6 +19,9 @@ export const AdminService = {
   async getPendingJobs(params?: any) {
     return apiClient.get('/admin/jobs', { query: params })
   },
+  async updateUser(id: string | number, body: Record<string, any>) {
+    return apiClient.put(`/admin/users/${id}`, body)
+  },
   async updateUserStatus(id: string | number, status: 'ACTIVE' | 'INACTIVE' | 'BANNED') {
     return apiClient.put(`/admin/users/${id}/status`, { status })
   },

@@ -1,75 +1,43 @@
-# Nuxt Minimal Starter
+# QuickWork Frontend
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Nuxt/Vue frontend for QuickWork.
+
+Project-level documentation lives in `../docs/`.
+
+Useful docs:
+
+- `../docs/architecture.md`
+- `../docs/api.md`
+- `../docs/business-rules.md`
+- `../docs/conventions.md`
 
 ## Setup
 
-Make sure to install dependencies:
-
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Development
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+Default dev URL: `http://localhost:3000`
 
-Build the application for production:
+Backend API base defaults to `http://localhost:8080/api/v1` and can be changed with `NUXT_PUBLIC_API_BASE`.
+
+## Build
 
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
+## Frontend Source Pointers
 
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- API client: `app/services/api.ts`
+- Auth store: `app/stores/auth.ts`
+- Route guards: `app/middleware/*.ts`
+- Pages: `app/pages/**/*.vue`
+- Layouts: `app/layouts/*.vue`
+- Shared UI: `app/components` and `app/components/ui`

@@ -17,6 +17,7 @@
 import EmptyState from '~/components/EmptyState.vue'
 
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'admin']
 })
 </script>

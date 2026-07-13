@@ -196,7 +196,25 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		case service.ErrAccountBanned:
 			return c.Status(http.StatusForbidden).JSON(fiber.Map{
 				"success": false,
-				"message": "Tài khoản đã bị khóa.",
+				"message": "Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên.",
+			})
+
+		case service.ErrAccountInactive:
+			return c.Status(http.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"message": "Tài khoản của bạn đang bị tạm khóa. Vui lòng liên hệ quản trị viên.",
+			})
+
+		case service.ErrEnterpriseNotVerify:
+			return c.Status(http.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"message": "Tài khoản doanh nghiệp của bạn chưa được duyệt.",
+			})
+
+		case service.ErrEnterpriseRejected:
+			return c.Status(http.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"message": "Tài khoản doanh nghiệp của bạn đã bị từ chối xác minh.",
 			})
 
 		default:

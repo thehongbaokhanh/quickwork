@@ -1,29 +1,27 @@
 <template>
-  <div class="min-h-screen bg-slate-50 flex flex-col text-slate-900 font-sans">
+  <div class="min-h-screen bg-slate-100 flex flex-col text-slate-900 font-sans">
     <div class="flex flex-1 h-screen overflow-hidden">
       <!-- Sidebar Desktop -->
-      <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col relative z-20">
+      <aside class="w-64 bg-slate-950 border-r border-slate-900 hidden md:flex flex-col relative z-20 text-white">
         <!-- Logo -->
-        <div class="h-16 flex items-center px-6 border-b border-slate-100">
-          <div class="flex items-center gap-2 font-bold text-lg text-slate-900">
-            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-              <Icon name="uil:rocket" class="w-5 h-5" />
-            </div>
-            <span>QuickWork</span>
+        <div class="h-16 flex items-center px-5 border-b border-white/10">
+          <div class="flex min-w-0 items-center gap-3 font-bold text-lg">
+            <img src="/images/brand/quickwork-icon-dark-transparent.png" alt="QuickWork" class="h-9 w-9 shrink-0 rounded-lg object-contain">
+            <span class="truncate">Quick<span class="text-emerald-400">Work</span></span>
           </div>
         </div>
 
         <!-- Menu -->
         <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
-          <NuxtLink v-for="item in menuItems" :key="item.path" :to="item.path" active-class="bg-blue-50 text-blue-700 font-medium" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+          <NuxtLink v-for="item in menuItems" :key="item.path" :to="item.path" active-class="bg-emerald-500 text-slate-950 font-black shadow-sm shadow-emerald-950/20" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
             <Icon :name="item.icon" class="w-5 h-5" />
             <span class="text-sm">{{ item.name }}</span>
           </NuxtLink>
         </div>
 
         <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-slate-100">
-          <button @click="handleLogout" class="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-700 transition-colors text-sm font-medium">
+        <div class="p-4 border-t border-white/10">
+          <button @click="handleLogout" class="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors text-sm font-bold">
             <Icon name="uil:sign-out-alt" class="w-5 h-5" />
             <span>Đăng xuất</span>
           </button>
@@ -31,54 +29,121 @@
       </aside>
 
       <!-- Main Content -->
-      <div class="flex-1 flex flex-col min-w-0 bg-slate-50/50 relative z-10">
+      <div class="flex-1 flex flex-col min-w-0 bg-slate-100 relative z-10">
         <!-- Top Navbar -->
-        <header class="bg-white/80 backdrop-blur-md h-16 border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-30">
-          <div class="flex items-center gap-4">
-            <button class="md:hidden text-slate-500 hover:text-slate-700">
-              <Icon name="uil:bars" class="w-6 h-6" />
-            </button>
-            <div class="hidden md:flex items-center text-sm text-slate-500">
-              <span class="hover:text-slate-900 cursor-pointer transition-colors">Admin</span>
-              <Icon name="uil:angle-right-b" class="w-4 h-4 mx-1" />
-              <span class="font-medium text-slate-900">{{ currentRouteName }}</span>
-            </div>
-          </div>
+        <header class="sticky top-0 z-30 h-16 border-b border-slate-200 bg-white/95 backdrop-blur">
+          <div class="flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="flex min-w-0 items-center gap-4">
+              <button
+                class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 md:hidden"
+                aria-label="Mở menu"
+              >
+                <Icon name="uil:bars" class="h-5 w-5" />
+              </button>
 
-          <div class="flex items-center gap-4">
-            <!-- Search -->
-            <div class="relative hidden sm:block">
-              <Icon name="uil:search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input type="text" placeholder="Tìm kiếm..." class="w-64 pl-9 pr-4 py-1.5 bg-slate-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-sm transition-all outline-none" />
-            </div>
+              <NuxtLink to="/admin/dashboard" class="flex min-w-0 items-center gap-3">
+                <img src="/images/brand/quickwork-icon-dark-transparent.png" alt="QuickWork" class="h-10 w-10 shrink-0 rounded-lg object-contain shadow-sm">
+                <span class="min-w-0">
+                  <span class="block text-sm font-black leading-tight text-slate-950">
+                    Quick<span class="text-emerald-600">Work</span>
+                  </span>
+                  <span class="block max-w-40 truncate text-[11px] font-semibold leading-tight text-slate-500">
+                    Quản trị hệ thống
+                  </span>
+                </span>
+              </NuxtLink>
 
-            <!-- Notifications -->
-            <button class="relative text-slate-500 hover:text-slate-700 transition-colors">
-              <Icon name="uil:bell" class="w-6 h-6" />
-              <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-            </button>
-
-            <!-- User Dropdown -->
-            <div class="relative group cursor-pointer pl-2">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-                  {{ userInitial }}
-                </div>
-                <Icon name="uil:angle-down" class="w-4 h-4 text-slate-400" />
+              <div class="hidden items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 lg:flex">
+                <Icon name="uil:apps" class="h-4 w-4 text-emerald-600" />
+                <span>{{ currentRouteName }}</span>
               </div>
-              <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all origin-top-right z-50">
-                <div class="p-3 border-b border-slate-100">
-                  <p class="text-sm font-medium text-slate-900">{{ authStore.user?.email || 'Admin User' }}</p>
-                  <p class="text-xs text-slate-500 truncate">{{ authStore.userRole }}</p>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+              <div class="relative">
+                <button
+                  class="relative rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                  aria-label="Thông báo"
+                  @click.stop="toggleNotifications"
+                >
+                  <Icon name="uil:bell" class="h-5 w-5" />
+                  <span class="absolute right-2 top-2 h-2 w-2 rounded-full border border-white bg-emerald-500"></span>
+                </button>
+
+                <div
+                  v-if="showNotifications"
+                  class="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-xl"
+                  @click.stop
+                >
+                  <div class="border-b border-slate-100 px-4 py-3">
+                    <p class="font-bold text-slate-950">Thông báo quản trị</p>
+                    <p class="mt-0.5 text-xs text-slate-500">Các cảnh báo hệ thống sẽ hiển thị tại đây.</p>
+                  </div>
+                  <div class="px-4 py-5 text-sm text-slate-500">
+                    Tính năng thông báo chi tiết đang phát triển.
+                  </div>
                 </div>
-                <div class="p-1">
-                  <NuxtLink to="/admin/settings" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">
-                    <Icon name="uil:setting" /> Cài đặt
-                  </NuxtLink>
-                  <button @click="handleLogout" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg text-left">
-                    <Icon name="uil:sign-out-alt" /> Đăng xuất
-                  </button>
-                </div>
+              </div>
+
+              <div class="relative">
+                <button
+                  class="flex min-w-0 items-center gap-2 rounded-xl px-1.5 py-1 transition hover:bg-slate-100"
+                  @click.stop="toggleUserMenu"
+                >
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-black text-white">
+                    {{ adminInitials }}
+                  </span>
+                  <span class="hidden min-w-0 text-left sm:block">
+                    <span class="block max-w-36 truncate text-xs font-bold text-slate-800">{{ adminName }}</span>
+                    <span class="block max-w-36 truncate text-[11px] text-slate-500">{{ userEmail || 'Tài khoản quản trị' }}</span>
+                  </span>
+                  <Icon name="uil:angle-down" class="hidden h-4 w-4 text-slate-400 sm:block" />
+                </button>
+
+                <transition
+                  enter-active-class="transition duration-150 ease-out"
+                  enter-from-class="scale-95 opacity-0"
+                  enter-to-class="scale-100 opacity-100"
+                  leave-active-class="transition duration-100 ease-in"
+                  leave-from-class="scale-100 opacity-100"
+                  leave-to-class="scale-95 opacity-0"
+                >
+                  <div
+                    v-if="showUserMenu"
+                    class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-xl"
+                    @click.stop
+                  >
+                    <div class="border-b border-slate-100 px-4 py-3">
+                      <p class="truncate font-bold text-slate-950">{{ adminName }}</p>
+                      <p class="mt-0.5 truncate text-xs text-slate-500">{{ userEmail || 'Chưa có email trong phiên đăng nhập' }}</p>
+                    </div>
+                    <div class="py-1">
+                      <NuxtLink
+                        to="/admin/settings"
+                        class="flex items-center gap-2.5 px-4 py-2.5 text-slate-700 transition hover:bg-slate-50"
+                        @click="closeDropdowns"
+                      >
+                        <Icon name="uil:setting" class="h-4.5 w-4.5 text-slate-400" />
+                        <span>Cài đặt</span>
+                      </NuxtLink>
+                      <NuxtLink
+                        to="/admin/dashboard"
+                        class="flex items-center gap-2.5 px-4 py-2.5 text-slate-700 transition hover:bg-slate-50"
+                        @click="closeDropdowns"
+                      >
+                        <Icon name="uil:apps" class="h-4.5 w-4.5 text-slate-400" />
+                        <span>Dashboard</span>
+                      </NuxtLink>
+                    </div>
+                    <button
+                      class="flex w-full items-center gap-2.5 border-t border-slate-100 px-4 py-2.5 text-left font-bold text-rose-600 transition hover:bg-rose-50"
+                      @click="handleLogout"
+                    >
+                      <Icon name="uil:sign-out-alt" class="h-4.5 w-4.5" />
+                      <span>Đăng xuất</span>
+                    </button>
+                  </div>
+                </transition>
               </div>
             </div>
           </div>
@@ -94,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { useToast } from '~/composables/useToast'
@@ -102,15 +167,59 @@ import { useToast } from '~/composables/useToast'
 const authStore = useAuthStore()
 const route = useRoute()
 const toast = useToast()
+const showUserMenu = ref(false)
+const showNotifications = ref(false)
 
 const handleLogout = async () => {
   await authStore.logout()
   toast.info('Đăng xuất thành công', 'Hẹn gặp lại!')
 }
 
-const userInitial = computed(() => {
-  const email = authStore.user?.email || 'A'
-  return email.charAt(0).toUpperCase()
+const adminName = computed(() => authStore.user?.name || authStore.user?.email?.split('@')[0] || 'Admin')
+const userEmail = computed(() => authStore.user?.email || '')
+const adminInitials = computed(() => {
+  const source = adminName.value.trim() || 'AD'
+  return source
+    .split(/\s+/)
+    .map((part) => part.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+})
+
+const toggleNotifications = () => {
+  showNotifications.value = !showNotifications.value
+  showUserMenu.value = false
+}
+
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value
+  showNotifications.value = false
+}
+
+const closeDropdowns = () => {
+  showUserMenu.value = false
+  showNotifications.value = false
+}
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    closeDropdowns()
+  }
+}
+
+onMounted(() => {
+  if (process.client) {
+    window.addEventListener('click', closeDropdowns)
+    window.addEventListener('keydown', handleKeyDown)
+  }
+})
+
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('click', closeDropdowns)
+    window.removeEventListener('keydown', handleKeyDown)
+  }
 })
 
 const menuItems = [

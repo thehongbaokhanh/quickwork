@@ -9,7 +9,7 @@
       <div>
         <NuxtLink 
           to="/enterprise/jobs/create"
-          class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-indigo-100 flex items-center gap-2 transition-all active:scale-98"
+          class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-100 flex items-center gap-2 transition-all active:scale-98"
         >
           <Icon name="uil:plus-circle" class="w-4 h-4" />
           <span>Tạo tin tuyển dụng</span>
@@ -33,7 +33,7 @@
             :class="[
               'px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
               activeFilter === status.value 
-                ? 'bg-indigo-50 text-indigo-600 shadow-sm' 
+                ? 'bg-emerald-50 text-emerald-600 shadow-sm'
                 : 'text-slate-500 hover:bg-slate-50'
             ]"
           >
@@ -45,7 +45,7 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="flex flex-col items-center justify-center py-12 space-y-3">
-      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-indigo-600 animate-spin" />
+      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-emerald-600 animate-spin" />
       <span class="text-xs font-bold text-slate-400">Đang tải danh sách tin...</span>
     </div>
 
@@ -60,7 +60,7 @@
       </div>
       <NuxtLink 
         to="/enterprise/jobs/create"
-        class="inline-block px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-extrabold text-xs rounded-xl transition-all"
+        class="inline-block px-5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-extrabold text-xs rounded-xl transition-all"
       >
         Tạo tin ngay
       </NuxtLink>
@@ -90,7 +90,7 @@
           </div>
 
           <div class="space-y-1">
-            <h3 class="font-extrabold text-slate-800 text-sm line-clamp-1 hover:text-indigo-600 transition-colors">
+            <h3 class="font-extrabold text-slate-800 text-sm line-clamp-1 hover:text-emerald-600 transition-colors">
               {{ job.title }}
             </h3>
             <p class="text-[11px] text-slate-400 font-medium line-clamp-2 leading-relaxed">
@@ -123,7 +123,7 @@
             <!-- Edit Button -->
             <button 
               @click="editJob(job)"
-              class="p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-95 flex items-center justify-center"
+              class="p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-all active:scale-95 flex items-center justify-center"
               title="Sửa tin"
             >
               <Icon name="uil:edit" class="w-4 h-4" />
@@ -152,7 +152,7 @@
             <input 
               v-model="editForm.title" 
               type="text" 
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
             />
           </div>
           <div>
@@ -160,7 +160,7 @@
             <input 
               v-model="editForm.salary" 
               type="text" 
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
             />
           </div>
           <div>
@@ -168,7 +168,7 @@
             <input 
               v-model="editForm.location" 
               type="text" 
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
             />
           </div>
           <div>
@@ -176,7 +176,7 @@
             <textarea 
               v-model="editForm.description" 
               rows="3"
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
             ></textarea>
           </div>
           <div>
@@ -185,7 +185,7 @@
               v-model.number="editForm.slots" 
               type="number" 
               min="1"
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@
           </button>
           <button 
             @click="saveJobEdit" 
-            class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+            class="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100"
           >
             Lưu thay đổi
           </button>
@@ -214,7 +214,7 @@ import { JobService } from '~/services/job.service'
 
 definePageMeta({
   layout: 'enterprise',
-  middleware: ['auth']
+  middleware: ['company']
 })
 
 const jobs = ref<any[]>([])

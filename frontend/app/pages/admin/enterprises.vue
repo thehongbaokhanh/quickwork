@@ -107,7 +107,7 @@
                 <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
                 <td class="px-5 py-4">
                   <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-sky-50 text-sm font-black text-sky-700">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-teal-50 text-sm font-black text-teal-700">
                       {{ getInitial(enterprise) }}
                     </div>
                     <div class="min-w-0">
@@ -178,7 +178,7 @@
       </div>
     </section>
 
-    <div v-if="selectedEnterprise" class="qw-detail-backdrop" @click.self="selectedEnterprise = null">
+    <div v-if="selectedEnterprise" class="qw-detail-backdrop" @click.self="closeEnterpriseDetail">
       <section class="qw-detail-panel">
         <header class="qw-detail-header">
           <div class="qw-detail-identity">
@@ -193,19 +193,66 @@
               </div>
             </div>
           </div>
-          <button class="qw-detail-close" type="button" @click="selectedEnterprise = null">
-            <Icon name="uil:times" class="h-5 w-5" />
-          </button>
+          <div class="flex shrink-0 items-center gap-2">
+            <button
+              v-if="!isEditingEnterprise"
+              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-black text-emerald-700 transition hover:bg-emerald-100"
+              type="button"
+              @click="startEditEnterprise(selectedEnterprise)"
+            >
+              <Icon name="uil:edit" class="h-4 w-4" />
+              Chỉnh sửa
+            </button>
+            <button class="qw-detail-close" type="button" @click="closeEnterpriseDetail">
+              <Icon name="uil:times" class="h-5 w-5" />
+            </button>
+          </div>
         </header>
         <div class="qw-detail-body">
-          <div class="qw-detail-grid">
+          <form v-if="isEditingEnterprise" class="space-y-4" @submit.prevent="saveSelectedEnterprise">
+            <div class="grid gap-3 md:grid-cols-2">
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Email</span>
+                <input v-model.trim="editEnterpriseForm.email" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="email">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Trạng thái tài khoản</span>
+                <select v-model="editEnterpriseForm.status" class="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
+                  <option value="ACTIVE">Đang hoạt động</option>
+                  <option value="INACTIVE">Tạm khóa</option>
+                  <option value="BANNED">Bị cấm</option>
+                </select>
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Tên doanh nghiệp</span>
+                <input v-model.trim="editEnterpriseForm.enterprise_profile.company_name" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Mã số thuế</span>
+                <input v-model.trim="editEnterpriseForm.enterprise_profile.tax_code" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">GPKD URL</span>
+                <input v-model.trim="editEnterpriseForm.enterprise_profile.gpkd_url" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">KYB</span>
+                <select v-model="editEnterpriseForm.enterprise_profile.kyb_status" class="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
+                  <option value="PENDING">Chờ xác minh</option>
+                  <option value="APPROVED">Đã xác minh</option>
+                  <option value="REJECTED">Từ chối</option>
+                </select>
+              </label>
+            </div>
+          </form>
+          <div v-else class="qw-detail-grid">
             <div v-for="item in detailItems(selectedEnterprise)" :key="item.label" class="qw-detail-item">
               <p class="qw-detail-label">{{ item.label }}</p>
               <p class="qw-detail-value">{{ item.value }}</p>
             </div>
           </div>
         </div>
-        <footer class="qw-detail-footer">
+        <footer v-if="!isEditingEnterprise" class="qw-detail-footer">
           <button type="button" class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-800" @click="handleViewBusinessLicense(selectedEnterprise)">
             <Icon name="uil:file-search-alt" class="h-4 w-4" />
             Xem giấy phép kinh doanh
@@ -221,18 +268,28 @@
             Yêu cầu nộp GPKD
           </button>
         </footer>
+        <footer v-else class="qw-detail-footer">
+          <button type="button" class="inline-flex items-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-50" @click="cancelEditEnterprise">
+            Hủy
+          </button>
+          <button type="button" class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60" :disabled="savingEnterprise" @click="saveSelectedEnterprise">
+            <Icon name="uil:save" class="h-4 w-4" />
+            {{ savingEnterprise ? 'Đang lưu...' : 'Lưu thay đổi' }}
+          </button>
+        </footer>
       </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { AdminService } from '~/services/admin.service'
 import { useToast } from '~/composables/useToast'
 
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'admin']
 })
 
 type UserStatus = 'ACTIVE' | 'INACTIVE' | 'BANNED'
@@ -250,6 +307,18 @@ const selectedEnterprise = ref<any | null>(null)
 const updatingUserId = ref<number | null>(null)
 const updatingKYBId = ref<number | null>(null)
 const requestingGPKDId = ref<number | null>(null)
+const isEditingEnterprise = ref(false)
+const savingEnterprise = ref(false)
+const editEnterpriseForm = reactive({
+  email: '',
+  status: 'ACTIVE' as UserStatus,
+  enterprise_profile: {
+    company_name: '',
+    tax_code: '',
+    gpkd_url: '',
+    kyb_status: 'PENDING' as KYBStatus
+  }
+})
 
 const jobCountMap = computed(() => {
   return jobs.value.reduce((counts, job) => {
@@ -276,7 +345,7 @@ const summaryCards = computed(() => [
     value: enterprises.value.length,
     helper: 'Tài khoản role ENTERPRISE',
     icon: 'uil:building',
-    iconClass: 'bg-sky-50 text-sky-700'
+    iconClass: 'bg-teal-50 text-teal-700'
   },
   {
     label: 'Đã xác minh',
@@ -397,6 +466,61 @@ function clearFilters() {
   searchQuery.value = ''
   activeKYB.value = 'ALL'
   activeStatus.value = 'ALL'
+}
+
+function openEnterpriseDetail(enterprise: any) {
+  selectedEnterprise.value = enterprise
+  cancelEditEnterprise()
+}
+
+function closeEnterpriseDetail() {
+  selectedEnterprise.value = null
+  cancelEditEnterprise()
+}
+
+function startEditEnterprise(enterprise: any) {
+  editEnterpriseForm.email = enterprise.email || ''
+  editEnterpriseForm.status = normalizeStatus(enterprise.status) as UserStatus
+  editEnterpriseForm.enterprise_profile.company_name = enterprise?.enterprise_profile?.company_name || ''
+  editEnterpriseForm.enterprise_profile.tax_code = enterprise?.enterprise_profile?.tax_code || ''
+  editEnterpriseForm.enterprise_profile.gpkd_url = enterprise?.enterprise_profile?.gpkd_url || ''
+  editEnterpriseForm.enterprise_profile.kyb_status = getKYBStatus(enterprise)
+  isEditingEnterprise.value = true
+}
+
+function cancelEditEnterprise() {
+  isEditingEnterprise.value = false
+  savingEnterprise.value = false
+}
+
+function replaceEnterprise(updatedEnterprise: any) {
+  const index = enterprises.value.findIndex((enterprise) => String(enterprise.id) === String(updatedEnterprise.id))
+  if (index >= 0) {
+    enterprises.value.splice(index, 1, updatedEnterprise)
+  }
+}
+
+async function saveSelectedEnterprise() {
+  if (!selectedEnterprise.value) return
+  try {
+    savingEnterprise.value = true
+    const response: any = await AdminService.updateUser(selectedEnterprise.value.id, {
+      email: editEnterpriseForm.email,
+      status: editEnterpriseForm.status,
+      enterprise_profile: { ...editEnterpriseForm.enterprise_profile }
+    })
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể lưu thông tin doanh nghiệp.')
+    }
+    replaceEnterprise(response.data)
+    selectedEnterprise.value = response.data
+    isEditingEnterprise.value = false
+    toast.success('Đã lưu doanh nghiệp', `${getCompanyName(response.data)} đã được cập nhật.`)
+  } catch (error: any) {
+    toast.error('Lưu thất bại', error?.data?.message || error?.message || 'Vui lòng kiểm tra lại dữ liệu.')
+  } finally {
+    savingEnterprise.value = false
+  }
 }
 
 function countByKYB(status: KYBStatus) {

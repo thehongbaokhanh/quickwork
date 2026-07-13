@@ -173,7 +173,7 @@
       </div>
     </section>
 
-    <div v-if="selectedUser" class="qw-detail-backdrop" @click.self="selectedUser = null">
+    <div v-if="selectedUser" class="qw-detail-backdrop" @click.self="closeDetail">
       <section class="qw-detail-panel">
         <header class="qw-detail-header">
           <div class="qw-detail-identity">
@@ -188,35 +188,117 @@
               </div>
             </div>
           </div>
-          <button class="qw-detail-close" type="button" @click="selectedUser = null">
-            <Icon name="uil:times" class="h-5 w-5" />
-          </button>
+          <div class="flex shrink-0 items-center gap-2">
+            <button
+              v-if="!isEditingUser && !isAdminUser(selectedUser)"
+              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-black text-emerald-700 transition hover:bg-emerald-100"
+              type="button"
+              @click="startEditUser(selectedUser)"
+            >
+              <Icon name="uil:edit" class="h-4 w-4" />
+              Chỉnh sửa
+            </button>
+            <button class="qw-detail-close" type="button" @click="closeDetail">
+              <Icon name="uil:times" class="h-5 w-5" />
+            </button>
+          </div>
         </header>
 
         <div class="qw-detail-body">
-          <div class="qw-detail-grid">
+          <form v-if="isEditingUser" class="space-y-4" @submit.prevent="saveSelectedUser">
+            <div class="grid gap-3 md:grid-cols-2">
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Email</span>
+                <input v-model.trim="editUserForm.email" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="email">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Trạng thái</span>
+                <select v-model="editUserForm.status" class="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
+                  <option value="ACTIVE">Đang hoạt động</option>
+                  <option value="INACTIVE">Tạm khóa</option>
+                  <option value="BANNED">Bị cấm</option>
+                </select>
+              </label>
+
+              <template v-if="selectedUser.role === 'STUDENT'">
+                <label class="space-y-1.5">
+                  <span class="text-xs font-black uppercase text-slate-500">Họ tên</span>
+                  <input v-model.trim="editUserForm.student_profile.name" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+                </label>
+                <label class="space-y-1.5">
+                  <span class="text-xs font-black uppercase text-slate-500">Số điện thoại</span>
+                  <input v-model.trim="editUserForm.student_profile.phone" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+                </label>
+                <label class="space-y-1.5">
+                  <span class="text-xs font-black uppercase text-slate-500">Avatar URL</span>
+                  <input v-model.trim="editUserForm.student_profile.avatar" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+                </label>
+                <label class="space-y-1.5">
+                  <span class="text-xs font-black uppercase text-slate-500">CV URL</span>
+                  <input v-model.trim="editUserForm.student_profile.cv_url" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+                </label>
+              </template>
+
+              <template v-if="selectedUser.role === 'ENTERPRISE'">
+                <label class="space-y-1.5">
+                  <span class="text-xs font-black uppercase text-slate-500">Tên doanh nghiệp</span>
+                  <input v-model.trim="editUserForm.enterprise_profile.company_name" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+                </label>
+                <label class="space-y-1.5">
+                  <span class="text-xs font-black uppercase text-slate-500">Mã số thuế</span>
+                  <input v-model.trim="editUserForm.enterprise_profile.tax_code" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+                </label>
+                <label class="space-y-1.5">
+                  <span class="text-xs font-black uppercase text-slate-500">GPKD URL</span>
+                  <input v-model.trim="editUserForm.enterprise_profile.gpkd_url" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+                </label>
+                <label class="space-y-1.5">
+                  <span class="text-xs font-black uppercase text-slate-500">KYB</span>
+                  <select v-model="editUserForm.enterprise_profile.kyb_status" class="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
+                    <option value="PENDING">Chờ xác minh</option>
+                    <option value="APPROVED">Đã xác minh</option>
+                    <option value="REJECTED">Từ chối</option>
+                  </select>
+                </label>
+              </template>
+            </div>
+          </form>
+
+          <div v-else class="qw-detail-grid">
             <div v-for="item in detailItems(selectedUser)" :key="item.label" class="qw-detail-item">
               <p class="qw-detail-label">{{ item.label }}</p>
               <p class="qw-detail-value">{{ item.value }}</p>
             </div>
           </div>
         </div>
+
+        <footer v-if="isEditingUser" class="qw-detail-footer">
+          <button type="button" class="inline-flex items-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-50" @click="cancelEditUser">
+            Hủy
+          </button>
+          <button type="button" class="inline-flex items-center gap-2 rounded-md bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60" :disabled="savingUser" @click="saveSelectedUser">
+            <Icon name="uil:save" class="h-4 w-4" />
+            {{ savingUser ? 'Đang lưu...' : 'Lưu thay đổi' }}
+          </button>
+        </footer>
       </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { AdminService } from '~/services/admin.service'
 import { useToast } from '~/composables/useToast'
 import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'admin']
 })
 
 type UserStatus = 'ACTIVE' | 'INACTIVE' | 'BANNED'
+type KYBStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 
 const toast = useToast()
 const authStore = useAuthStore()
@@ -228,6 +310,24 @@ const activeRole = ref('ALL')
 const activeStatus = ref('ALL')
 const selectedUser = ref<any | null>(null)
 const updatingUserId = ref<number | null>(null)
+const isEditingUser = ref(false)
+const savingUser = ref(false)
+const editUserForm = reactive({
+  email: '',
+  status: 'ACTIVE' as UserStatus,
+  student_profile: {
+    name: '',
+    phone: '',
+    avatar: '',
+    cv_url: ''
+  },
+  enterprise_profile: {
+    company_name: '',
+    tax_code: '',
+    gpkd_url: '',
+    kyb_status: 'PENDING' as KYBStatus
+  }
+})
 
 const summaryCards = computed(() => [
   {
@@ -342,6 +442,78 @@ function clearFilters() {
 
 function openDetail(user: any) {
   selectedUser.value = user
+  cancelEditUser()
+}
+
+function closeDetail() {
+  selectedUser.value = null
+  cancelEditUser()
+}
+
+function startEditUser(user: any) {
+  if (isAdminUser(user)) {
+    toast.info('Tài khoản admin được bảo vệ', 'Không thể chỉnh sửa tài khoản quản trị tại đây.')
+    return
+  }
+
+  editUserForm.email = user.email || ''
+  editUserForm.status = normalizeStatus(user.status) as UserStatus
+  editUserForm.student_profile.name = user?.student_profile?.name || ''
+  editUserForm.student_profile.phone = user?.student_profile?.phone || ''
+  editUserForm.student_profile.avatar = user?.student_profile?.avatar || ''
+  editUserForm.student_profile.cv_url = user?.student_profile?.cv_url || ''
+  editUserForm.enterprise_profile.company_name = user?.enterprise_profile?.company_name || ''
+  editUserForm.enterprise_profile.tax_code = user?.enterprise_profile?.tax_code || ''
+  editUserForm.enterprise_profile.gpkd_url = user?.enterprise_profile?.gpkd_url || ''
+  editUserForm.enterprise_profile.kyb_status = getKYBStatus(user) as KYBStatus
+  isEditingUser.value = true
+}
+
+function cancelEditUser() {
+  isEditingUser.value = false
+  savingUser.value = false
+}
+
+function buildUpdatePayload(user: any) {
+  const payload: Record<string, any> = {
+    email: editUserForm.email,
+    status: editUserForm.status
+  }
+
+  if (user.role === 'STUDENT') {
+    payload.student_profile = { ...editUserForm.student_profile }
+  }
+  if (user.role === 'ENTERPRISE') {
+    payload.enterprise_profile = { ...editUserForm.enterprise_profile }
+  }
+
+  return payload
+}
+
+function replaceUser(updatedUser: any) {
+  const index = users.value.findIndex((user) => String(user.id) === String(updatedUser.id))
+  if (index >= 0) {
+    users.value.splice(index, 1, updatedUser)
+  }
+}
+
+async function saveSelectedUser() {
+  if (!selectedUser.value) return
+  try {
+    savingUser.value = true
+    const response: any = await AdminService.updateUser(selectedUser.value.id, buildUpdatePayload(selectedUser.value))
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể lưu thông tin tài khoản.')
+    }
+    replaceUser(response.data)
+    selectedUser.value = response.data
+    isEditingUser.value = false
+    toast.success('Đã lưu thông tin', `${getDisplayName(response.data)} đã được cập nhật.`)
+  } catch (error: any) {
+    toast.error('Lưu thất bại', error?.data?.message || error?.message || 'Vui lòng kiểm tra lại dữ liệu.')
+  } finally {
+    savingUser.value = false
+  }
 }
 
 function isAdminUser(user: any) {
@@ -382,8 +554,8 @@ function roleLabel(role?: string) {
 function roleClass(role?: string) {
   const classes: Record<string, string> = {
     ADMIN: 'bg-rose-50 text-rose-700',
-    STUDENT: 'bg-indigo-50 text-indigo-700',
-    ENTERPRISE: 'bg-sky-50 text-sky-700'
+    STUDENT: 'bg-emerald-50 text-emerald-700',
+    ENTERPRISE: 'bg-teal-50 text-teal-700'
   }
   return role ? classes[role] || 'bg-slate-50 text-slate-600' : 'bg-slate-50 text-slate-600'
 }
@@ -404,6 +576,12 @@ function statusClass(status?: string) {
     BANNED: 'bg-rose-50 text-rose-700'
   }
   return classes[normalizeStatus(status)] || 'bg-slate-50 text-slate-600'
+}
+
+function getKYBStatus(user: any): KYBStatus {
+  const value = (user?.enterprise_profile?.kyb_status || user?.enterprise_profile?.status_kyb || 'PENDING').toUpperCase()
+  if (value === 'APPROVED' || value === 'REJECTED') return value
+  return 'PENDING'
 }
 
 function getDisplayName(user: any) {

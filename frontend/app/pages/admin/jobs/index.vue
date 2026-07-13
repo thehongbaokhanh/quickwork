@@ -28,7 +28,7 @@
     </div>
 
     <div v-if="loading" class="flex flex-col items-center justify-center py-12 space-y-3">
-      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-indigo-600 animate-spin" />
+      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-emerald-600 animate-spin" />
       <span class="text-xs font-bold text-slate-400">Đang tải danh sách chờ duyệt...</span>
     </div>
 
@@ -83,7 +83,7 @@
               <td class="px-6 py-4 text-slate-500">{{ formatDate(job.created_at) }}</td>
               <td class="px-6 py-4 text-right">
                 <button
-                  class="qw-chip bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                  class="qw-chip bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                   @click="openReview(job)"
                 >
                   Xem duyệt
@@ -191,7 +191,7 @@
           </button>
           <button
             :disabled="reviewing || (decision === 'REJECTED' && !rejectReason)"
-            class="rounded-md bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-100 transition hover:bg-indigo-700 disabled:opacity-50"
+            class="rounded-md bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-100 transition hover:bg-emerald-700 disabled:opacity-50"
             @click="submitReview"
           >
             {{ reviewing ? 'Đang lưu...' : 'Xác nhận' }}
