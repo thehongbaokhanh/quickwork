@@ -7,7 +7,7 @@
       type="text"
       v-model="searchQuery"
       :placeholder="placeholder"
-      class="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none"
+      class="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none"
       @keyup.enter="emitSearch"
     />
     <button 

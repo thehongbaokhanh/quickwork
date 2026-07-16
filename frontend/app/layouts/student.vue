@@ -1,6 +1,8 @@
 <template>
   <div class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
-    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <HomeHeader @notify="notifyDevelopment" />
+
+    <header v-if="false" class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div class="flex min-w-0 items-center gap-8">
           <NuxtLink to="/student" class="flex shrink-0 items-center">
@@ -14,7 +16,7 @@
               :to="item.to"
               :class="[
                 'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold transition-colors',
-                item.active ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'
+                item.active ? 'bg-sky-50 text-sky-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'
               ]"
             >
               <Icon :name="item.icon" class="h-4 w-4" />
@@ -27,12 +29,12 @@
           <div class="relative">
             <button
               type="button"
-              class="relative rounded-lg p-2 text-slate-500 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+              class="relative rounded-lg p-2 text-slate-500 transition-colors hover:bg-sky-50 hover:text-sky-700"
               aria-label="Thông báo"
               @click.stop="toggleNotifications"
             >
               <Icon name="uil:bell" class="h-5 w-5" />
-              <span class="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+              <span class="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-sky-500 ring-2 ring-white"></span>
             </button>
 
             <div
@@ -44,7 +46,7 @@
                 <span class="font-black text-slate-950">Thông báo tuyển dụng</span>
                 <button
                   type="button"
-                  class="text-xs font-black text-emerald-700 hover:text-emerald-800"
+                  class="text-xs font-black text-sky-700 hover:text-sky-800"
                   @click="notifyDevelopment('Đánh dấu đã đọc')"
                 >
                   Đã đọc
@@ -70,7 +72,7 @@
               class="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-slate-100"
               @click.stop="toggleUserMenu"
             >
-              <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-sm font-black text-white">
+              <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-600 text-sm font-black text-white">
                 {{ userInitials }}
               </span>
               <span class="hidden max-w-[140px] truncate text-sm font-black text-slate-800 sm:inline">{{ userName }}</span>
@@ -125,13 +127,15 @@
       <slot />
     </main>
 
-    <footer class="border-t border-slate-200 bg-white">
+    <HomeFooter @notify="notifyDevelopment" />
+
+    <footer v-if="false" class="border-t border-slate-200 bg-white">
       <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-xs font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <p>© 2026 QuickWork. Nền tảng việc làm sinh viên.</p>
         <div class="flex gap-4">
-          <button type="button" class="hover:text-emerald-700" @click="notifyDevelopment('Trung tâm hỗ trợ')">Hỗ trợ</button>
-          <button type="button" class="hover:text-emerald-700" @click="notifyDevelopment('Điều khoản sử dụng')">Điều khoản</button>
-          <button type="button" class="hover:text-emerald-700" @click="notifyDevelopment('Bảo mật')">Bảo mật</button>
+          <button type="button" class="hover:text-sky-700" @click="notifyDevelopment('Trung tâm hỗ trợ')">Hỗ trợ</button>
+          <button type="button" class="hover:text-sky-700" @click="notifyDevelopment('Điều khoản sử dụng')">Điều khoản</button>
+          <button type="button" class="hover:text-sky-700" @click="notifyDevelopment('Bảo mật')">Bảo mật</button>
         </div>
       </div>
     </footer>
@@ -140,6 +144,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import HomeFooter from '~/components/home/HomeFooter.vue'
+import HomeHeader from '~/components/home/HomeHeader.vue'
 import { useAuthStore } from '~/stores/auth'
 import { useToast } from '~/composables/useToast'
 
@@ -165,7 +171,7 @@ const notifications = [
     title: 'FPT Software vừa mở vị trí Software Engineer Intern.',
     time: '2 giờ trước',
     icon: 'uil:briefcase-alt',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   {
     title: 'Hồ sơ của bạn đạt 75%, thêm portfolio để nổi bật hơn.',

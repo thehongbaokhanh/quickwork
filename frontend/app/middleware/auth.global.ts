@@ -1,10 +1,11 @@
 import { useAuthStore } from '~/stores/auth'
+import { getDefaultRouteForRole } from '~/utils/authRedirect'
 
 export default defineNuxtRouteMiddleware((to, from) => {
   const authStore = useAuthStore()
 
   // Các trang không yêu cầu đăng nhập
-  const publicPages = ['/auth/login', '/auth/register', '/', '/forgot-password', '/403', '/404', '/500']
+  const publicPages = ['/auth/login', '/auth/register', '/login', '/register', '/', '/student', '/forgot-password', '/403', '/404', '/500']
   const isPublicPage = publicPages.includes(to.path)
 
   // 1. Chưa đăng nhập
@@ -25,11 +26,9 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return navigateTo('/auth/login?error=invalid_role')
   }
 
-  // Nếu truy cập lại trang đăng nhập / đăng ký thì điều hướng về dashboard tương ứng
-  if (['/auth/login', '/auth/register'].includes(to.path)) {
-    if (role === 'ADMIN') return navigateTo('/admin')
-    if (role === 'ENTERPRISE') return navigateTo(authStore.enterpriseApproved ? '/enterprise' : '/student')
-    if (role === 'STUDENT') return navigateTo('/student')
+  // Nếu truy cập lại trang đăng nhập / đăng ký thì điều hướng theo đúng vai trò.
+  if (['/auth/login', '/auth/register', '/login', '/register'].includes(to.path)) {
+    return navigateTo(getDefaultRouteForRole(role))
   }
 
   // 3. Phân quyền theo Role
@@ -37,12 +36,13 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return navigateTo('/403')
   }
 
-  if (to.path.startsWith('/student') && !authStore.canAccessStudentArea) {
+  if (to.path.startsWith('/student') && to.path !== '/student' && !authStore.canAccessStudentArea) {
     return navigateTo('/403')
   }
 
   if (to.path.startsWith('/enterprise') && role === 'ENTERPRISE' && !authStore.enterpriseApproved) {
-    return navigateTo('/student')
+    authStore.clearAuth()
+    return navigateTo('/auth/login?error=enterprise_pending')
   }
 
   if (to.path.startsWith('/enterprise') && role !== 'ENTERPRISE') {

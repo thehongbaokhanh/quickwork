@@ -191,7 +191,7 @@
           <div class="flex shrink-0 items-center gap-2">
             <button
               v-if="!isEditingUser && !isAdminUser(selectedUser)"
-              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-black text-emerald-700 transition hover:bg-emerald-100"
+              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-black text-sky-700 transition hover:bg-sky-100"
               type="button"
               @click="startEditUser(selectedUser)"
             >
@@ -342,7 +342,7 @@ const summaryCards = computed(() => [
     value: countByStatus('ACTIVE'),
     helper: 'Có thể đăng nhập',
     icon: 'uil:check-circle',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   {
     label: 'Tạm khóa',
@@ -554,7 +554,7 @@ function roleLabel(role?: string) {
 function roleClass(role?: string) {
   const classes: Record<string, string> = {
     ADMIN: 'bg-rose-50 text-rose-700',
-    STUDENT: 'bg-emerald-50 text-emerald-700',
+    STUDENT: 'bg-sky-50 text-sky-700',
     ENTERPRISE: 'bg-teal-50 text-teal-700'
   }
   return role ? classes[role] || 'bg-slate-50 text-slate-600' : 'bg-slate-50 text-slate-600'
@@ -571,7 +571,7 @@ function statusLabel(status?: string) {
 
 function statusClass(status?: string) {
   const classes: Record<string, string> = {
-    ACTIVE: 'bg-emerald-50 text-emerald-700',
+    ACTIVE: 'bg-sky-50 text-sky-700',
     INACTIVE: 'bg-amber-50 text-amber-700',
     BANNED: 'bg-rose-50 text-rose-700'
   }

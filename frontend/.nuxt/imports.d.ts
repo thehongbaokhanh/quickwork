@@ -31,7 +31,10 @@ export { requestIdleCallback, cancelIdleCallback } from '#app/compat/idle-callba
 export { setInterval } from '#app/compat/interval';
 export { definePageMeta, PageMeta } from '#app/composables/pages';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
+export { useHomeJobs, HomeSearchState, HomeQuickStat, HomeCategorySummary, HomeCompanySummary } from '../app/composables/useHomeJobs';
 export { useToast, ToastMessage } from '../app/composables/useToast';
+export { getDefaultRouteForRole, getLoginRedirectForRole } from '../app/utils/authRedirect';
 export { mapJobForDisplay, getDateTime, getSalaryRange, salaryRank, ApiSkill, ApiJob, DisplayJob } from '../app/utils/jobDisplay';
+export { getJobTypeMeta, JobTypeMeta } from '../app/utils/jobTypeMeta';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
 export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

@@ -1,6 +1,6 @@
 # API Documentation
 
-Last updated: 2026-07-10
+Last updated: 2026-07-16
 
 Base API: `/api/v1`
 
@@ -85,6 +85,26 @@ When initialized with DB access in `cmd/api/main.go`, `AuthMiddleware` also chec
 | GET | `/student/test` | Student test endpoint |
 | GET | `/enterprise/test` | Enterprise test endpoint |
 
+## Student Job Action Routes
+
+Base group: `/student`
+
+Middleware:
+
+- `AuthMiddleware`
+- `RoleMiddleware("STUDENT")`
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/student/job-actions` | Return current student's applied and favorite job ids |
+| GET | `/student/applied-jobs` | List jobs the current student has applied to |
+| GET | `/student/favorite-jobs` | List jobs the current student has saved |
+| POST | `/student/jobs/:id/apply` | Apply current student to an approved job |
+| POST | `/student/jobs/:id/favorite` | Save an approved job to current student's favorites |
+| DELETE | `/student/jobs/:id/favorite` | Remove an approved job from current student's favorites |
+
+Applying and saving only accept jobs with status `APPROVED`. Repeating an apply or save request for the same student/job pair returns the existing record instead of creating duplicates.
+
 ## Enterprise Routes
 
 Base group: `/enterprise`
@@ -97,10 +117,29 @@ Middleware:
 
 | Method | Path | Purpose |
 | --- | --- | --- |
+| GET | `/enterprise/applications` | List applications submitted to current enterprise's jobs |
+| PUT | `/enterprise/applications/:id/status` | Accept or reject an application for current enterprise's job |
 | POST | `/enterprise/jobs/` | Create enterprise job |
 | GET | `/enterprise/jobs/` | List current enterprise jobs |
 | PUT | `/enterprise/jobs/:id` | Update enterprise job |
 | DELETE | `/enterprise/jobs/:id` | Delete/close enterprise job |
+
+`GET /enterprise/applications` supports optional `status` and `job_id` query params. Responses preload the applied job plus the student's user profile, phone, CV URL, and skills.
+
+`PUT /enterprise/applications/:id/status` accepts:
+
+```json
+{
+  "status": "ACCEPTED",
+  "employer_note": "Ứng viên phù hợp, hẹn phỏng vấn."
+}
+```
+
+Allowed statuses for enterprise review are `ACCEPTED` and `REJECTED`.
+
+`PUT /enterprise/jobs/:id` accepts the editable job fields used by the enterprise UI, including `title`, `description`, `requirements`, `salary`, `location`, `slots`, and optional `status`.
+
+`DELETE /enterprise/jobs/:id` is a soft close: it sets the job status to `CLOSED` instead of physically deleting the row. The enterprise UI can restore a closed job by sending `status: "DRAFT"` through the update endpoint.
 
 ## Admin Routes
 
@@ -172,13 +211,20 @@ Confirmed against current `main.go`:
 - `JobService.createEnterpriseJob` -> `POST /enterprise/jobs`
 - `JobService.updateEnterpriseJob` -> `PUT /enterprise/jobs/:id`
 - `JobService.deleteEnterpriseJob` -> `DELETE /enterprise/jobs/:id`
+- `JobService.getEnterpriseApplications` -> `GET /enterprise/applications`
+- `JobService.reviewEnterpriseApplication` -> `PUT /enterprise/applications/:id/status`
+- `StudentService.getAppliedJobs` -> `GET /student/applied-jobs`
+- `StudentService.getFavoriteJobs` -> `GET /student/favorite-jobs`
+- `StudentService.getJobActions` -> `GET /student/job-actions`
+- `StudentService.applyJob` -> `POST /student/jobs/:id/apply`
+- `StudentService.saveFavoriteJob` -> `POST /student/jobs/:id/favorite`
+- `StudentService.removeFavoriteJob` -> `DELETE /student/jobs/:id/favorite`
 
 Verify before relying:
 
 - `AuthService.forgotPassword` -> `POST /auth/forgot-password`
 - `StudentService.getProfile` -> `GET /student/profile`
 - `StudentService.updateProfile` -> `PUT /student/profile`
-- `StudentService.getAppliedJobs` -> `GET /student/applied-jobs`
 - `CompanyService.getProfile` -> `GET /company/profile`
 
 Legacy/alternate route caveat:

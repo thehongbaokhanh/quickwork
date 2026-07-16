@@ -24,5 +24,13 @@ export const JobService = {
 
   async deleteEnterpriseJob(id: string | number) {
     return apiClient.delete(`/enterprise/jobs/${id}`)
+  },
+
+  async getEnterpriseApplications(params?: any) {
+    return apiClient.get('/enterprise/applications', { query: params })
+  },
+
+  async reviewEnterpriseApplication(id: string | number, body: any) {
+    return apiClient.put(`/enterprise/applications/${id}/status`, body)
   }
 }

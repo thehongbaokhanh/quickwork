@@ -86,15 +86,15 @@ for (const [toast] of __VLS_vFor((__VLS_ctx.toasts))) {
         // @ts-ignore
         const __VLS_7 = __VLS_asFunctionalComponent1(__VLS_6, new __VLS_6({
             name: "uil:check-circle",
-            ...{ class: "h-6 w-6 text-green-400" },
+            ...{ class: "h-6 w-6 text-sky-400" },
         }));
         const __VLS_8 = __VLS_7({
             name: "uil:check-circle",
-            ...{ class: "h-6 w-6 text-green-400" },
+            ...{ class: "h-6 w-6 text-sky-400" },
         }, ...__VLS_functionalComponentArgsRest(__VLS_7));
         /** @type {__VLS_StyleScopedClasses['h-6']} */ ;
         /** @type {__VLS_StyleScopedClasses['w-6']} */ ;
-        /** @type {__VLS_StyleScopedClasses['text-green-400']} */ ;
+        /** @type {__VLS_StyleScopedClasses['text-sky-400']} */ ;
     }
     else if (toast.type === 'error') {
         let __VLS_11;

@@ -1,6 +1,6 @@
 # Database Documentation
 
-Last updated: 2026-07-10
+Last updated: 2026-07-16
 
 Schema source of truth:
 
@@ -23,6 +23,8 @@ Migration behavior:
 - `StudentProfile`
 - `EnterpriseProfile`
 - `Job`
+- `JobApplication`
+- `FavoriteJob`
 - `Category`
 - `Skill`
 - `Notification`
@@ -128,6 +130,58 @@ Relations:
 
 - enterprise profile via `enterprise_id -> enterprise_profiles.user_id`,
 - many-to-many `skills` through `job_skills`.
+
+## job_applications
+
+Model: `backend/internal/models/job_application.go`
+
+Purpose:
+
+- store student applications to approved jobs.
+
+Important fields:
+
+- `id`,
+- `student_id`,
+- `job_id`,
+- `status`,
+- `employer_note`,
+- `reviewed_at`,
+- `created_at`,
+- `updated_at`.
+
+Enums:
+
+- `APPLIED`
+- `ACCEPTED`
+- `REJECTED`
+
+Indexes and relations:
+
+- unique pair `student_id + job_id` through `idx_student_job_application`,
+- student via `student_id -> users.id`,
+- job via `job_id -> jobs.id`.
+
+## favorite_jobs
+
+Model: `backend/internal/models/favorite_job.go`
+
+Purpose:
+
+- store jobs saved by students.
+
+Important fields:
+
+- `id`,
+- `student_id`,
+- `job_id`,
+- `created_at`.
+
+Indexes and relations:
+
+- unique pair `student_id + job_id` through `idx_student_favorite_job`,
+- student via `student_id -> users.id`,
+- job via `job_id -> jobs.id`.
 
 ## notifications
 

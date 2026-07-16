@@ -9,7 +9,7 @@
       <div>
         <NuxtLink 
           to="/enterprise/jobs/create"
-          class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-100 flex items-center gap-2 transition-all active:scale-98"
+          class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-sky-100 flex items-center gap-2 transition-all active:scale-98"
         >
           <Icon name="uil:plus-circle" class="w-4 h-4" />
           <span>Tạo tin tuyển dụng</span>
@@ -33,7 +33,7 @@
             :class="[
               'px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
               activeFilter === status.value 
-                ? 'bg-emerald-50 text-emerald-600 shadow-sm'
+                ? 'bg-sky-50 text-sky-600 shadow-sm'
                 : 'text-slate-500 hover:bg-slate-50'
             ]"
           >
@@ -45,7 +45,7 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="flex flex-col items-center justify-center py-12 space-y-3">
-      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-emerald-600 animate-spin" />
+      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-sky-600 animate-spin" />
       <span class="text-xs font-bold text-slate-400">Đang tải danh sách tin...</span>
     </div>
 
@@ -60,7 +60,7 @@
       </div>
       <NuxtLink 
         to="/enterprise/jobs/create"
-        class="inline-block px-5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-extrabold text-xs rounded-xl transition-all"
+        class="inline-block px-5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-600 font-extrabold text-xs rounded-xl transition-all"
       >
         Tạo tin ngay
       </NuxtLink>
@@ -90,7 +90,7 @@
           </div>
 
           <div class="space-y-1">
-            <h3 class="font-extrabold text-slate-800 text-sm line-clamp-1 hover:text-emerald-600 transition-colors">
+            <h3 class="font-extrabold text-slate-800 text-sm line-clamp-1 hover:text-sky-600 transition-colors">
               {{ job.title }}
             </h3>
             <p class="text-[11px] text-slate-400 font-medium line-clamp-2 leading-relaxed">
@@ -120,17 +120,27 @@
             {{ new Date(job.created_at).toLocaleDateString('vi-VN') }}
           </span>
           <div class="flex items-center gap-2">
+            <button
+              v-if="isClosedJob(job)"
+              @click="restoreClosedJob(job.id)"
+              class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-sky-100 bg-white px-3 py-2 text-[10px] font-extrabold text-sky-700 transition-all hover:border-sky-200 hover:bg-sky-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 active:scale-95"
+              title="Hoàn tác tin đã đóng"
+            >
+              <Icon name="uil:history" class="w-4 h-4" />
+              Hoàn tác
+            </button>
             <!-- Edit Button -->
             <button 
+              v-if="!isClosedJob(job)"
               @click="editJob(job)"
-              class="p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-all active:scale-95 flex items-center justify-center"
+              class="p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-sky-600 hover:border-sky-200 transition-all active:scale-95 flex items-center justify-center"
               title="Sửa tin"
             >
               <Icon name="uil:edit" class="w-4 h-4" />
             </button>
             <!-- Close/Delete Button -->
             <button 
-              v-if="job.status !== 'CLOSED'"
+              v-if="!isClosedJob(job)"
               @click="closeJob(job.id)"
               class="p-2 bg-white border border-slate-200 rounded-lg text-slate-450 hover:text-rose-600 hover:border-rose-200 transition-all active:scale-95 flex items-center justify-center"
               title="Đóng tin"
@@ -142,8 +152,264 @@
       </div>
     </div>
 
+    <Teleport to="body">
+      <!-- Detailed Edit Modal -->
+      <div
+        v-if="editModalOpen"
+        class="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-slate-950/50 px-4 py-6 backdrop-blur-md sm:py-8"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="enterprise-job-edit-title"
+        @click.self="editModalOpen = false"
+      >
+        <div class="flex min-h-full items-center justify-center" @click.self="editModalOpen = false">
+      <div class="flex max-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col overflow-hidden rounded-[32px] border border-white/70 bg-white shadow-2xl shadow-slate-950/25 ring-1 ring-slate-950/5">
+        <div class="flex flex-col gap-4 border-b border-slate-100 bg-slate-50/70 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+          <div class="min-w-0">
+            <div class="mb-2 flex flex-wrap items-center gap-2">
+              <span :class="['rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase', getStatusBadge(editForm.status)]">
+                {{ getStatusLabel(editForm.status) }}
+              </span>
+              <span class="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-500 shadow-sm">
+                Mã tin #{{ editForm.id }}
+              </span>
+            </div>
+            <h3 id="enterprise-job-edit-title" class="truncate text-xl font-black text-slate-950">Chỉnh sửa tin tuyển dụng</h3>
+            <p class="mt-1 text-sm font-semibold text-slate-500">{{ editStatusHint() }}</p>
+          </div>
+          <button
+            type="button"
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
+            aria-label="Đóng cửa sổ chỉnh sửa"
+            @click="editModalOpen = false"
+          >
+            <Icon name="uil:multiply" class="h-5 w-5" />
+          </button>
+        </div>
+
+        <div class="min-h-0 flex-1 overflow-y-auto px-6 py-6 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent">
+          <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+            <section class="space-y-5 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+              <div class="flex items-center gap-3">
+                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+                  <Icon name="uil:file-edit-alt" class="h-5 w-5" />
+                </span>
+                <div>
+                  <h4 class="text-sm font-black text-slate-900">Thông tin chính</h4>
+                  <p class="text-xs font-semibold text-slate-500">Các trường này sẽ hiển thị với ứng viên sau khi được duyệt.</p>
+                </div>
+              </div>
+
+              <div class="grid gap-4 md:grid-cols-2">
+                <label class="md:col-span-2">
+                  <span class="mb-2 block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Tiêu đề công việc</span>
+                  <input
+                    v-model="editForm.title"
+                    :disabled="isClosedEditJob()"
+                    type="text"
+                    class="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                    placeholder="VD: Thực tập sinh Marketing"
+                  >
+                </label>
+
+                <label>
+                  <span class="mb-2 block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Mức lương</span>
+                  <input
+                    v-model="editForm.salary"
+                    :disabled="isClosedEditJob()"
+                    type="text"
+                    class="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-900 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                    placeholder="VD: 6 - 9 triệu"
+                  >
+                </label>
+
+                <label>
+                  <span class="mb-2 block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Số lượng tuyển dụng</span>
+                  <input
+                    v-model.number="editForm.slots"
+                    :disabled="isClosedEditJob()"
+                    type="number"
+                    min="1"
+                    class="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-900 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                </label>
+
+                <label class="md:col-span-2">
+                  <span class="mb-2 block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Địa điểm làm việc</span>
+                  <input
+                    v-model="editForm.location"
+                    :disabled="isClosedEditJob()"
+                    type="text"
+                    class="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-900 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                    placeholder="VD: Hà Nội, Remote..."
+                  >
+                </label>
+              </div>
+            </section>
+
+            <aside class="space-y-4 rounded-3xl border border-slate-100 bg-slate-50/70 p-5">
+              <div class="flex items-center gap-3">
+                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm">
+                  <Icon name="uil:info-circle" class="h-5 w-5" />
+                </span>
+                <div>
+                  <h4 class="text-sm font-black text-slate-900">Trạng thái & lịch sử</h4>
+                  <p class="text-xs font-semibold text-slate-500">Theo dõi tình trạng duyệt và cập nhật gần nhất.</p>
+                </div>
+              </div>
+
+              <div class="grid gap-3">
+                <div class="rounded-2xl bg-white p-4 shadow-sm">
+                  <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Trạng thái hiện tại</p>
+                  <p class="mt-1 text-sm font-black text-slate-900">{{ getStatusLabel(editForm.status) }}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="rounded-2xl bg-white p-4 shadow-sm">
+                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Ngày tạo</p>
+                    <p class="mt-1 text-sm font-black text-slate-900">{{ formatDate(editForm.created_at) }}</p>
+                  </div>
+                  <div class="rounded-2xl bg-white p-4 shadow-sm">
+                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Cập nhật</p>
+                    <p class="mt-1 text-sm font-black text-slate-900">{{ formatDate(editForm.updated_at) }}</p>
+                  </div>
+                </div>
+                <div v-if="normalizeStatus(editForm.status) === 'REJECTED' && editForm.reject_reason" class="rounded-2xl border border-rose-100 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+                  <p class="mb-1 text-[11px] font-extrabold uppercase tracking-wider">Lý do từ chối</p>
+                  {{ editForm.reject_reason }}
+                </div>
+                <div v-if="isClosedEditJob()" class="rounded-2xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-600">
+                  Tin đã đóng chỉ có thể hoàn tác về bản nháp trước khi chỉnh sửa hoặc gửi duyệt lại.
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <section class="mt-6 grid gap-6 lg:grid-cols-2">
+            <label class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+              <span class="mb-2 block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Yêu cầu công việc</span>
+              <textarea
+                v-model="editForm.requirements"
+                :disabled="isClosedEditJob()"
+                rows="7"
+                class="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                placeholder="Kỹ năng, kinh nghiệm, thời gian làm việc..."
+              />
+            </label>
+
+            <label class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+              <span class="mb-2 block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Mô tả chi tiết công việc</span>
+              <textarea
+                v-model="editForm.description"
+                :disabled="isClosedEditJob()"
+                rows="7"
+                class="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                placeholder="Nhiệm vụ, quyền lợi, quy trình ứng tuyển..."
+              />
+            </label>
+          </section>
+        </div>
+
+        <div class="flex flex-col gap-3 border-t border-slate-100 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs font-semibold text-slate-500">{{ editActionNote() }}</p>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <button
+              type="button"
+              class="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-200 px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-100"
+              @click="editModalOpen = false"
+            >
+              Hủy
+            </button>
+            <button
+              v-if="isClosedEditJob()"
+              type="button"
+              :disabled="submitting"
+              class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 text-sm font-extrabold text-white shadow-lg shadow-sky-100 transition hover:bg-sky-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+              @click="restoreClosedJob(editForm.id)"
+            >
+              <Icon :name="submitting ? 'svg-spinners:180-ring' : 'uil:history'" class="h-5 w-5" />
+              Hoàn tác về nháp
+            </button>
+            <template v-else>
+              <button
+                type="button"
+                :disabled="submitting"
+                class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-sky-100 bg-sky-50 px-5 text-sm font-extrabold text-sky-700 transition hover:border-sky-200 hover:bg-sky-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+                @click="submitJobEdit()"
+              >
+                <Icon :name="submitting ? 'svg-spinners:180-ring' : 'uil:save'" class="h-5 w-5" />
+                Lưu thay đổi
+              </button>
+              <button
+                v-if="canSubmitEditJob()"
+                type="button"
+                :disabled="submitting"
+                class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 text-sm font-extrabold text-white shadow-lg shadow-sky-100 transition hover:bg-sky-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+                @click="submitJobEdit('PENDING', submitEditSuccessMessage())"
+              >
+                <Icon :name="submitting ? 'svg-spinners:180-ring' : submitEditActionIcon()" class="h-5 w-5" />
+                {{ submitEditActionLabel() }}
+              </button>
+            </template>
+          </div>
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <div
+        v-if="confirmDialog.open"
+        class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-md"
+        role="dialog"
+        aria-modal="true"
+        @click.self="closeConfirmDialog"
+      >
+        <div class="w-full max-w-md overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-2xl shadow-slate-950/25 ring-1 ring-slate-950/5">
+        <div class="p-6">
+          <div class="flex items-start gap-4">
+            <div
+              :class="[
+                'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl',
+                confirmDialog.tone === 'rose' ? 'bg-rose-50 text-rose-600' : 'bg-sky-50 text-sky-700'
+              ]"
+            >
+              <Icon :name="confirmDialog.icon" class="h-6 w-6" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-base font-black text-slate-950">{{ confirmDialog.title }}</h3>
+              <p class="mt-2 text-sm font-semibold leading-6 text-slate-500">{{ confirmDialog.message }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2 border-t border-slate-100 bg-slate-50/80 px-6 py-4 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            :disabled="confirmDialog.loading"
+            class="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+            @click="closeConfirmDialog"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            :disabled="confirmDialog.loading"
+            :class="[
+              'inline-flex h-11 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-extrabold text-white shadow-lg transition focus:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60',
+              confirmDialog.tone === 'rose'
+                ? 'bg-rose-600 shadow-rose-100 hover:bg-rose-700 focus-visible:ring-rose-100'
+                : 'bg-sky-600 shadow-sky-100 hover:bg-sky-700 focus-visible:ring-sky-100'
+            ]"
+            @click="runConfirmDialog"
+          >
+            <Icon :name="confirmDialog.loading ? 'svg-spinners:180-ring' : confirmDialog.icon" class="h-5 w-5" />
+            {{ confirmDialog.confirmLabel }}
+          </button>
+        </div>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Simple Edit Modal -->
-    <div v-if="editModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div v-if="false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" aria-hidden="true">
       <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-2xl max-w-md w-full space-y-4">
         <h3 class="font-extrabold text-slate-900 text-sm">Chỉnh sửa tin tuyển dụng</h3>
         <div class="space-y-3">
@@ -152,7 +418,7 @@
             <input 
               v-model="editForm.title" 
               type="text" 
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-xs font-semibold text-slate-800"
             />
           </div>
           <div>
@@ -160,7 +426,7 @@
             <input 
               v-model="editForm.salary" 
               type="text" 
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-xs font-semibold text-slate-800"
             />
           </div>
           <div>
@@ -168,7 +434,7 @@
             <input 
               v-model="editForm.location" 
               type="text" 
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-xs font-semibold text-slate-800"
             />
           </div>
           <div>
@@ -176,7 +442,7 @@
             <textarea 
               v-model="editForm.description" 
               rows="3"
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-xs font-semibold text-slate-800"
             ></textarea>
           </div>
           <div>
@@ -185,7 +451,7 @@
               v-model.number="editForm.slots" 
               type="number" 
               min="1"
-              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-xs font-semibold text-slate-800"
             />
           </div>
         </div>
@@ -198,7 +464,7 @@
           </button>
           <button 
             @click="saveJobEdit" 
-            class="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100"
+            class="px-4 py-2 bg-sky-600 text-white rounded-xl font-bold text-xs hover:bg-sky-700 transition-all shadow-md shadow-sky-100"
           >
             Lưu thay đổi
           </button>
@@ -210,19 +476,45 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useToast } from '~/composables/useToast'
 import { JobService } from '~/services/job.service'
+
+type EnterpriseJobStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CLOSED'
+type ConfirmTone = 'sky' | 'rose'
+type ConfirmAction = () => Promise<void> | void
 
 definePageMeta({
   layout: 'enterprise',
   middleware: ['company']
 })
 
+const toast = useToast()
 const jobs = ref<any[]>([])
 const loading = ref(true)
 const activeFilter = ref('')
 const editModalOpen = ref(false)
 const editForm = ref<any>({})
 const errorMessage = ref('')
+const submitting = ref(false)
+const confirmDialog = ref<{
+  open: boolean
+  title: string
+  message: string
+  confirmLabel: string
+  icon: string
+  tone: ConfirmTone
+  loading: boolean
+  action: ConfirmAction | null
+}>({
+  open: false,
+  title: '',
+  message: '',
+  confirmLabel: 'Xác nhận',
+  icon: 'uil:question-circle',
+  tone: 'sky',
+  loading: false,
+  action: null
+})
 
 const statusOptions = [
   { value: '', label: 'Tất cả' },
@@ -233,11 +525,60 @@ const statusOptions = [
   { value: 'CLOSED', label: 'Đã đóng' }
 ]
 
+const openConfirmDialog = (options: {
+  title: string
+  message: string
+  confirmLabel: string
+  icon: string
+  tone?: ConfirmTone
+  action: ConfirmAction
+}) => {
+  confirmDialog.value = {
+    open: true,
+    title: options.title,
+    message: options.message,
+    confirmLabel: options.confirmLabel,
+    icon: options.icon,
+    tone: options.tone || 'sky',
+    loading: false,
+    action: options.action
+  }
+}
+
+const closeConfirmDialog = () => {
+  if (confirmDialog.value.loading) return
+  confirmDialog.value.open = false
+}
+
+const runConfirmDialog = async () => {
+  if (!confirmDialog.value.action || confirmDialog.value.loading) return
+
+  try {
+    confirmDialog.value.loading = true
+    await confirmDialog.value.action()
+    confirmDialog.value.open = false
+  } finally {
+    confirmDialog.value.loading = false
+  }
+}
+
+const normalizeStatus = (status?: string) => (status || '').toUpperCase()
+
+const isClosedJob = (job: any) => normalizeStatus(job?.status) === 'CLOSED'
+const isClosedEditJob = () => normalizeStatus(editForm.value?.status) === 'CLOSED'
+
+const formatDate = (value?: string) => {
+  if (!value) return 'Chưa cập nhật'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Chưa cập nhật'
+  return date.toLocaleDateString('vi-VN')
+}
+
 const getStatusBadge = (status: string) => {
-  switch (status) {
+  switch (normalizeStatus(status)) {
     case 'DRAFT': return 'bg-slate-50 text-slate-500 border-slate-100'
     case 'PENDING': return 'bg-amber-50 text-amber-600 border-amber-100/50'
-    case 'APPROVED': return 'bg-green-50 text-green-600 border-green-100/50'
+    case 'APPROVED': return 'bg-sky-50 text-sky-600 border-sky-100/50'
     case 'REJECTED': return 'bg-rose-50 text-rose-600 border-rose-100/50'
     case 'CLOSED': return 'bg-slate-100 text-slate-400 border-slate-200'
     default: return 'bg-slate-50 text-slate-400 border-slate-100'
@@ -245,13 +586,65 @@ const getStatusBadge = (status: string) => {
 }
 
 const getStatusLabel = (status: string) => {
-  switch (status) {
+  switch (normalizeStatus(status)) {
     case 'DRAFT': return 'Bản nháp'
     case 'PENDING': return 'Chờ duyệt'
     case 'APPROVED': return 'Đã duyệt'
     case 'REJECTED': return 'Bị từ chối'
     case 'CLOSED': return 'Đã đóng'
-    default: return status
+    default: return status || 'Chưa cập nhật'
+  }
+}
+
+const canSubmitEditJob = () => ['DRAFT', 'REJECTED'].includes(normalizeStatus(editForm.value?.status))
+
+const submitEditActionLabel = () => (
+  normalizeStatus(editForm.value?.status) === 'DRAFT' ? 'Đăng tin tuyển dụng' : 'Xin đăng lại'
+)
+
+const submitEditActionIcon = () => (
+  normalizeStatus(editForm.value?.status) === 'DRAFT' ? 'uil:message' : 'uil:redo'
+)
+
+const submitEditSuccessMessage = () => (
+  normalizeStatus(editForm.value?.status) === 'DRAFT'
+    ? 'Đã gửi duyệt tin'
+    : 'Đã xin đăng lại'
+)
+
+const submitEditSuccessDescription = () => (
+  normalizeStatus(editForm.value?.status) === 'DRAFT'
+    ? 'Tin tuyển dụng đang chờ admin xét duyệt.'
+    : 'Tin đã được gửi lại để admin xem xét.'
+)
+
+const editStatusHint = () => {
+  switch (normalizeStatus(editForm.value?.status)) {
+    case 'DRAFT':
+      return 'Tin đang là bản nháp. Bạn có thể chỉnh sửa và gửi admin duyệt.'
+    case 'REJECTED':
+      return 'Tin đã bị từ chối. Hãy cập nhật nội dung rồi xin đăng lại.'
+    case 'PENDING':
+      return 'Tin đang chờ admin duyệt. Bạn vẫn có thể cập nhật nội dung.'
+    case 'APPROVED':
+      return 'Tin đang hiển thị với ứng viên. Thay đổi sẽ được lưu ngay.'
+    case 'CLOSED':
+      return 'Tin đã đóng. Hãy hoàn tác về bản nháp trước khi chỉnh sửa.'
+    default:
+      return 'Cập nhật thông tin tuyển dụng từ dữ liệu hiện có.'
+  }
+}
+
+const editActionNote = () => {
+  switch (normalizeStatus(editForm.value?.status)) {
+    case 'DRAFT':
+      return 'Lưu bản nháp hoặc đăng tin tuyển dụng để chuyển sang chờ duyệt.'
+    case 'REJECTED':
+      return 'Sau khi chỉnh sửa, hãy gửi yêu cầu xin đăng lại để admin duyệt.'
+    case 'CLOSED':
+      return 'Tin đã đóng chỉ còn thao tác hoàn tác về bản nháp.'
+    default:
+      return 'Các thay đổi sẽ cập nhật trực tiếp lên tin tuyển dụng này.'
   }
 }
 
@@ -280,25 +673,119 @@ const changeStatusFilter = (status: string) => {
   fetchJobs()
 }
 
-const closeJob = async (id: number) => {
-  if (!confirm('Bạn có chắc chắn muốn đóng tin tuyển dụng này?')) return
+const closeJob = (id: number) => {
+  openConfirmDialog({
+    title: 'Đóng tin tuyển dụng?',
+    message: 'Tin sẽ chuyển sang trạng thái đã đóng và không còn hiển thị cho ứng viên. Bạn vẫn có thể hoàn tác về bản nháp sau đó.',
+    confirmLabel: 'Đóng tin',
+    icon: 'uil:archive',
+    tone: 'rose',
+    action: () => performCloseJob(id)
+  })
+}
 
+const performCloseJob = async (id: number) => {
   try {
     errorMessage.value = ''
     const response: any = await JobService.deleteEnterpriseJob(id)
     if (!response?.success) {
       throw new Error(response?.message || 'Không thể đóng tin tuyển dụng.')
     }
-    alert('Đã đóng tin tuyển dụng thành công!')
+    toast.success('Đã đóng tin tuyển dụng', 'Tin đã được chuyển sang trạng thái đã đóng và có thể hoàn tác khi cần.')
     fetchJobs()
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || 'Không thể đóng tin tuyển dụng.'
+    toast.error('Không thể đóng tin', errorMessage.value)
   }
 }
 
 const editJob = (job: any) => {
-  editForm.value = { ...job }
+  editForm.value = {
+    id: job.id,
+    title: job.title || '',
+    salary: job.salary || '',
+    description: job.description || '',
+    requirements: job.requirements || '',
+    location: job.location || '',
+    slots: Number(job.slots) > 0 ? Number(job.slots) : 1,
+    status: normalizeStatus(job.status) || 'DRAFT',
+    reject_reason: job.reject_reason || '',
+    created_at: job.created_at,
+    updated_at: job.updated_at
+  }
   editModalOpen.value = true
+}
+
+const buildEditPayload = (targetStatus?: EnterpriseJobStatus) => ({
+  title: String(editForm.value.title || '').trim(),
+  salary: String(editForm.value.salary || '').trim(),
+  description: String(editForm.value.description || '').trim(),
+  requirements: String(editForm.value.requirements || '').trim(),
+  location: String(editForm.value.location || '').trim(),
+  slots: Number(editForm.value.slots) || 1,
+  status: targetStatus || normalizeStatus(editForm.value.status) || 'DRAFT'
+})
+
+const validateEditForm = (payload: ReturnType<typeof buildEditPayload>) => {
+  if (!payload.title || !payload.salary || !payload.description || !payload.slots) {
+    toast.warning('Thiếu thông tin bắt buộc', 'Vui lòng điền đủ tiêu đề, mức lương, mô tả và số lượng tuyển dụng.')
+    return false
+  }
+  return true
+}
+
+const submitJobEdit = async (targetStatus?: EnterpriseJobStatus, successMessage = 'Đã cập nhật tin tuyển dụng thành công!') => {
+  const payload = buildEditPayload(targetStatus)
+  if (!validateEditForm(payload)) return
+
+  try {
+    submitting.value = true
+    errorMessage.value = ''
+    const response: any = await JobService.updateEnterpriseJob(editForm.value.id, payload)
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể cập nhật tin tuyển dụng.')
+    }
+    toast.success(successMessage, targetStatus === 'PENDING' ? submitEditSuccessDescription() : 'Thông tin tuyển dụng đã được lưu lại.')
+    editModalOpen.value = false
+    fetchJobs()
+  } catch (error: any) {
+    errorMessage.value = error?.data?.message || error?.message || 'Không thể cập nhật tin tuyển dụng.'
+    toast.error('Không thể cập nhật tin', errorMessage.value)
+  } finally {
+    submitting.value = false
+  }
+}
+
+const restoreClosedJob = (id: number) => {
+  if (!id) return
+
+  openConfirmDialog({
+    title: 'Hoàn tác tin đã đóng?',
+    message: 'Tin sẽ được đưa về bản nháp để bạn có thể chỉnh sửa hoặc gửi duyệt lại khi sẵn sàng.',
+    confirmLabel: 'Hoàn tác',
+    icon: 'uil:history',
+    tone: 'sky',
+    action: () => performRestoreClosedJob(id)
+  })
+}
+
+const performRestoreClosedJob = async (id: number) => {
+  try {
+    submitting.value = true
+    errorMessage.value = ''
+    const response: any = await JobService.updateEnterpriseJob(id, { status: 'DRAFT' })
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể hoàn tác tin tuyển dụng.')
+    }
+    toast.success('Đã hoàn tác tin tuyển dụng', 'Tin đã được đưa về bản nháp để chỉnh sửa hoặc gửi duyệt lại.')
+    editModalOpen.value = false
+    fetchJobs()
+  } catch (error: any) {
+    errorMessage.value = error?.data?.message || error?.message || 'Không thể hoàn tác tin tuyển dụng.'
+    toast.error('Không thể hoàn tác tin', errorMessage.value)
+  } finally {
+    submitting.value = false
+  }
 }
 
 const saveJobEdit = async () => {
@@ -308,11 +795,12 @@ const saveJobEdit = async () => {
     if (!response?.success) {
       throw new Error(response?.message || 'Không thể cập nhật tin tuyển dụng.')
     }
-    alert('Đã cập nhật tin tuyển dụng thành công!')
+    toast.success('Đã cập nhật tin tuyển dụng', 'Thông tin tuyển dụng đã được lưu lại.')
     editModalOpen.value = false
     fetchJobs()
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || 'Không thể cập nhật tin tuyển dụng.'
+    toast.error('Không thể cập nhật tin', errorMessage.value)
   }
 }
 

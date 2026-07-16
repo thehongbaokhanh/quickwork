@@ -15,7 +15,7 @@
             <img src="/images/brand/quickwork-icon-dark-transparent.png" alt="QuickWork" class="h-10 w-10 shrink-0 rounded-lg object-contain shadow-sm">
             <span class="min-w-0">
               <span class="block text-sm font-black leading-tight text-slate-950">
-                Quick<span class="text-emerald-600">Work</span>
+                Quick<span class="text-sky-600">Work</span>
               </span>
               <span class="block text-[11px] font-semibold leading-tight text-slate-500">
                 Nhà tuyển dụng
@@ -54,7 +54,7 @@
               class="flex min-w-0 items-center gap-2 rounded-xl px-1.5 py-1 transition hover:bg-slate-100"
               @click.stop="toggleUserMenu"
             >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-black text-white">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-xs font-black text-white">
                 {{ companyInitials }}
               </span>
               <span class="hidden min-w-0 text-left sm:block">
@@ -133,11 +133,62 @@
               :key="item.to"
               :to="item.to"
               class="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-slate-600 transition hover:bg-slate-50 hover:text-slate-950"
-              active-class="border-emerald-100 bg-emerald-50 text-emerald-700"
+              active-class="border-sky-100 bg-sky-50 text-sky-700"
               @click="isSidebarOpen = false"
             >
               <Icon :name="item.icon" class="h-5 w-5" />
               <span>{{ item.name }}</span>
+            </NuxtLink>
+
+            <div class="space-y-1">
+              <NuxtLink
+                :to="applicationNav.to"
+                :class="[
+                  'flex items-center gap-3 rounded-lg border px-3 py-2.5 transition',
+                  isApplicationsSection
+                    ? 'border-sky-100 bg-sky-50 text-sky-700'
+                    : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-950'
+                ]"
+                @click="isSidebarOpen = false"
+              >
+                <Icon :name="applicationNav.icon" class="h-5 w-5" />
+                <span>{{ applicationNav.name }}</span>
+              </NuxtLink>
+
+              <div class="ml-5 space-y-1 border-l border-slate-200 pl-4">
+                <NuxtLink
+                  v-for="item in applicationNav.children"
+                  :key="item.to"
+                  :to="item.to"
+                  :class="[
+                    'block rounded-lg px-3 py-2 text-sm transition',
+                    isRouteActive(item.to, true)
+                      ? 'bg-sky-50 font-black text-sky-700'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                  ]"
+                  @click="isSidebarOpen = false"
+                >
+                  {{ item.name }}
+                </NuxtLink>
+              </div>
+            </div>
+
+            <NuxtLink
+              v-for="item in secondaryNavItems"
+              :key="item.to"
+              :to="item.to"
+              class="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-slate-600 transition hover:bg-slate-50 hover:text-slate-950"
+              active-class="border-sky-100 bg-sky-50 text-sky-700"
+              @click="isSidebarOpen = false"
+            >
+              <Icon :name="item.icon" class="h-5 w-5" />
+              <span>{{ item.name }}</span>
+              <span
+                v-if="item.badge"
+                class="ml-auto rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-black text-rose-600"
+              >
+                {{ item.badge }}
+              </span>
             </NuxtLink>
 
             <button
@@ -157,7 +208,7 @@
 
           <div class="border-t border-slate-100 pt-5">
             <div class="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-3">
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-emerald-700 shadow-sm">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-sky-700 shadow-sm">
                 {{ companyInitials }}
               </span>
               <div class="min-w-0">
@@ -191,10 +242,18 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
+const route = useRoute()
 
 const isSidebarOpen = ref(false)
 const showUserMenu = ref(false)
 const showNotifications = ref(false)
+
+type EnterpriseSidebarItem = {
+  name: string
+  to: string
+  icon: string
+  badge?: number
+}
 
 const primaryNavItems = [
   { name: 'Tổng quan', to: '/enterprise', icon: 'uil:apps' },
@@ -202,8 +261,23 @@ const primaryNavItems = [
   { name: 'Tạo tin mới', to: '/enterprise/jobs/create', icon: 'uil:plus-circle' }
 ]
 
+const applicationNav = {
+  name: 'Ứng viên',
+  to: '/enterprise/applications',
+  icon: 'uil:users-alt',
+  children: [
+    { name: 'Danh sách ứng viên', to: '/enterprise/applications' },
+    { name: 'Ứng viên đã lưu', to: '/enterprise/applications/saved' },
+    { name: 'Bị từ chối', to: '/enterprise/applications/rejected' }
+  ]
+}
+
+const secondaryNavItems: EnterpriseSidebarItem[] = [
+  { name: 'Lịch phỏng vấn', to: '/enterprise/interviews', icon: 'uil:clipboard-notes' },
+  { name: 'Thông báo', to: '/enterprise/notifications', icon: 'uil:bell' }
+]
+
 const disabledNavItems = [
-  { name: 'Ứng viên', icon: 'uil:users-alt' },
   { name: 'Hồ sơ công ty', icon: 'uil:building' },
   { name: 'Cài đặt', icon: 'uil:setting' }
 ]
@@ -220,6 +294,12 @@ const companyInitials = computed(() => {
     .slice(0, 2)
     .toUpperCase()
 })
+
+const isApplicationsSection = computed(() => route.path.startsWith('/enterprise/applications'))
+
+const isRouteActive = (to: string, exact = false) => (
+  exact ? route.path === to : route.path.startsWith(to)
+)
 
 const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value

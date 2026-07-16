@@ -1,6 +1,6 @@
 # Architecture
 
-Last updated: 2026-07-10
+Last updated: 2026-07-16
 
 ## Product Context
 
@@ -62,6 +62,8 @@ Current patterns:
 
 - Auth uses handler plus service plus repositories.
 - Enterprise jobs use handler plus job repository.
+- Student job actions use `StudentJobHandler` with direct `*gorm.DB` queries.
+- Enterprise application review uses `EnterpriseJobHandler` with direct `*gorm.DB` queries scoped to the current enterprise's jobs.
 - Admin currently uses handler with direct `*gorm.DB` queries.
 - Shared helpers live under `backend/pkg`.
 
@@ -106,6 +108,56 @@ page/layout/component
 - JSON content type is default,
 - `FormData` removes content type so browser can set multipart boundary.
 
+Frontend auth UI:
+
+- `/login` and `/auth/login` render the shared `AuthLoginExperience` login surface.
+- `/register` and `/auth/register` render the shared `AuthRegisterExperience` registration surface.
+- Normal login without a `redirect` query and Google callback login now land on `/`; protected-route password login still returns to the requested `redirect`.
+- The shared auth page shell/input/brand structure lives in:
+  - `frontend/app/components/AuthShell.vue`
+  - `frontend/app/components/AuthField.vue`
+  - `frontend/app/components/AuthBrandMark.vue`
+  - `frontend/app/components/FooterBrandMark.vue`
+- `frontend/app/middleware/auth.global.ts` treats all four auth entry routes as public pages. Existing unauthenticated protected-route redirects still go to `/auth/login`.
+
+Public homepage UI:
+
+- `/` renders `frontend/app/pages/index.vue`, which delegates to `frontend/app/components/HomeLandingPage.vue`.
+- `HomeHeader` is auth-aware: guests see saved/login/register actions, authenticated users see notification/chat/avatar controls plus the account dropdown.
+- `HomeLandingPage` is now an orchestrator only; section UI lives under `frontend/app/components/home/`.
+- Homepage data and derived public statistics live in `frontend/app/composables/useHomeJobs.ts`.
+- Public jobs still come from `JobService.getAllJobs()` and are mapped with `frontend/app/utils/jobDisplay.ts`; the homepage must not use mock job/company/category data.
+- When an authenticated student is present, `useHomeJobs.ts` also loads `/student/job-actions` and drives homepage favorite/apply state through `StudentService`.
+- The public homepage structure is:
+  - `HomeHeader`
+  - `HomeHero` plus `HomeSearchBar`
+  - `HomeQuickStats`
+  - `HomeFeaturedJobs`
+  - `HomeJobDetailPanel`
+  - `HomeCategories`
+  - `HomeEmployerCta`
+  - `HomeCareerCta`
+  - `HomeFooter`
+- The homepage intentionally does not show admin role selection, market-dashboard charts, or duplicated impact-stat sections.
+- `HomeCareerCta` is shown only to unauthenticated visitors; authenticated users stay on the job discovery flow after login.
+- `HomeFeaturedJobs` renders the full scored public job list in pages of nine jobs, with dropdown filters for location, salary, experience, category, and job type. The section auto-advances pages after a longer idle period, pauses while a job title or hover preview popup is active, and renders `HomeJobDetailPanel` beside the hovered job card only when the job title is hovered or focused, using existing `DisplayJob` data only.
+- Public and auth footers share `frontend/app/components/FooterBrandMark.vue` so the QuickWork footer logo stays visible and consistent on dark backgrounds.
+
+Public job board:
+
+- `/student` is now the public all-jobs board reached from homepage "Xem tất cả" and ngành nghề links.
+- `/student` keeps using persisted approved jobs from `JobService.getAllJobs()` and no longer requires the `student` middleware.
+- `/student` job actions call `StudentService` and require authenticated role `STUDENT`; unauthenticated users are prompted to log in before applying or saving.
+- The `student` layout uses the same `HomeHeader` and `HomeFooter` as the public homepage.
+- `/profile` and `/settings` are authenticated account pages surfaced from the user dropdown, not top-level student nav tabs.
+
+Enterprise applications UI:
+
+- `/enterprise/applications` is the primary applicant list for enterprise accounts.
+- `/enterprise/applications/saved` and `/enterprise/applications/rejected` reuse `frontend/app/components/enterprise/CandidateCollectionView.vue` to keep saved/rejected candidate tables visually consistent with the main applicant list.
+- Saved candidates are displayed only when `JobService.getEnterpriseApplications()` returns persisted saved/bookmarked flags; the frontend does not create placeholder candidates.
+- `/enterprise/interviews` and `/enterprise/notifications` are enterprise sidebar pages prepared for real scheduling/notification data and currently render empty states instead of mock lists.
+
 ## Runtime Route Groups
 
 Registered in `backend/cmd/api/main.go`:
@@ -113,6 +165,7 @@ Registered in `backend/cmd/api/main.go`:
 - public auth group under `/api/v1/auth`,
 - public approved job routes under `/api/v1/jobs`,
 - protected common group under `/api/v1`,
+- student group under `/api/v1/student` with auth and role `STUDENT`,
 - enterprise group under `/api/v1/enterprise` with auth, role `ENTERPRISE`, and approved enterprise middleware,
 - admin group under `/api/v1/admin` with auth and role `ADMIN`.
 
@@ -138,6 +191,17 @@ Auth:
 - `backend/pkg/redis/redis.go`
 - `frontend/app/services/auth.service.ts`
 - `frontend/app/stores/auth.ts`
+- `frontend/app/middleware/auth.global.ts`
+- `frontend/app/components/AuthShell.vue`
+- `frontend/app/components/AuthField.vue`
+- `frontend/app/components/AuthBrandMark.vue`
+- `frontend/app/components/FooterBrandMark.vue`
+- `frontend/app/components/AuthLoginExperience.vue`
+- `frontend/app/components/AuthRegisterExperience.vue`
+- `frontend/app/pages/login.vue`
+- `frontend/app/pages/register.vue`
+- `frontend/app/pages/auth/login.vue`
+- `frontend/app/pages/auth/register.vue`
 
 Enterprise access:
 
@@ -159,6 +223,30 @@ Enterprise jobs:
 - `frontend/app/pages/enterprise/jobs/index.vue`
 - `frontend/app/pages/enterprise/jobs/create.vue`
 
+Student job actions:
+
+- `backend/routes/student_routes.go`
+- `backend/internal/handlers/student_job_handler.go`
+- `backend/internal/models/job_application.go`
+- `backend/internal/models/favorite_job.go`
+- `frontend/app/services/student.service.ts`
+- `frontend/app/composables/useHomeJobs.ts`
+- `frontend/app/pages/student/index.vue`
+
+Enterprise applications:
+
+- `backend/routes/enterprise_routes.go`
+- `backend/internal/handlers/enterprise_job_handler.go`
+- `backend/internal/models/job_application.go`
+- `frontend/app/services/job.service.ts`
+- `frontend/app/layouts/enterprise.vue`
+- `frontend/app/components/enterprise/CandidateCollectionView.vue`
+- `frontend/app/pages/enterprise/applications.vue`
+- `frontend/app/pages/enterprise/applications/saved.vue`
+- `frontend/app/pages/enterprise/applications/rejected.vue`
+- `frontend/app/pages/enterprise/interviews.vue`
+- `frontend/app/pages/enterprise/notifications.vue`
+
 Admin:
 
 - `backend/routes/admin_routes.go`
@@ -166,3 +254,35 @@ Admin:
 - `frontend/app/services/admin.service.ts`
 - `frontend/app/layouts/admin.vue`
 - `frontend/app/pages/admin/*.vue`
+
+Public homepage:
+
+- `frontend/app/pages/index.vue`
+- `frontend/app/components/HomeLandingPage.vue`
+- `frontend/app/components/HomeJobCard.vue`
+- `frontend/app/components/HomeCategoryCard.vue`
+- `frontend/app/components/home/HomeHeader.vue`
+- `frontend/app/components/home/HomeHero.vue`
+- `frontend/app/components/home/HomeSearchBar.vue`
+- `frontend/app/components/home/HomeQuickStats.vue`
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `frontend/app/components/home/HomeJobDetailPanel.vue`
+- `frontend/app/components/home/HomeCategories.vue`
+- `frontend/app/components/home/HomeEmployerCta.vue`
+- `frontend/app/components/home/HomeCareerCta.vue`
+- `frontend/app/components/home/HomeFooter.vue`
+- `frontend/app/components/FooterBrandMark.vue`
+- `frontend/app/composables/useHomeJobs.ts`
+- `frontend/app/services/job.service.ts`
+- `frontend/app/services/student.service.ts`
+- `frontend/app/utils/jobDisplay.ts`
+
+Public job board:
+
+- `frontend/app/pages/student/index.vue`
+- `frontend/app/layouts/student.vue`
+- `frontend/app/components/home/HomeHeader.vue`
+- `frontend/app/components/home/HomeFooter.vue`
+- `frontend/app/services/job.service.ts`
+- `frontend/app/services/student.service.ts`
+- `frontend/app/utils/jobDisplay.ts`

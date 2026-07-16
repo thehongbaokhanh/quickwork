@@ -45,10 +45,10 @@ export type DisplayJob = {
 }
 
 const logoClasses = [
-  'bg-emerald-600',
+  'bg-sky-600',
   'bg-teal-600',
   'bg-slate-900',
-  'bg-emerald-700',
+  'bg-sky-700',
   'bg-teal-700',
   'bg-slate-700'
 ]
@@ -69,7 +69,7 @@ export function mapJobForDisplay(job: ApiJob, index = 0): DisplayJob {
     title,
     company,
     logo: getCompanyLogo(company),
-    logoClass: logoClasses[(job.id || index) % logoClasses.length] || 'bg-emerald-600',
+    logoClass: logoClasses[(job.id || index) % logoClasses.length] || 'bg-sky-600',
     badge: getJobBadge(type, createdAt),
     description,
     salary: cleanText(job.salary, 'Thỏa thuận'),

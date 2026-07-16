@@ -306,7 +306,7 @@ const dashboardCards = computed(() => [
     value: stats.value.total_students,
     helper: `${getShare(stats.value.total_students, totalUsers.value)}% tổng tài khoản`,
     icon: 'uil:graduation-cap',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   {
     name: 'Doanh nghiệp',
@@ -320,7 +320,7 @@ const dashboardCards = computed(() => [
     value: stats.value.active_jobs,
     helper: `${activeJobRate.value}% trong nhóm tin theo dõi`,
     icon: 'uil:check-circle',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   {
     name: 'Chờ duyệt',
@@ -333,9 +333,9 @@ const dashboardCards = computed(() => [
 
 const systemBars = computed(() => {
   const items = [
-    { label: 'Học viên', value: stats.value.total_students, dotClass: 'bg-emerald-500', barClass: 'bg-emerald-500' },
+    { label: 'Học viên', value: stats.value.total_students, dotClass: 'bg-sky-500', barClass: 'bg-sky-500' },
     { label: 'Doanh nghiệp', value: stats.value.total_enterprises, dotClass: 'bg-teal-500', barClass: 'bg-teal-500' },
-    { label: 'Tin đang hiển thị', value: stats.value.active_jobs, dotClass: 'bg-emerald-500', barClass: 'bg-emerald-500' },
+    { label: 'Tin đang hiển thị', value: stats.value.active_jobs, dotClass: 'bg-sky-500', barClass: 'bg-sky-500' },
     { label: 'Tin chờ duyệt', value: stats.value.pending_jobs, dotClass: 'bg-amber-500', barClass: 'bg-amber-500' }
   ]
   const max = Math.max(...items.map((item) => item.value), 1)
@@ -347,7 +347,7 @@ const systemBars = computed(() => {
 })
 
 const roleColors: Record<string, string> = {
-  STUDENT: 'bg-emerald-50 text-emerald-700',
+  STUDENT: 'bg-sky-50 text-sky-700',
   ENTERPRISE: 'bg-teal-50 text-teal-700',
   ADMIN: 'bg-rose-50 text-rose-700'
 }
@@ -365,7 +365,7 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusColors: Record<string, string> = {
-  ACTIVE: 'bg-emerald-50 text-emerald-700',
+  ACTIVE: 'bg-sky-50 text-sky-700',
   INACTIVE: 'bg-amber-50 text-amber-700',
   BANNED: 'bg-rose-50 text-rose-700'
 }
@@ -390,7 +390,7 @@ const accountTypeCards = computed(() => [
     label: 'Tài khoản Sinh viên',
     count: getRecentUserCountByRole('STUDENT'),
     icon: 'uil:graduation-cap',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   {
     role: 'ENTERPRISE',

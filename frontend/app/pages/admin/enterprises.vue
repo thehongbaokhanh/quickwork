@@ -128,8 +128,9 @@
                   </span>
                 </td>
                 <td class="px-5 py-4">
-                  <div class="font-black text-slate-950">{{ getJobCount(enterprise.id).total }}</div>
-                  <div class="mt-0.5 text-xs font-semibold text-slate-500">
+                  <div class="flex min-w-[220px] items-center gap-2 whitespace-nowrap text-xs font-semibold text-slate-500">
+                    <span class="rounded-full bg-sky-50 px-2.5 py-1 text-sm font-black text-sky-700">{{ getJobCount(enterprise.id).total }} tin</span>
+                    <span class="sr-only">Chi tiết tin tuyển dụng</span>
                     {{ getJobCount(enterprise.id).approved }} đã duyệt · {{ getJobCount(enterprise.id).pending }} chờ duyệt
                   </div>
                 </td>
@@ -196,7 +197,7 @@
           <div class="flex shrink-0 items-center gap-2">
             <button
               v-if="!isEditingEnterprise"
-              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-black text-emerald-700 transition hover:bg-emerald-100"
+              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-black text-sky-700 transition hover:bg-sky-100"
               type="button"
               @click="startEditEnterprise(selectedEnterprise)"
             >
@@ -352,7 +353,7 @@ const summaryCards = computed(() => [
     value: countByKYB('APPROVED'),
     helper: 'KYB đã duyệt',
     icon: 'uil:check-circle',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   {
     label: 'Chờ KYB',
@@ -548,7 +549,7 @@ function kybLabel(status?: string) {
 
 function kybClass(status?: string) {
   const classes: Record<string, string> = {
-    APPROVED: 'bg-emerald-50 text-emerald-700',
+    APPROVED: 'bg-sky-50 text-sky-700',
     PENDING: 'bg-amber-50 text-amber-700',
     REJECTED: 'bg-rose-50 text-rose-700'
   }
@@ -574,7 +575,7 @@ function statusLabel(status?: string) {
 
 function statusClass(status?: string) {
   const classes: Record<string, string> = {
-    ACTIVE: 'bg-emerald-50 text-emerald-700',
+    ACTIVE: 'bg-sky-50 text-sky-700',
     INACTIVE: 'bg-amber-50 text-amber-700',
     BANNED: 'bg-rose-50 text-rose-700'
   }

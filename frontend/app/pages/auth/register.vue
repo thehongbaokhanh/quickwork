@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen bg-[#edf3fb] p-2 font-sans text-slate-950 sm:p-4">
+  <AuthRegisterExperience v-if="true" />
+  <div v-else class="min-h-screen bg-[#edf3fb] p-2 font-sans text-slate-950 sm:p-4">
     <div class="relative mx-auto min-h-[calc(100vh-1rem)] max-w-[1320px] overflow-hidden rounded-[24px] border border-white bg-white shadow-2xl shadow-slate-200/90 sm:min-h-[calc(100vh-2rem)]">
       <header class="relative z-20 flex h-20 items-center justify-between border-b border-slate-100 bg-white px-5 sm:px-8 lg:px-10">
         <NuxtLink to="/" class="inline-flex items-center gap-3">
@@ -7,18 +8,18 @@
         </NuxtLink>
 
         <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-800 lg:flex">
-          <NuxtLink to="/student" class="transition hover:text-emerald-600">Việc làm</NuxtLink>
-          <a href="#" class="transition hover:text-emerald-600">Công ty</a>
-          <a href="#" class="transition hover:text-emerald-600">Mức lương</a>
-          <a href="#" class="transition hover:text-emerald-600">Blog</a>
-          <a href="#" class="transition hover:text-emerald-600">Khám phá</a>
+          <NuxtLink to="/student" class="transition hover:text-sky-600">Việc làm</NuxtLink>
+          <a href="#" class="transition hover:text-sky-600">Công ty</a>
+          <a href="#" class="transition hover:text-sky-600">Mức lương</a>
+          <a href="#" class="transition hover:text-sky-600">Blog</a>
+          <a href="#" class="transition hover:text-sky-600">Khám phá</a>
         </nav>
 
         <div class="flex items-center gap-2">
-          <NuxtLink to="/auth/login" class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-emerald-200 hover:text-emerald-700">
+          <NuxtLink to="/auth/login" class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-sky-200 hover:text-sky-700">
             Đăng nhập
           </NuxtLink>
-          <NuxtLink to="/auth/register" class="hidden rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:inline-flex">
+          <NuxtLink to="/auth/register" class="hidden rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700 sm:inline-flex">
             Đăng ký
           </NuxtLink>
         </div>
@@ -26,21 +27,21 @@
 
       <div class="relative grid min-h-[calc(100vh-6.5rem)] lg:grid-cols-[0.88fr_1.12fr]">
         <section class="relative hidden overflow-hidden px-10 py-12 lg:flex lg:flex-col lg:justify-between">
-          <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(16,185,129,0.17),transparent_29%),linear-gradient(150deg,#ffffff_0%,#f2fbf8_50%,#e9f3fb_100%)]" />
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(14,165,233,0.17),transparent_29%),linear-gradient(150deg,#ffffff_0%,#f0f9ff_50%,#e9f3fb_100%)]" />
           <div class="absolute bottom-0 left-0 right-0 h-[44%] bg-[url('/images/quickwork-career-hero.png')] bg-cover bg-bottom opacity-38" />
 
           <div class="relative z-10 max-w-lg">
-            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+            <span class="inline-flex items-center gap-2 rounded-full bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700">
               <Icon name="uil:user-plus" class="h-5 w-5" />
               Tạo tài khoản mới
             </span>
             <h1 class="mt-8 text-4xl font-bold leading-tight tracking-tight text-slate-950 xl:text-5xl">
-              Bắt đầu hành trình sự nghiệp của bạn cùng <span class="text-emerald-700">QuickWork</span>
+              Bắt đầu hành trình sự nghiệp của bạn cùng <span class="text-sky-700">QuickWork</span>
             </h1>
 
             <div class="mt-10 space-y-6">
               <div v-for="item in benefits" :key="item.title" class="flex gap-4">
-                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-700">
                   <Icon :name="item.icon" class="h-5 w-5" />
                 </span>
                 <span>
@@ -71,12 +72,12 @@
         <main class="relative flex items-center justify-center px-5 py-8 sm:px-8 lg:px-12">
           <div class="w-full max-w-[660px] rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl shadow-slate-200/80 sm:p-8">
             <div class="mb-6 lg:hidden">
-              <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+              <span class="inline-flex items-center gap-2 rounded-full bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700">
                 <Icon name="uil:user-plus" class="h-5 w-5" />
                 Tạo tài khoản mới
               </span>
               <h1 class="mt-5 text-3xl font-bold leading-tight text-slate-950">
-                Bắt đầu cùng <span class="text-emerald-700">QuickWork</span>
+                Bắt đầu cùng <span class="text-sky-700">QuickWork</span>
               </h1>
             </div>
 
@@ -89,7 +90,7 @@
               </button>
             </div>
 
-            <div v-if="successMessage" class="mt-5 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
+            <div v-if="successMessage" class="mt-5 flex items-start gap-2 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm font-medium text-sky-700">
               <Icon name="uil:check-circle" class="mt-0.5 h-5 w-5 shrink-0" />
               <span>{{ successMessage }}</span>
             </div>
@@ -223,7 +224,7 @@
                     Chọn file GPKD
                     <input id="gpkd-file" type="file" class="sr-only" accept=".jpg,.jpeg,.png,.pdf,.docx" @change="handleFileUpload">
                   </label>
-                  <span class="text-sm font-medium" :class="companyForm.gpkd_url ? 'text-emerald-700' : 'text-slate-600'">
+                  <span class="text-sm font-medium" :class="companyForm.gpkd_url ? 'text-sky-700' : 'text-slate-600'">
                     <span v-if="uploadingFile">Đang tải lên...</span>
                     <span v-else-if="companyForm.gpkd_url">Đã tải lên giấy phép</span>
                     <span v-else>Chưa có file nào được chọn</span>
@@ -288,7 +289,7 @@
 
             <p class="mt-7 text-center text-sm font-medium text-slate-700">
               Đã có tài khoản?
-              <NuxtLink to="/auth/login" class="font-semibold text-emerald-600 transition hover:text-emerald-700">
+              <NuxtLink to="/auth/login" class="font-semibold text-sky-600 transition hover:text-sky-700">
                 Đăng nhập ngay
               </NuxtLink>
             </p>
@@ -306,6 +307,7 @@ definePageMeta({
 
 import { defineComponent, h, reactive, ref, resolveComponent, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import AuthRegisterExperience from '~/components/AuthRegisterExperience.vue'
 import { AuthService } from '~/services/auth.service'
 
 type RegisterRole = 'STUDENT' | 'COMPANY'
@@ -351,7 +353,7 @@ const AuthField = defineComponent({
         'span',
         {
           class: [
-            'mt-2 flex items-center gap-3 rounded-lg border bg-white px-4 py-3.5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-100',
+            'mt-2 flex items-center gap-3 rounded-lg border bg-white px-4 py-3.5 transition focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100',
             props.error ? 'border-rose-300' : 'border-slate-200'
           ]
         },
@@ -367,7 +369,7 @@ const AuthField = defineComponent({
 
 const tabClass = (active: boolean) => [
   'rounded-lg px-4 py-3 text-sm font-semibold transition',
-  active ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200' : 'text-slate-600 hover:text-slate-900'
+  active ? 'bg-white text-sky-700 shadow-sm ring-1 ring-sky-200' : 'text-slate-600 hover:text-slate-900'
 ]
 
 const changeRole = (newRole: RegisterRole) => {
@@ -687,17 +689,17 @@ const handleGoogleLogin = async () => {
   justify-content: center;
   gap: 0.75rem;
   border-radius: 0.5rem;
-  background: #059669;
+  background: #0284c7;
   padding: 1rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: white;
-  box-shadow: 0 18px 32px rgba(5, 150, 105, 0.22);
+  box-shadow: 0 18px 32px rgba(2, 132, 199, 0.22);
   transition: background 150ms ease, opacity 150ms ease;
 }
 
 .qw-auth-submit:hover {
-  background: #047857;
+  background: #0369a1;
 }
 
 .qw-auth-submit:disabled {

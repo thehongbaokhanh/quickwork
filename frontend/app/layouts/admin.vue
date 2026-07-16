@@ -3,17 +3,22 @@
     <div class="flex flex-1 h-screen overflow-hidden">
       <!-- Sidebar Desktop -->
       <aside class="w-64 bg-slate-950 border-r border-slate-900 hidden md:flex flex-col relative z-20 text-white">
-        <!-- Logo -->
+        <!-- Admin workspace identity -->
         <div class="h-16 flex items-center px-5 border-b border-white/10">
-          <div class="flex min-w-0 items-center gap-3 font-bold text-lg">
-            <img src="/images/brand/quickwork-icon-dark-transparent.png" alt="QuickWork" class="h-9 w-9 shrink-0 rounded-lg object-contain">
-            <span class="truncate">Quick<span class="text-emerald-400">Work</span></span>
+          <div class="flex min-w-0 items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-400/20 bg-sky-400/10 text-sky-300 shadow-sm shadow-sky-950/30">
+              <Icon name="uil:shield-check" class="h-6 w-6" aria-hidden="true" />
+            </span>
+            <span class="min-w-0">
+              <span class="block truncate text-sm font-black uppercase text-white">Admin Center</span>
+              <span class="mt-0.5 block truncate text-[11px] font-semibold text-slate-400">QuickWork Control</span>
+            </span>
           </div>
         </div>
 
         <!-- Menu -->
         <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
-          <NuxtLink v-for="item in menuItems" :key="item.path" :to="item.path" active-class="bg-emerald-500 text-slate-950 font-black shadow-sm shadow-emerald-950/20" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
+          <NuxtLink v-for="item in menuItems" :key="item.path" :to="item.path" active-class="bg-sky-500 text-slate-950 font-black shadow-sm shadow-sky-950/20" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
             <Icon :name="item.icon" class="w-5 h-5" />
             <span class="text-sm">{{ item.name }}</span>
           </NuxtLink>
@@ -41,21 +46,23 @@
                 <Icon name="uil:bars" class="h-5 w-5" />
               </button>
 
-              <NuxtLink to="/admin/dashboard" class="flex min-w-0 items-center gap-3">
-                <img src="/images/brand/quickwork-icon-dark-transparent.png" alt="QuickWork" class="h-10 w-10 shrink-0 rounded-lg object-contain shadow-sm">
+              <NuxtLink to="/admin/dashboard" class="flex min-w-0 items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100">
+                  <Icon :name="currentRouteIcon" class="h-5 w-5" aria-hidden="true" />
+                </span>
                 <span class="min-w-0">
                   <span class="block text-sm font-black leading-tight text-slate-950">
-                    Quick<span class="text-emerald-600">Work</span>
+                    Trung tâm quản trị
                   </span>
                   <span class="block max-w-40 truncate text-[11px] font-semibold leading-tight text-slate-500">
-                    Quản trị hệ thống
+                    {{ currentRouteName }}
                   </span>
                 </span>
               </NuxtLink>
 
               <div class="hidden items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 lg:flex">
-                <Icon name="uil:apps" class="h-4 w-4 text-emerald-600" />
-                <span>{{ currentRouteName }}</span>
+                <Icon name="uil:shield-check" class="h-4 w-4 text-sky-600" />
+                <span>Phiên quản trị</span>
               </div>
             </div>
 
@@ -67,7 +74,7 @@
                   @click.stop="toggleNotifications"
                 >
                   <Icon name="uil:bell" class="h-5 w-5" />
-                  <span class="absolute right-2 top-2 h-2 w-2 rounded-full border border-white bg-emerald-500"></span>
+                  <span class="absolute right-2 top-2 h-2 w-2 rounded-full border border-white bg-sky-500"></span>
                 </button>
 
                 <div
@@ -90,7 +97,7 @@
                   class="flex min-w-0 items-center gap-2 rounded-xl px-1.5 py-1 transition hover:bg-slate-100"
                   @click.stop="toggleUserMenu"
                 >
-                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-black text-white">
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-xs font-black text-white">
                     {{ adminInitials }}
                   </span>
                   <span class="hidden min-w-0 text-left sm:block">
@@ -237,6 +244,11 @@ const menuItems = [
 const currentRouteName = computed(() => {
   const item = menuItems.find(m => route.path.startsWith(m.path))
   return item ? item.name : 'Trang quản trị'
+})
+
+const currentRouteIcon = computed(() => {
+  const item = menuItems.find(m => route.path.startsWith(m.path))
+  return item?.icon || 'uil:shield-check'
 })
 </script>
 

@@ -6,6 +6,9 @@ import (
 )
 
 func RegisterEnterpriseJobRoutes(router fiber.Router, handler *handlers.EnterpriseJobHandler) {
+	router.Get("/applications", handler.ListApplications)
+	router.Put("/applications/:id/status", handler.ReviewApplication)
+
 	jobs := router.Group("/jobs")
 	jobs.Post("/", handler.CreateJob)
 	jobs.Get("/", handler.ListJobs)

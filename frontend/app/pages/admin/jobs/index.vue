@@ -28,7 +28,7 @@
     </div>
 
     <div v-if="loading" class="flex flex-col items-center justify-center py-12 space-y-3">
-      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-emerald-600 animate-spin" />
+      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-sky-600 animate-spin" />
       <span class="text-xs font-bold text-slate-400">Đang tải danh sách chờ duyệt...</span>
     </div>
 
@@ -37,7 +37,7 @@
       class="bg-white rounded-3xl border border-slate-100 p-12 text-center max-w-md mx-auto space-y-4 shadow-sm"
     >
       <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto text-3xl">
-        <Icon name="uil:check-circle" class="text-emerald-500" />
+        <Icon name="uil:check-circle" class="text-sky-500" />
       </div>
       <div class="space-y-1">
         <h3 class="font-extrabold text-slate-800 text-sm">Không có tin chờ duyệt</h3>
@@ -83,7 +83,7 @@
               <td class="px-6 py-4 text-slate-500">{{ formatDate(job.created_at) }}</td>
               <td class="px-6 py-4 text-right">
                 <button
-                  class="qw-chip bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  class="qw-chip bg-sky-50 text-sky-700 hover:bg-sky-100"
                   @click="openReview(job)"
                 >
                   Xem duyệt
@@ -147,7 +147,7 @@
             :class="[
               'flex-1 rounded-md border px-4 py-3 text-xs font-black transition flex items-center justify-center gap-2',
               decision === 'APPROVED'
-                ? 'bg-green-50 text-green-700 border-green-200 shadow-sm shadow-green-100'
+                ? 'bg-sky-50 text-sky-700 border-sky-200 shadow-sm shadow-sky-100'
                 : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             ]"
             @click="decision = 'APPROVED'"
@@ -191,7 +191,7 @@
           </button>
           <button
             :disabled="reviewing || (decision === 'REJECTED' && !rejectReason)"
-            class="rounded-md bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-100 transition hover:bg-emerald-700 disabled:opacity-50"
+            class="rounded-md bg-sky-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-sky-100 transition hover:bg-sky-700 disabled:opacity-50"
             @click="submitReview"
           >
             {{ reviewing ? 'Đang lưu...' : 'Xác nhận' }}

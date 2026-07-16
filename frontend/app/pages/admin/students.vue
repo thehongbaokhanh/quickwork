@@ -100,7 +100,7 @@
                   <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
                   <td class="px-5 py-4">
                     <div class="flex items-center gap-3">
-                      <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-emerald-50 text-sm font-black text-emerald-700">
+                      <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-sky-50 text-sm font-black text-sky-700">
                         <img v-if="student.student_profile?.avatar" :src="student.student_profile.avatar" alt="" class="h-full w-full object-cover">
                         <span v-else>{{ getInitial(student) }}</span>
                       </div>
@@ -123,7 +123,7 @@
                     </div>
                   </td>
                   <td class="px-5 py-4">
-                    <a v-if="student.student_profile?.cv_url" :href="student.student_profile.cv_url" target="_blank" class="qw-chip bg-emerald-50 text-emerald-700 hover:bg-emerald-100">
+                    <a v-if="student.student_profile?.cv_url" :href="student.student_profile.cv_url" target="_blank" class="qw-chip bg-sky-50 text-sky-700 hover:bg-sky-100">
                       <Icon name="uil:file-download" class="h-4 w-4" />
                       Xem CV
                     </a>
@@ -193,7 +193,7 @@
               <h2 class="qw-detail-title">{{ getStudentName(selectedStudent) }}</h2>
               <p class="qw-detail-subtitle">{{ selectedStudent.email }}</p>
               <div class="qw-detail-badges">
-                <span class="qw-chip qw-chip--compact bg-emerald-50 text-emerald-700">Học viên</span>
+                <span class="qw-chip qw-chip--compact bg-sky-50 text-sky-700">Học viên</span>
                 <span :class="['qw-chip', statusClass(selectedStudent.status)]">{{ statusLabel(selectedStudent.status) }}</span>
               </div>
             </div>
@@ -201,7 +201,7 @@
           <div class="flex shrink-0 items-center gap-2">
             <button
               v-if="!isEditingStudent"
-              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-black text-emerald-700 transition hover:bg-emerald-100"
+              class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-black text-sky-700 transition hover:bg-sky-100"
               type="button"
               @click="startEditStudent(selectedStudent)"
             >
@@ -306,14 +306,14 @@ const summaryCards = computed(() => [
     value: students.value.length,
     helper: 'Tài khoản role STUDENT',
     icon: 'uil:graduation-cap',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   {
     label: 'Đang hoạt động',
     value: countByStatus('ACTIVE'),
     helper: 'Có thể đăng nhập',
     icon: 'uil:check-circle',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   {
     label: 'Có số điện thoại',
@@ -353,7 +353,7 @@ const profileBars = computed(() => {
     {
       label: 'Có hồ sơ học viên',
       value: students.value.filter((student) => Boolean(student?.student_profile)).length,
-      className: 'bg-emerald-500'
+      className: 'bg-sky-500'
     },
     {
       label: 'Có số điện thoại',
@@ -363,7 +363,7 @@ const profileBars = computed(() => {
     {
       label: 'Có kỹ năng',
       value: students.value.filter((student) => getSkills(student).length > 0).length,
-      className: 'bg-emerald-500'
+      className: 'bg-sky-500'
     },
     {
       label: 'Có CV',
@@ -492,7 +492,7 @@ function statusLabel(status?: string) {
 
 function statusClass(status?: string) {
   const classes: Record<string, string> = {
-    ACTIVE: 'bg-emerald-50 text-emerald-700',
+    ACTIVE: 'bg-sky-50 text-sky-700',
     INACTIVE: 'bg-amber-50 text-amber-700',
     BANNED: 'bg-rose-50 text-rose-700'
   }

@@ -15,7 +15,7 @@
       </div>
       <div class="flex items-center gap-4">
         <span class="text-sm text-gray-500 hidden sm:inline">Chào mừng quay trở lại</span>
-        <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-semibold text-sm">
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center font-semibold text-sm">
           U
         </div>
       </div>

@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen bg-[#edf3fb] p-2 font-sans text-slate-950 sm:p-4">
+  <AuthLoginExperience v-if="true" />
+  <div v-else class="min-h-screen bg-[#edf3fb] p-2 font-sans text-slate-950 sm:p-4">
     <div class="relative mx-auto min-h-[calc(100vh-1rem)] max-w-[1320px] overflow-hidden rounded-[24px] border border-white bg-white shadow-2xl shadow-slate-200/90 sm:min-h-[calc(100vh-2rem)]">
       <header class="relative z-20 flex h-20 items-center justify-between px-5 sm:px-8 lg:px-10">
         <NuxtLink to="/" class="inline-flex items-center gap-3">
@@ -8,18 +9,18 @@
 
         <NuxtLink
           to="/auth/register"
-          class="rounded-lg border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-700"
+          class="rounded-lg border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-sky-200 hover:text-sky-700"
         >
-          Chưa có tài khoản? <span class="font-bold text-emerald-600">Đăng ký ngay</span>
+          Chưa có tài khoản? <span class="font-bold text-sky-600">Đăng ký ngay</span>
         </NuxtLink>
       </header>
 
       <div class="relative grid min-h-[calc(100vh-6.5rem)] lg:grid-cols-[0.82fr_1.18fr]">
         <section class="relative hidden overflow-hidden px-10 pb-10 pt-8 lg:flex lg:flex-col lg:justify-between">
-          <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(16,185,129,0.18),transparent_30%),linear-gradient(155deg,#ffffff_0%,#f2fbf8_48%,#e8f2fb_100%)]" />
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(14,165,233,0.18),transparent_30%),linear-gradient(155deg,#ffffff_0%,#f0f9ff_48%,#e8f2fb_100%)]" />
           <div class="absolute bottom-0 left-0 right-0 h-[48%] bg-[url('/images/quickwork-career-hero.png')] bg-cover bg-bottom opacity-45" />
           <div class="absolute left-0 top-28 grid grid-cols-6 gap-3 opacity-45">
-            <span v-for="dot in 48" :key="dot" class="h-1 w-1 rounded-full bg-emerald-500" />
+            <span v-for="dot in 48" :key="dot" class="h-1 w-1 rounded-full bg-sky-500" />
           </div>
 
           <div class="relative z-10 mt-16 max-w-md">
@@ -33,12 +34,12 @@
           </div>
 
           <div class="relative z-10 mb-20 flex items-end justify-center">
-            <div class="relative h-60 w-60 rounded-[34px] border border-white/80 bg-white/60 shadow-2xl shadow-emerald-900/15 backdrop-blur">
+            <div class="relative h-60 w-60 rounded-[34px] border border-white/80 bg-white/60 shadow-2xl shadow-sky-900/15 backdrop-blur">
               <img src="/images/brand/quickwork-logo-main-transparent.png" alt="QuickWork" class="absolute inset-8 h-44 w-44 object-contain">
-              <span class="absolute -right-8 top-16 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-xl">
+              <span class="absolute -right-8 top-16 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-xl">
                 <Icon name="uil:briefcase-alt" class="h-8 w-8" />
               </span>
-              <span class="absolute -bottom-8 -left-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-xl">
+              <span class="absolute -bottom-8 -left-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-xl">
                 <Icon name="uil:users-alt" class="h-8 w-8" />
               </span>
             </div>
@@ -46,7 +47,7 @@
 
           <div class="relative z-10 grid grid-cols-3 gap-4 rounded-xl bg-slate-950 px-6 py-6 text-white shadow-2xl shadow-slate-300">
             <div v-for="item in trustItems" :key="item.title" class="flex items-start gap-3">
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-500/15 text-sky-300">
                 <Icon :name="item.icon" class="h-5 w-5" />
               </span>
               <span>
@@ -65,7 +66,7 @@
             <div>
               <h2 class="text-3xl font-bold tracking-tight text-slate-950">Chào mừng trở lại</h2>
               <p class="mt-3 text-base leading-7 text-slate-700">
-                Đăng nhập để tiếp tục hành trình sự nghiệp cùng <span class="font-bold text-emerald-600">QuickWork</span>.
+                Đăng nhập để tiếp tục hành trình sự nghiệp cùng <span class="font-bold text-sky-600">QuickWork</span>.
               </p>
             </div>
 
@@ -77,7 +78,7 @@
             <div class="mt-7 space-y-5">
               <label class="block">
                 <span class="text-sm font-semibold text-slate-900">Email hoặc số điện thoại</span>
-                <span class="mt-2 flex items-center gap-3 rounded-lg border bg-white px-4 py-3.5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-100" :class="errors.email ? 'border-rose-300' : 'border-slate-200'">
+                <span class="mt-2 flex items-center gap-3 rounded-lg border bg-white px-4 py-3.5 transition focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100" :class="errors.email ? 'border-rose-300' : 'border-slate-200'">
                   <Icon name="uil:envelope" class="h-5 w-5 text-slate-500" />
                   <input
                     v-model="form.email"
@@ -94,7 +95,7 @@
 
               <label class="block">
                 <span class="text-sm font-semibold text-slate-900">Mật khẩu</span>
-                <span class="mt-2 flex items-center gap-3 rounded-lg border bg-white px-4 py-3.5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-100" :class="errors.password ? 'border-rose-300' : 'border-slate-200'">
+                <span class="mt-2 flex items-center gap-3 rounded-lg border bg-white px-4 py-3.5 transition focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100" :class="errors.password ? 'border-rose-300' : 'border-slate-200'">
                   <Icon name="uil:lock" class="h-5 w-5 text-slate-500" />
                   <input
                     v-model="form.password"
@@ -114,10 +115,10 @@
 
               <div class="flex items-center justify-between gap-4">
                 <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                  <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                  <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500">
                   Ghi nhớ đăng nhập
                 </label>
-                <NuxtLink to="/forgot-password" class="text-sm font-semibold text-emerald-600 transition hover:text-emerald-700">
+                <NuxtLink to="/forgot-password" class="text-sm font-semibold text-sky-600 transition hover:text-sky-700">
                   Quên mật khẩu?
                 </NuxtLink>
               </div>
@@ -125,7 +126,7 @@
               <button
                 type="submit"
                 :disabled="isLoading"
-                class="group flex w-full items-center justify-center gap-3 rounded-lg bg-emerald-600 px-5 py-4 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                class="group flex w-full items-center justify-center gap-3 rounded-lg bg-sky-600 px-5 py-4 text-sm font-semibold text-white shadow-lg shadow-sky-600/25 transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <span>{{ isLoading ? 'Đang đăng nhập...' : 'Đăng nhập' }}</span>
                 <Icon name="uil:arrow-right" class="h-5 w-5 transition group-hover:translate-x-0.5" />
@@ -150,7 +151,7 @@
 
             <p class="mt-7 text-center text-sm font-medium text-slate-700">
               Chưa có tài khoản?
-              <NuxtLink to="/auth/register" class="font-semibold text-emerald-600 transition hover:text-emerald-700">
+              <NuxtLink to="/auth/register" class="font-semibold text-sky-600 transition hover:text-sky-700">
                 Đăng ký ngay
               </NuxtLink>
             </p>
@@ -168,7 +169,9 @@ definePageMeta({
 
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import AuthLoginExperience from '~/components/AuthLoginExperience.vue'
 import { useAuthStore } from '~/stores/auth'
+import { getLoginRedirectForRole } from '~/utils/authRedirect'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -234,17 +237,13 @@ const handleLogin = async () => {
       password: form.password
     })
 
-    const role = authStore.userRole
-
-    if (role === 'ADMIN') {
-      await navigateTo('/admin')
-    } else if (role === 'ENTERPRISE') {
-      await navigateTo('/enterprise')
-    } else if (role === 'STUDENT') {
-      await navigateTo('/student')
-    } else {
+    if (!authStore.userRole) {
       throw new Error('Không lấy được thông tin quyền người dùng hợp lệ')
     }
+
+    const requestedRedirect = typeof route.query.redirect === 'string' ? route.query.redirect : undefined
+    const redirectTo = getLoginRedirectForRole(authStore.userRole, requestedRedirect)
+    await navigateTo(redirectTo)
   } catch (err: any) {
     errorMessage.value = err?.data?.message || err?.message || 'Thông tin tài khoản hoặc mật khẩu chưa chính xác.'
   } finally {

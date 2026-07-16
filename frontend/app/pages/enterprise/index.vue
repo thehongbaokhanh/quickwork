@@ -4,7 +4,7 @@
       <div class="grid gap-5 bg-slate-950 px-5 py-6 text-white lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-6">
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 rounded-md bg-emerald-400/15 px-3 py-1 text-xs font-bold text-emerald-100 ring-1 ring-emerald-300/20">
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-sky-400/15 px-3 py-1 text-xs font-bold text-sky-100 ring-1 ring-sky-300/20">
               <Icon name="uil:database" class="h-4 w-4" />
               Dữ liệu hệ thống
             </span>
@@ -35,7 +35,7 @@
             Xem danh sách
           </NuxtLink>
           <button
-            class="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-400 px-4 py-2.5 text-sm font-black text-slate-950 shadow-sm transition hover:bg-emerald-300 disabled:opacity-60"
+            class="inline-flex items-center justify-center gap-2 rounded-md bg-sky-400 px-4 py-2.5 text-sm font-black text-slate-950 shadow-sm transition hover:bg-sky-300 disabled:opacity-60"
             type="button"
             @click="openCreateJobModal"
           >
@@ -221,7 +221,7 @@
               </span>
             </div>
             <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
-              <div class="h-full rounded-full bg-emerald-400" :style="{ width: `${approvalRate}%` }" />
+              <div class="h-full rounded-full bg-sky-400" :style="{ width: `${approvalRate}%` }" />
             </div>
           </div>
 
@@ -329,7 +329,7 @@
       leave-from-class="scale-100 opacity-100"
       leave-to-class="scale-95 opacity-0"
     >
-      <div v-if="createModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+      <div v-if="createModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-md" @click.self="createModalOpen = false">
         <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-2xl">
           <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
             <div>
@@ -485,7 +485,7 @@ const statusMeta: Record<StatusKey, { label: string; description: string; icon: 
     label: 'Đã duyệt',
     description: 'Tin đang được hiển thị',
     icon: 'uil:check-circle',
-    iconClass: 'bg-emerald-50 text-emerald-700'
+    iconClass: 'bg-sky-50 text-sky-700'
   },
   PENDING: {
     label: 'Chờ duyệt',
@@ -597,7 +597,7 @@ const emptyMessage = computed(() => {
 const statusClasses: Record<string, string> = {
   DRAFT: 'border-teal-100 bg-teal-50 text-teal-700',
   PENDING: 'border-amber-100 bg-amber-50 text-amber-700',
-  APPROVED: 'border-emerald-100 bg-emerald-50 text-emerald-700',
+  APPROVED: 'border-sky-100 bg-sky-50 text-sky-700',
   REJECTED: 'border-rose-100 bg-rose-50 text-rose-700',
   CLOSED: 'border-slate-200 bg-slate-100 text-slate-600'
 }

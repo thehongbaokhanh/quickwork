@@ -4,7 +4,7 @@
     <div class="absolute top-4 left-4 sm:top-6 sm:left-8">
       <NuxtLink 
         to="/" 
-        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-600 bg-white border border-slate-200/60 shadow-sm transition-all hover:scale-102"
+        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-sky-600 bg-white border border-slate-200/60 shadow-sm transition-all hover:scale-102"
       >
         <Icon name="uil:arrow-left" class="w-4 h-4" />
         <span>Quay về trang chủ</span>
@@ -14,7 +14,7 @@
     <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
       <NuxtLink to="/" class="inline-flex flex-col items-center group">
         <img src="/images/brand/quickwork-icon-dark-transparent.png" alt="QuickWork" class="mb-3 h-14 w-14 rounded-xl object-contain shadow-md shadow-slate-200 transition-all group-hover:scale-105">
-        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Quick<span class="text-emerald-600">Work</span> Portal</h2>
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Quick<span class="text-sky-600">Work</span> Portal</h2>
       </NuxtLink>
       <p class="mt-2 text-xs text-slate-400 font-semibold">Hệ thống xác thực tập trung sinh viên & doanh nghiệp</p>
     </div>

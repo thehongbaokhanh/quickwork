@@ -1,6 +1,6 @@
 # Business Rules
 
-Last updated: 2026-07-10
+Last updated: 2026-07-16
 
 This file describes business behavior and invariants. Implementation details belong in source files; API paths belong in `docs/api.md`; schema details belong in `docs/database.md`.
 
@@ -92,7 +92,8 @@ Frontend access rule:
 
 - Enterprise users without approval are not allowed to complete login.
 - Enterprise pages use the company middleware and require role `ENTERPRISE` plus approved enterprise metadata.
-- Student area is limited to role `STUDENT`.
+- `/student` is the public all-jobs board and is not limited to role `STUDENT`.
+- Student-only pages, if added outside the public job board, should continue to use the `student` middleware.
 
 ## Jobs
 
@@ -109,6 +110,10 @@ Enterprise job rules:
 - Enterprise job APIs are under `/api/v1/enterprise/jobs`.
 - Creating a job uses the authenticated enterprise user id as `enterprise_id`.
 - Enterprise-created jobs can be submitted as `PENDING`.
+- Draft jobs can be submitted to admin review from the enterprise edit screen by changing status to `PENDING`.
+- Rejected jobs can be edited and requested for reposting by changing status back to `PENDING`.
+- Closing/deleting an enterprise job changes its status to `CLOSED`; it is not a hard delete.
+- Closed jobs should not expose edit, repost, or close actions in the enterprise UI. They can only be restored to `DRAFT` before further edits or resubmission.
 - Admin reviews pending jobs.
 
 Public job visibility:
@@ -117,6 +122,20 @@ Public job visibility:
 - Homepage and student job-board listings must use persisted backend jobs instead of hardcoded job counts/cards.
 - Public APIs only return jobs with status `APPROVED`.
 - `PENDING`, `REJECTED`, `DRAFT`, and `CLOSED` jobs stay out of public listings.
+
+Student job actions:
+
+- Viewing the homepage and `/student` job board remains public.
+- Applying to a job requires authenticated role `STUDENT`.
+- Saving or removing a favorite job requires authenticated role `STUDENT`.
+- Students can only apply to or save jobs with status `APPROVED`.
+- A student can apply to the same job only once.
+- A student can save the same favorite job only once.
+- Repeated apply/save requests return the existing row instead of creating duplicates.
+- New applications start as `APPLIED`.
+- Applications are visible only to the enterprise that owns the applied job.
+- Approved enterprise users can review their applications as `ACCEPTED` or `REJECTED`.
+- Enterprise review can store an optional `employer_note` for the latest decision context.
 
 Admin job review:
 

@@ -24,6 +24,862 @@ Tai lieu nay dung de ghi lai loi, thay doi, cach sua va ket qua kiem tra cua du 
 
 ## Da xu ly
 
+### 2026-07-16 - Tach menu ung vien nha tuyen dung thanh cac trang con
+
+Hien tuong / Yeu cau:
+
+- Sidebar nha tuyen dung can doi muc `Ung vien` thanh nhom co `Danh sach ung vien`, `Ung vien da luu`, `Bi tu choi`.
+- Can them cac muc `Lich phong van` va `Thong bao` nhu bo cuc tham chieu.
+- Can thiet ke truoc trang ung vien da luu va bi tu choi dua tren giao dien bang ung vien hien tai.
+
+Cach sua:
+
+- Cap nhat `enterprise` layout de gom nav ung vien thanh nhom route con va them route lich phong van/thong bao.
+- Them `CandidateCollectionView` dung chung cho trang ung vien da luu va bi tu choi, dung truc tiep du lieu that tu `JobService.getEnterpriseApplications()`.
+- Trang ung vien da luu chi hien thi khi API tra co saved/bookmarked; khong tao du lieu mau tren frontend.
+- Them trang trong thai rong cho lich phong van va thong bao de sidebar khong bi route cut.
+
+File lien quan:
+
+- `frontend/app/layouts/enterprise.vue`
+- `frontend/app/components/enterprise/CandidateCollectionView.vue`
+- `frontend/app/pages/enterprise/applications/saved.vue`
+- `frontend/app/pages/enterprise/applications/rejected.vue`
+- `frontend/app/pages/enterprise/interviews.vue`
+- `frontend/app/pages/enterprise/notifications.vue`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- `git -c safe.directory=D:/GOLANG/QuickWork diff --check` pass, chi con canh bao CRLF san co tren Windows.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Tinh chinh bang ung vien va mau nut yeu thich
+
+Hien tuong / Yeu cau:
+
+- Bang ung vien cua nha tuyen dung bi xuong dong o cot ngay ung tuyen, trang thai va hanh dong.
+- Dong phan trang "Hien thi ... ung vien" can doi thanh dieu khien so luong ung vien trong 1 trang.
+- Dropdown loc trong bang can dep hon va co cuon khi danh sach dai.
+- Nut tim tren giao dien viec lam sinh vien can doi sang mau do khi da yeu thich.
+
+Cach sua:
+
+- Them component `ScrollSelect` dung chung cho dropdown co panel cuon, hang option phang va dong bo kich thuoc voi nut goc.
+- Thay cac dropdown loc va page-size trong bang ung vien bang `ScrollSelect`.
+- Co dinh do rong cot ngay ung tuyen, trang thai, danh gia va hanh dong de tranh xuong dong.
+- Doi trang thai favorite active sang tone do cho card viec lam, popup chi tiet viec lam va trang `/student`.
+
+File lien quan:
+
+- `frontend/app/components/ui/ScrollSelect.vue`
+- `frontend/app/pages/enterprise/applications.vue`
+- `frontend/app/components/HomeJobCard.vue`
+- `frontend/app/components/home/HomeJobDetailPanel.vue`
+- `frontend/app/pages/student/index.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build frontend con canh bao cu ve duplicate `useToast`, sourcemap, deprecated trailing slash mapping va canh bao ket noi font/icon provider do moi truong chan network.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Sua modal nha tuyen dung bi ho lop phu phia tren
+
+Hien tuong / Yeu cau:
+
+- Khi mo modal trong trang nha tuyen dung, header/phia tren man hinh van bi ho va khong nam duoi lop lam mo.
+- Can sua modal xem chi tiet ung tuyen va modal xem ho so ung vien de lop phu che dung toan man hinh.
+
+Cach sua:
+
+- Render modal sua/xem chi tiet va modal ho so ung vien bang `Teleport` ra `body` de thoat khoi stacking context cua layout.
+- Tang z-index cua lop phu modal len tren header va giu `fixed inset-0` + `backdrop-blur-md`.
+- Them `overscroll-contain` de han che scroll nen bi keo theo khi modal dang mo.
+
+File lien quan:
+
+- `frontend/app/pages/enterprise/jobs/index.vue`
+- `frontend/app/pages/enterprise/applications.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build frontend con canh bao cu ve duplicate `useToast`, sourcemap va deprecated trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Khoi phuc modal nha tuyen dung dang hop noi va lam mo toan man hinh
+
+Hien tuong / Yeu cau:
+
+- Can quay lai kieu modal truoc khi doi sang full-screen.
+- Lop lam mo phia sau modal phai phu toan bo man hinh.
+
+Cach sua:
+
+- Dua modal sua tin tuyen dung, modal xem ho so ung vien va hop xac nhan ve dang hop noi co gioi han kich thuoc.
+- Tang backdrop thanh `fixed inset-0` voi nen toi trong suot va `backdrop-blur-md` de lam mo toan viewport.
+- Dong bo backdrop cho modal tao tin nhanh o dashboard nha tuyen dung.
+
+File lien quan:
+
+- `frontend/app/pages/enterprise/index.vue`
+- `frontend/app/pages/enterprise/jobs/index.vue`
+- `frontend/app/pages/enterprise/applications.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build frontend con canh bao cu ve duplicate `useToast`, sourcemap va deprecated trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Chuyen modal nha tuyen dung sang full-screen
+
+Hien tuong / Yeu cau:
+
+- Cac modal trong khu vuc nha tuyen dung khong duoc hien thi nhu hop noi lung chung giua man hinh.
+- Can thiet ke modal theo dang full-screen de khong bi cam giac lap lung va thieu khong gian thao tac.
+
+Cach sua:
+
+- Chuyen modal sua tin tuyen dung sang overlay full-screen voi header/footer co dinh, noi dung cuon ben trong.
+- Chuyen modal xem ho so ung vien sang overlay full-screen dong bo voi modal sua tin.
+- Chuyen hop xac nhan dong/hoan tac tin tuyen dung sang full-screen confirmation view.
+
+File lien quan:
+
+- `frontend/app/pages/enterprise/jobs/index.vue`
+- `frontend/app/pages/enterprise/applications.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build frontend con canh bao cu ve duplicate `useToast`, sourcemap va deprecated trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Lam moi modal sua tin va trang ung vien nha tuyen dung
+
+Hien tuong / Yeu cau:
+
+- Man chinh sua tin tuyen dung can hien thi nhu modal noi tren trang hien tai, nen phia sau chi lam mo nhe.
+- Trang ung vien cua nha tuyen dung can dong bo voi giao dien dashboard trong anh mau: thong ke, bo loc, bang ung vien, hanh dong xem ho so va xu ly don.
+
+Cach sua:
+
+- Dieu chinh modal sua tin tuyen dung thanh overlay co `role="dialog"`, nen mo nhe, khung noi lon hon va can giua trong viewport.
+- Viet lai `frontend/app/pages/enterprise/applications.vue` theo dang bang quan tri voi 5 the thong ke, bo loc theo vi tri/trang thai/ngay ung tuyen, chon dong, xuat CSV, phan trang va modal xem ho so ung vien.
+- Giu nguyen cac API hien co cho danh sach ung vien va duyet/tu choi don ung tuyen.
+
+File lien quan:
+
+- `frontend/app/pages/enterprise/jobs/index.vue`
+- `frontend/app/pages/enterprise/applications.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build frontend con canh bao cu ve duplicate `useToast`, sourcemap va deprecated trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Chuyen don ung tuyen ve trang ung vien cua nha tuyen dung
+
+Hien tuong / Yeu cau:
+
+- Khi sinh vien ung tuyen, nha tuyen dung cua tin do can nhan duoc thong tin ung vien.
+- Trang nha tuyen dung can co phan ung vien voi thong tin can thiet de chap nhan hoac tu choi don ung tuyen.
+
+Cach sua:
+
+- Mo rong `JobApplication` voi trang thai `ACCEPTED`, `REJECTED`, `employer_note` va `reviewed_at`.
+- Them API doanh nghiep `GET /enterprise/applications` de lay cac don ung tuyen thuoc cac job cua doanh nghiep hien tai.
+- Them API `PUT /enterprise/applications/:id/status` de nha tuyen dung chap nhan hoac tu choi don ung tuyen, kem ghi chu phan hoi.
+- Them trang `frontend/app/pages/enterprise/applications.vue` hien thi danh sach ung vien, thong tin lien he, CV, ky nang, tin da ung tuyen va thao tac xu ly.
+- Mo khoa menu `Ung vien` trong layout doanh nghiep va noi service frontend voi API moi.
+- Cap nhat docs API, database, business rules va architecture.
+
+File lien quan:
+
+- `backend/internal/models/job_application.go`
+- `backend/internal/handlers/enterprise_job_handler.go`
+- `backend/routes/enterprise_routes.go`
+- `backend/cmd/api/main.go`
+- `frontend/app/services/job.service.ts`
+- `frontend/app/layouts/enterprise.vue`
+- `frontend/app/pages/enterprise/applications.vue`
+- `docs/api.md`
+- `docs/database.md`
+- `docs/business-rules.md`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `gofmt -w ...` pass.
+- `go test ./...` pass.
+- `npm.cmd run build` pass.
+- Build frontend con canh bao cu ve duplicate `useToast`, sourcemap va deprecated trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Them chuc nang ung tuyen va yeu thich cho sinh vien
+
+Hien tuong / Yeu cau:
+
+- Sinh vien can ung tuyen viec lam va luu/bo luu viec yeu thich bang du lieu that thay vi thong bao tinh nang dang phat trien.
+- Trang chu va trang `/student` can phan anh trang thai da ung tuyen/da luu khi nguoi dung la sinh vien.
+
+Cach sua:
+
+- Them model `JobApplication` va `FavoriteJob`, migrate thanh cac bang `job_applications` va `favorite_jobs` voi unique index theo cap `student_id + job_id`.
+- Them `StudentJobHandler` va route `/api/v1/student` cho job actions: xem trang thai, danh sach da ung tuyen, danh sach yeu thich, ung tuyen, luu va bo luu.
+- Noi `StudentService` voi cac endpoint moi.
+- Cap nhat trang `/student`, homepage job cards va popup chi tiet de goi API that, hien spinner/trang thai da luu/da ung tuyen va canh bao khi chua dang nhap hoac khong phai role `STUDENT`.
+- Cap nhat docs API, database, business rules va architecture theo route/model/luong moi.
+
+File lien quan:
+
+- `backend/internal/models/job_application.go`
+- `backend/internal/models/favorite_job.go`
+- `backend/internal/handlers/student_job_handler.go`
+- `backend/routes/student_routes.go`
+- `backend/database/migration.go`
+- `backend/cmd/api/main.go`
+- `frontend/app/services/student.service.ts`
+- `frontend/app/pages/student/index.vue`
+- `frontend/app/composables/useHomeJobs.ts`
+- `frontend/app/components/HomeLandingPage.vue`
+- `frontend/app/components/HomeJobCard.vue`
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `frontend/app/components/home/HomeJobDetailPanel.vue`
+- `docs/api.md`
+- `docs/database.md`
+- `docs/business-rules.md`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `gofmt -w ...` pass.
+- `go test ./...` pass khi chay ngoai sandbox do Go can ghi cache trong `AppData/Local/go-build`.
+- `npm.cmd run build` pass.
+- Frontend khong co script `lint` hoac `typecheck` rieng trong `package.json`.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Lam gon thong bao gui duyet tin
+
+Hien tuong / Yeu cau:
+
+- Toast khi gui duyet tin tuyen dung nhin xau, noi dung dai va cam giac nang.
+
+Cach sua:
+
+- Rut gon noi dung toast gui duyet thanh `Da gui duyet tin` va mo ta ngan gon hon.
+- Lam lai `UiToast` gon hon: card nho hon, icon nho, thanh trang thai mong tren dau va shadow mem hon.
+
+File lien quan:
+
+- `frontend/app/pages/enterprise/jobs/index.vue`
+- `frontend/app/components/ui/Toast.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Lam dep modal va thong bao thao tac tin tuyen dung
+
+Hien tuong / Yeu cau:
+
+- Nen xung quanh cua so chinh sua tin tuyen dung can mo ro hon de modal tach khoi trang.
+- Cac thong bao/confirm khi nha tuyen dung luu, dong tin, gui duyet lai hoac hoan tac dang dung popup trinh duyet va can dep hon.
+
+Cach sua:
+
+- Tang blur/dim cho overlay cua modal chinh sua tin tuyen dung va them ring/border de cua so noi ro hon.
+- Thay `alert`/`confirm` trong trang quan ly tin tuyen dung bang toast va hop xac nhan noi bo.
+- Lam lai `UiToast` theo phong cach card hien dai co icon, thanh mau trang thai, shadow va z-index cao hon de hien tren modal.
+
+File lien quan:
+
+- `frontend/app/pages/enterprise/jobs/index.vue`
+- `frontend/app/components/ui/Toast.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Lam lai modal chinh sua tin tuyen dung doanh nghiep
+
+Hien tuong / Yeu cau:
+
+- Man hinh nha tuyen dung can cua so chinh sua tin dep hon va hien day du thong tin hon.
+- Tin nhap can co nut dang tin tuyen dung, tin bi tu choi can co nut xin dang lai.
+- Tin da dong/da xoa khong duoc hien cac thao tac dang lai, thay vao do can co nut hoan tac.
+
+Cach sua:
+
+- Lam lai modal chinh sua tin tuyen dung voi bo cuc lon hon, gom thong tin chinh, trang thai, ngay tao/cap nhat, ly do tu choi, mo ta va yeu cau cong viec.
+- Them luong gui duyet lai bang `PUT /enterprise/jobs/:id` voi `status: "PENDING"` cho tin nhap va tin bi tu choi.
+- Doi tin `CLOSED` chi hien nut hoan tac; hoan tac dua tin ve `DRAFT` bang endpoint cap nhat hien co.
+- Cap nhat tai lieu API va business rules ve dong/xoa mem tin tuyen dung.
+
+File lien quan:
+
+- `frontend/app/pages/enterprise/jobs/index.vue`
+- `docs/api.md`
+- `docs/business-rules.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Lam mem item con trong user dropdown
+
+Hien tuong / Yeu cau:
+
+- Dropdown tai khoan sau khi bam icon nguoi dung con cac duong ke giua option con.
+- Mau item con can dong bo hon voi khoi thong tin tai khoan chinh.
+
+Cach sua:
+
+- Bo border ngan cach giua cac option con trong account dropdown desktop/mobile cua `HomeHeader`.
+- Doi nen item con ve trang, chu ve slate dam va hover/focus xanh nhat de hop voi phan ten/email tai khoan.
+
+File lien quan:
+
+- `frontend/app/components/home/HomeHeader.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-16 - Bo card rieng cho item trong user dropdown
+
+Hien tuong / Yeu cau:
+
+- Dropdown tai khoan sau khi bam icon nguoi dung dang hien moi option con nhu mot card/oval tach rieng.
+- Can cac option trong nhom dropdown hien lien mach hon.
+
+Cach sua:
+
+- Doi item con trong account dropdown desktop/mobile cua `HomeHeader` tu button co border, rounded va shadow rieng sang cac dong trong mot khoi list.
+- Them border ngan cach mong giua cac dong, hover/focus theo hang, khong con card rieng tung option.
+
+File lien quan:
+
+- `frontend/app/components/home/HomeHeader.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-15 - Gioi han dropdown loai hinh tren hero
+
+Hien tuong / Yeu cau:
+
+- Dropdown `Tat ca loai hinh` tren trang chu bi dai va de che noi dung ben duoi.
+- Cac option dang hien nhu nhieu vien card/oval tach roi, can gom lai thanh mot menu lien mach.
+
+Cach sua:
+
+- Gioi han chieu cao menu `Loai hinh cong viec` trong `HomeSearchBar` de chi hien khoang 2 option va cuon de xem cac option con lai.
+- Bo border/shadow/rounded rieng tung option, chi giu rounded o container va hover/focus theo dong.
+- Them scrollbar nho, dong bo mau xanh nuoc cua giao dien.
+
+File lien quan:
+
+- `frontend/app/components/home/HomeSearchBar.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-15 - Dong bo giao dien cac dropdown
+
+Hien tuong / Yeu cau:
+
+- Cac thanh phan hien ra sau khi bam dropdown dang nho va khac style so voi nut ban dau.
+- Can item trong dropdown co kich thuoc, bo goc, font, border va trang thai hover/focus dong bo hon.
+
+Cach sua:
+
+- Doi dropdown `Loai hinh cong viec` trong `HomeSearchBar` tu native select sang custom listbox de kiem soat giao dien option.
+- Doi dropdown `Loc theo` trong `HomeFeaturedJobs` sang cac item cao `h-14`, rounded-2xl, co border/shadow/focus giong nut trigger.
+- Dong bo item con trong account dropdown desktop/mobile cua `HomeHeader` thanh row button co border, nen, bo goc va focus state ro.
+- Tang style mac dinh cua `ui/Select` len rounded-2xl, min-height va spacing dong bo voi input/button moi.
+
+File lien quan:
+
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `frontend/app/components/home/HomeSearchBar.vue`
+- `frontend/app/components/home/HomeHeader.vue`
+- `frontend/app/components/ui/Select.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-15 - Tinh gon nut hanh dong tren the viec lam
+
+Hien tuong / Yeu cau:
+
+- Popup chi tiet viec lam khong can nut dong `X`.
+- The viec lam khong can hien chu `Chi tiet`.
+- Nut yeu thich can chuyen xuong duoi de khong che phan logo va thong tin chinh.
+
+Cach sua:
+
+- Xoa nut dong trong `HomeJobDetailPanel`, popup tiep tuc dong theo co che hover/outside hien co cua `HomeFeaturedJobs`.
+- Xoa label `Chi tiet` o footer cua `HomeJobCard`.
+- Chuyen nut trai tim tu goc tren phai xuong footer sau duong ke mo cua the viec lam.
+
+File lien quan:
+
+- `frontend/app/components/HomeJobCard.vue`
+- `frontend/app/components/home/HomeJobDetailPanel.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-15 - Hien 9 viec/trang va dat popup theo title hover
+
+Hien tuong / Yeu cau:
+
+- Khu "Viec lam tot nhat" can hien toi da 9 viec moi trang.
+- Can them du lieu that vao database de co nhieu viec hon khi su dung.
+- Popup chi tiet can nam ben canh the viec lam dang hover.
+- Chi khi hover vao ten nghe/viec lam thi moi hien popup.
+
+Cach sua:
+
+- Doi `HomeFeaturedJobs` tu `pageSize = 6` sang `pageSize = 9`.
+- Bo hover/focus tren wrapper card; `HomeJobCard` chi phat preview khi hover/focus vao dong title viec lam.
+- Them anchor rect tu card/title ve `HomeFeaturedJobs` de tinh `top/left` cho popup, uu tien mo ben phai card va tu dong ne mep viewport.
+- Giu pause auto-pagination khi title/popup dang hover.
+- Chay script Go tam de insert/update truc tiep them categories, skills, 3 doanh nghiep va 12 viec lam approved vao MySQL; script tam da bi xoa sau khi chay.
+- Cap nhat `docs/architecture.md`.
+
+File lien quan:
+
+- `frontend/app/components/HomeJobCard.vue`
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build con canh bao cu ve duplicate `useToast`, sourcemap va trailing slash mapping.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-15 - Doi chi tiet viec lam thanh hover preview popup
+
+Hien tuong / Yeu cau:
+
+- Khu "Viec lam tot nhat" tu dong chuyen trang hoi nhanh, can cham hon 1-2 giay.
+- Chi tiet viec lam khong nen day layout thanh cot ben canh nua, can hien thi dang hover preview popup.
+- Khi nguoi dung dang hover card viec lam hoac popup chi tiet, danh sach khong duoc tu dong chuyen trang.
+
+Cach sua:
+
+- Tang `autoPageDelay` cua `HomeFeaturedJobs` tu 5s len 7s.
+- Doi `HomeFeaturedJobs` sang render job grid 3 cot on dinh va hien `HomeJobDetailPanel` trong popup fixed khi hover/focus/click vao card.
+- Them timer dong popup ngan khi roi hover de nguoi dung co the di chuyen tu card sang popup.
+- Them pause auto-pagination khi card/popup dang hover hoac preview dang mo.
+- Them variant `popup` cho `HomeJobDetailPanel` de bo sticky va gioi han chieu cao hop voi popup.
+- Cap nhat `HomeLandingPage` de hover mo preview ma khong tu dong scroll ve section.
+- Cap nhat `docs/architecture.md`.
+
+File lien quan:
+
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `frontend/app/components/home/HomeJobDetailPanel.vue`
+- `frontend/app/components/HomeLandingPage.vue`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap va dependency deprecation.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-15 - Bo sung du lieu DB truc tiep va tinh chinh panel viec lam
+
+Hien tuong / Yeu cau:
+
+- Can them du lieu mau truc tiep vao database, khong them tiep vao `seed.go`.
+- Bang doanh nghiep trong admin bi cot tin tuyen dung xuong 3-4 dong, lam hang bi cao bat thuong.
+- Panel chi tiet viec lam can dong khi click ra ngoai cua so.
+- Thanh cuon trong panel chi tiet khong duoc hien mui ten o dau/cuoi.
+
+Cach sua:
+
+- Chay script Go tam ket noi MySQL bang config hien tai de insert/update du lieu mau cho categories, skills, users, student profiles, enterprise profiles, jobs, notifications, messages va transactions.
+- Xoa script tam sau khi chay; `backend/database/seed.go` khong con thay doi demo mo rong.
+- Doi cot tin tuyen dung trong `admin/enterprises` thanh hang flex mot dong co pill tong so tin va thong tin da duyet/cho duyet.
+- Them click-outside listener cho `HomeFeaturedJobs` de dong `HomeJobDetailPanel` khi bam ra ngoai panel.
+- Them CSS an `::-webkit-scrollbar-button` va scrollbar corner cho panel chi tiet.
+
+File lien quan:
+
+- `frontend/app/pages/admin/enterprises.vue`
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `frontend/app/components/home/HomeJobDetailPanel.vue`
+
+Kiem tra:
+
+- `go run direct_db_sample_data_tmp.go` trong `backend` pass va bao da insert/update direct DB sample data.
+- `npm.cmd run build` pass.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap va dependency deprecation.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-15 - Can lai card viec lam tot nhat tren homepage
+
+Hien tuong / Yeu cau:
+
+- Trong card viec lam tot nhat, nut trai tim va khu "Chi tiet" dang nam canh nhau theo truc doc nen nhin roi va xau.
+- Nut trai tim can nam o goc tren phai cua card.
+- Khu "Chi tiet" can nam goc duoi phai va co duong ke mo phan tach voi thong tin phia tren.
+- Thong tin chinh can nam canh logo; cac thong tin phu nhu luong, dia diem, loai hinh va badge can nam ben duoi.
+
+Cach sua:
+
+- Doi `HomeJobCard` tu grid 3 cot sang card flex co nut yeu thich absolute o goc tren phai.
+- Tach vung logo + ten viec + cong ty o dau card.
+- Gom luong, dia diem, loai hinh va badge vao nhom chip thong tin phu ben duoi.
+- Them border-top mo cho hang hanh dong va dat `Chi tiet` ve goc duoi phai.
+- Thu nho nut yeu thich xuong 32px, icon 16px va dat sat goc hon de khong che logo/thong tin viec lam.
+- Ap dung mau vien card va chip loai hinh theo tung loai cong viec; dua chip loai hinh co icon len tren ten viec va bo badge loai hinh khong icon o phan thong tin phu.
+- Rut gon ten viec xuong mot dong co tooltip title de card khong bi day thong tin.
+
+File lien quan:
+
+- `frontend/app/components/HomeJobCard.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap va dependency deprecation.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-15 - Loc va phan trang khu viec lam tot nhat tren homepage
+
+Hien tuong / Yeu cau:
+
+- Sau khi dang nhap, homepage khong nen tiep tuc hien khoi "Ban muon dang nhap/dang ky voi vai tro nao?".
+- Khu "Viec lam tot nhat" can co dropdown loc theo dia diem, muc luong, kinh nghiem, nganh nghe va loai hinh.
+- Danh sach viec lam can hien thi theo trang, moi trang 6 viec va co the tu dong chuyen trang khi nguoi dung khong tuong tac.
+
+Cach sua:
+
+- An `HomeCareerCta` khi `authStore.isAuthenticated` la `true`.
+- Doi `HomeFeaturedJobs` thanh section co dropdown filter, chip gia tri loc, job grid 6 tin/trang, nut phan trang va timer auto-advance sau khoang idle.
+- Doi `HomeJobCard` sang card ngang gon hon voi logo, thong tin chinh, tag luong/dia diem va nut trai tim yeu thich.
+- Doi `useHomeJobs.bestJobs` tra danh sach da sap xep day du thay vi cat con 6 tin de pagination co du lieu that.
+- Cap nhat `docs/architecture.md`.
+
+File lien quan:
+
+- `frontend/app/components/HomeLandingPage.vue`
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `frontend/app/components/HomeJobCard.vue`
+- `frontend/app/composables/useHomeJobs.ts`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap va dependency deprecation.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-14 - Doi homepage thanh trang chinh sau dang nhap va bien student thanh job board public
+
+Hien tuong / Yeu cau:
+
+- Trang chu can la trang chinh sau khi nguoi dung dang nhap thanh cong.
+- Header trang chu can doi nut dang nhap/dang ky thanh cum icon thong bao, tin nhan, avatar va menu tai khoan khi da dang nhap.
+- Trang `/student` can dong vai tro trang hien thi tat ca viec lam, dung header giong trang chu.
+- Ho so va cai dat can nam trong menu thong tin nguoi dung thay vi nav rieng tren header sinh vien.
+
+Cach sua:
+
+- Cap nhat `HomeHeader` de doc auth store va hien thi menu tai khoan khi authenticated.
+- Doi login redirect mac dinh ve `/`, van ton trong `redirect` query khi nguoi dung bi day tu route can dang nhap.
+- Doi Google callback login ve `/` de dong bo voi login thuong.
+- Dua link `Xem tat ca` va link nganh nghe tren homepage sang `/student`.
+- Cho `/student` thanh public page trong global guard va bo middleware `student` khoi page.
+- Doi layout `student` sang dung `HomeHeader` va `HomeFooter`; profile/settings chi con middleware `auth`.
+- Cap nhat `docs/architecture.md` va `docs/business-rules.md`.
+
+File lien quan:
+
+- `frontend/app/components/home/HomeHeader.vue`
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `frontend/app/components/home/HomeCategories.vue`
+- `frontend/app/pages/student/index.vue`
+- `frontend/app/layouts/student.vue`
+- `frontend/app/components/AuthLoginExperience.vue`
+- `frontend/app/pages/auth/login.vue`
+- `frontend/app/pages/auth/google/callback.vue`
+- `frontend/app/middleware/auth.global.ts`
+- `frontend/app/pages/profile.vue`
+- `frontend/app/pages/settings.vue`
+- `docs/architecture.md`
+- `docs/business-rules.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap va dependency deprecation.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-14 - Can lai quick stats va them panel chi tiet viec lam trang chu
+
+Hien tuong / Yeu cau:
+
+- Chu trong 4 o thong ke nhanh tren trang chu khong deu, co nhan bi lech len/xuong do can theo baseline.
+- Khi bam chi tiet viec lam, can hien thi mot panel chi tiet nam ben canh danh sach theo co che tuong tu TopCV.
+
+Cach sua:
+
+- Can lai `HomeQuickStats` bang truc co dinh cho so, nhan va mo ta; bo cach can `items-baseline`.
+- Them `HomeJobDetailPanel` de hien thi logo cong ty, tieu de, luong, dia diem, loai hinh, cap bac, ngay dang, mo ta va ky nang.
+- Cap nhat `HomeFeaturedJobs` de danh sach co sang ben trai va panel sticky hien ben phai khi chon job.
+- Cap nhat `HomeLandingPage` de luu job dang chon, dong panel khi reset/filter lam job khong con trong danh sach.
+- Cap nhat `docs/architecture.md`.
+
+File lien quan:
+
+- `frontend/app/components/home/HomeQuickStats.vue`
+- `frontend/app/components/home/HomeFeaturedJobs.vue`
+- `frontend/app/components/home/HomeJobDetailPanel.vue`
+- `frontend/app/components/HomeJobCard.vue`
+- `frontend/app/components/HomeLandingPage.vue`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-14 - Tach khoi quick stats khoi hero trang chu
+
+Hien tuong / Yeu cau:
+
+- Phan hero/search phia tren dang chen vao va che mot phan 4 o thong ke ben duoi tren trang chu.
+
+Cach sua:
+
+- Bo margin am `-mt-8` trong `HomeQuickStats`.
+- Them padding rieng cho section thong ke de card nam tach bach duoi hero.
+
+File lien quan:
+
+- `frontend/app/components/home/HomeQuickStats.vue`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-14 - Dong bo logo footer va thay identity sidebar admin
+
+Hien tuong / Yeu cau:
+
+- Sidebar trai cua trang admin dang hien logo QuickWork nen bi lap voi top header.
+- Footer trang chu, dang nhap va dang ky dung logo khac nhau; logo tren nen toi bi chim/khong dong bo.
+
+Cach sua:
+
+- Them `FooterBrandMark` dung wordmark QuickWork that tren nen trang de hien ro tren footer navy/dark.
+- Doi `HomeFooter` va `AuthShell` cung dung `FooterBrandMark`, bo cach invert logo o auth footer.
+- Doi khu identity dau sidebar admin tu logo QuickWork sang `Admin Center / QuickWork Control` voi icon shield quan tri.
+- Cap nhat `docs/architecture.md`.
+
+File lien quan:
+
+- `frontend/app/components/FooterBrandMark.vue`
+- `frontend/app/components/home/HomeFooter.vue`
+- `frontend/app/components/AuthShell.vue`
+- `frontend/app/layouts/admin.vue`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap va dependency deprecation.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-13 - Refactor va lam moi trang chu public QuickWork
+
+Hien tuong / Yeu cau:
+
+- Trang chu public dang bi nang tinh dashboard, co nhieu section thong ke trung lap va role Admin tren landing page.
+- Hero can sang, hien dai, khong de anh chen vao chu; search viec lam phai la trong tam.
+- Can giu nguyen API, route, business logic va chi hien du lieu that tu DB.
+- Can tach `HomeLandingPage.vue` lon thanh component nho de de bao tri.
+
+Cach sua:
+
+- Tach homepage thanh cac component trong `frontend/app/components/home/`: header, hero/search, quick stats, featured jobs, categories, employer CTA, career CTA va footer.
+- Tao `frontend/app/composables/useHomeJobs.ts` de gom logic load `JobService.getAllJobs()`, map `DisplayJob`, tinh quick stats, category stats, cong ty noi bat va filter search.
+- Refactor `HomeLandingPage.vue` thanh component dieu phoi, bo cac section dashboard thi truong, bieu do 7 ngay, impact stats trung lap va role `Quan tri vien`.
+- Refactor `HomeJobCard.vue` gon hon, card click duoc, gioi han 2 skill va thay nut ung tuyen lon bang CTA nho `Xem chi tiet`.
+- Refactor `HomeCategoryCard.vue` thanh card button co the click de ap dung filter nganh.
+- Dieu chinh hero dung mot anh chinh duy nhat, grid khong de search/anh chong len nhau, tone mau trang/emerald/navy/blue nhat dong bo auth.
+- Cap nhat `docs/architecture.md`.
+
+File lien quan:
+
+- `frontend/app/components/HomeLandingPage.vue`
+- `frontend/app/components/HomeJobCard.vue`
+- `frontend/app/components/HomeCategoryCard.vue`
+- `frontend/app/components/home/*.vue`
+- `frontend/app/composables/useHomeJobs.ts`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Browser check tai `http://127.0.0.1:3001/`: chi co 1 anh hero QuickWork, khong con dashboard thi truong, khong con role `Quan tri vien`, co cac section `featured-jobs`, `employer`, `career-tools`, va khong bi horizontal overflow o viewport 1280px.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap va dependency deprecation.
+
+Trang thai:
+
+- Da xu ly.
+
+### 2026-07-13 - Lam moi UI dang nhap/dang ky va them route ngan
+
+Hien tuong / Yeu cau:
+
+- Can cai thien UI dang nhap/dang ky theo mau QuickWork sang, hien dai hon.
+- Can giu nguyen auth logic, API calls va Google Login.
+- Can dung component Vue tai su dung, focus/accessibility tot hon va khong de font qua dam gay cam giac loi chu.
+- Can co route ngan `/login` va `/register` ben canh route cu `/auth/login` va `/auth/register`.
+
+Cach sua:
+
+- Tach giao dien auth thanh cac component tai su dung: brand mark, field, shell, login experience va register experience.
+- Them trang `/login` va `/register`, dong thoi cho `/auth/login` va `/auth/register` render UI moi.
+- Cap nhat global auth guard de `/login` va `/register` la public pages, giu redirect mac dinh cua protected route ve `/auth/login`.
+- Giu nguyen cac ham dang nhap, dang ky, upload GPKD va Google config endpoint hien co.
+- Giam do dam font auth tu `font-black` xuong `font-bold`/`font-semibold`; sua order responsive de mobile/tablet hien form truoc hero.
+- Cap nhat `docs/architecture.md`.
+
+File lien quan:
+
+- `frontend/app/components/AuthBrandMark.vue`
+- `frontend/app/components/AuthField.vue`
+- `frontend/app/components/AuthShell.vue`
+- `frontend/app/components/AuthLoginExperience.vue`
+- `frontend/app/components/AuthRegisterExperience.vue`
+- `frontend/app/pages/login.vue`
+- `frontend/app/pages/register.vue`
+- `frontend/app/pages/auth/login.vue`
+- `frontend/app/pages/auth/register.vue`
+- `frontend/app/middleware/auth.global.ts`
+- `docs/architecture.md`
+
+Kiem tra:
+
+- `npm.cmd run build` pass.
+- Preview production tai `http://127.0.0.1:3000` chay thanh cong.
+- HTTP status `/login`, `/register`, `/auth/login`, `/auth/register` deu tra `200`.
+- Browser check xac nhan `/login` va `/register` khong bi redirect sai, form hien thi truoc hero tren viewport hep, Google button van co mat.
+- Build van co cac warning cu ve duplicate `useToast`, sourcemap va dependency deprecation.
+
+Trang thai:
+
+- Da xu ly.
+
 ### 2026-07-10 - Tinh chinh lai giao dien dang nhap/dang ky sat anh mau hon
 
 Hien tuong / Yeu cau:

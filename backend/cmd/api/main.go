@@ -80,7 +80,8 @@ func main() {
 	// Handler
 	authHandler := handlers.NewAuthHandler(authService)
 	testHandler := handlers.NewTestHandler()
-	enterpriseJobHandler := handlers.NewEnterpriseJobHandler(jobRepo)
+	enterpriseJobHandler := handlers.NewEnterpriseJobHandler(jobRepo, db)
+	studentJobHandler := handlers.NewStudentJobHandler(db)
 	adminHandler := handlers.NewAdminHandler(db)
 
 	app := fiber.New()
@@ -106,6 +107,9 @@ func main() {
 	protected.Get("/profile", testHandler.Profile)
 
 	routes.RegisterTestRoutes(protected, testHandler)
+
+	studentGroup := protected.Group("/student", middleware.RoleMiddleware("STUDENT"))
+	routes.RegisterStudentRoutes(studentGroup, studentJobHandler)
 
 	enterpriseGroup := protected.Group("/enterprise", middleware.RoleMiddleware("ENTERPRISE"), middleware.EnterpriseApprovedMiddleware(db))
 	routes.RegisterEnterpriseJobRoutes(enterpriseGroup, enterpriseJobHandler)

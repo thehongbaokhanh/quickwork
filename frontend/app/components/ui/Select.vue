@@ -11,11 +11,11 @@
         :disabled="disabled"
         :required="required"
         :class="[
-          'block w-full rounded-lg sm:text-sm transition-colors duration-200 outline-none appearance-none',
-          'px-3 py-2.5',
+          'block min-h-12 w-full rounded-2xl text-sm font-semibold transition-colors duration-200 outline-none appearance-none',
+          'px-4 py-3',
           error 
             ? 'border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500' 
-            : 'border-slate-300 text-slate-900 focus:ring-emerald-500 focus:border-emerald-500 border',
+            : 'border-slate-300 text-slate-900 focus:ring-sky-500 focus:border-sky-500 border',
           disabled ? 'bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-white shadow-sm'
         ]"
       >
@@ -24,7 +24,7 @@
           {{ option.label }}
         </option>
       </select>
-      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
         <Icon name="uil:angle-down" class="h-5 w-5" />
       </div>
     </div>

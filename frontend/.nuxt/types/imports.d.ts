@@ -33,6 +33,9 @@ declare global {
   const getCurrentInstance: typeof import('vue').getCurrentInstance
   const getCurrentScope: typeof import('vue').getCurrentScope
   const getDateTime: typeof import('../../app/utils/jobDisplay').getDateTime
+  const getDefaultRouteForRole: typeof import('../../app/utils/authRedirect').getDefaultRouteForRole
+  const getJobTypeMeta: typeof import('../../app/utils/jobTypeMeta').getJobTypeMeta
+  const getLoginRedirectForRole: typeof import('../../app/utils/authRedirect').getLoginRedirectForRole
   const getRouteRules: typeof import('../../node_modules/nuxt/dist/app/composables/manifest').getRouteRules
   const getSalaryRange: typeof import('../../app/utils/jobDisplay').getSalaryRange
   const h: typeof import('vue').h
@@ -114,6 +117,7 @@ declare global {
   const useFetch: typeof import('../../node_modules/nuxt/dist/app/composables/fetch').useFetch
   const useHead: typeof import('../../node_modules/nuxt/dist/app/composables/head').useHead
   const useHeadSafe: typeof import('../../node_modules/nuxt/dist/app/composables/head').useHeadSafe
+  const useHomeJobs: typeof import('../../app/composables/useHomeJobs').useHomeJobs
   const useHydration: typeof import('../../node_modules/nuxt/dist/app/composables/hydrate').useHydration
   const useId: typeof import('vue').useId
   const useLazyAsyncData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useLazyAsyncData
@@ -210,11 +214,17 @@ declare global {
   export type { PageMeta } from '../../node_modules/nuxt/dist/app/composables/pages'
   import('../../node_modules/nuxt/dist/app/composables/pages')
   // @ts-ignore
+  export type { HomeSearchState, HomeQuickStat, HomeCategorySummary, HomeCompanySummary } from '../../app/composables/useHomeJobs'
+  import('../../app/composables/useHomeJobs')
+  // @ts-ignore
   export type { ToastMessage } from '../../app/composables/useToast'
   import('../../app/composables/useToast')
   // @ts-ignore
   export type { ApiSkill, ApiJob, DisplayJob } from '../../app/utils/jobDisplay'
   import('../../app/utils/jobDisplay')
+  // @ts-ignore
+  export type { JobTypeMeta } from '../../app/utils/jobTypeMeta'
+  import('../../app/utils/jobTypeMeta')
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
@@ -252,6 +262,9 @@ declare module 'vue' {
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getDateTime: UnwrapRef<typeof import('../../app/utils/jobDisplay')['getDateTime']>
+    readonly getDefaultRouteForRole: UnwrapRef<typeof import('../../app/utils/authRedirect')['getDefaultRouteForRole']>
+    readonly getJobTypeMeta: UnwrapRef<typeof import('../../app/utils/jobTypeMeta')['getJobTypeMeta']>
+    readonly getLoginRedirectForRole: UnwrapRef<typeof import('../../app/utils/authRedirect')['getLoginRedirectForRole']>
     readonly getRouteRules: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/manifest')['getRouteRules']>
     readonly getSalaryRange: UnwrapRef<typeof import('../../app/utils/jobDisplay')['getSalaryRange']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
@@ -333,6 +346,7 @@ declare module 'vue' {
     readonly useFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/fetch')['useFetch']>
     readonly useHead: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['useHeadSafe']>
+    readonly useHomeJobs: UnwrapRef<typeof import('../../app/composables/useHomeJobs')['useHomeJobs']>
     readonly useHydration: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/hydrate')['useHydration']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useLazyAsyncData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useLazyAsyncData']>

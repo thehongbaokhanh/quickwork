@@ -15,6 +15,6 @@ import EmptyState from '~/components/EmptyState.vue'
 
 definePageMeta({
   layout: 'student',
-  middleware: ['auth', 'student']
+  middleware: ['auth']
 })
 </script>

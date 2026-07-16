@@ -30,7 +30,7 @@
               type="text" 
               required
               placeholder="Nhập tiêu đề công việc"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
 
@@ -41,7 +41,7 @@
               type="text" 
               required
               placeholder="Nhập mức lương"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
 
@@ -53,7 +53,7 @@
               min="1"
               required
               placeholder="Nhập số lượng"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
 
@@ -63,7 +63,7 @@
               v-model="form.location" 
               type="text" 
               placeholder="Nhập địa điểm làm việc"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
 
@@ -73,7 +73,7 @@
               v-model="form.requirements" 
               type="text" 
               placeholder="Nhập yêu cầu công việc"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
             />
           </div>
         </div>
@@ -85,7 +85,7 @@
             rows="5"
             required
             placeholder="Nhiệm vụ, dự án sẽ tham gia, quyền lợi được hưởng..."
-            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-medium text-slate-800 transition-all placeholder:text-slate-400"
           ></textarea>
         </div>
 
@@ -104,7 +104,7 @@
             type="button"
             :disabled="submitting"
             @click="submitJob('PENDING')"
-            class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-100 transition-all active:scale-98 flex items-center justify-center gap-2"
+            class="w-full sm:w-auto px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-sky-100 transition-all active:scale-98 flex items-center justify-center gap-2"
           >
             <Icon v-if="submitting" name="svg-spinners:180-ring" class="w-4 h-4 animate-spin" />
             <Icon v-else name="uil:message" class="w-4 h-4" />
