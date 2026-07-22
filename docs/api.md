@@ -1,6 +1,6 @@
 # API Documentation
 
-Last updated: 2026-07-16
+Last updated: 2026-07-17
 
 Base API: `/api/v1`
 
@@ -55,7 +55,7 @@ Registered by `routes.RegisterAuthRoutes(api, authHandler)`.
 
 Registered directly in `backend/cmd/api/main.go`.
 
-Only jobs with status `APPROVED` are returned.
+Only jobs with status `APPROVED` and `slots > 0` are returned.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
@@ -103,7 +103,7 @@ Middleware:
 | POST | `/student/jobs/:id/favorite` | Save an approved job to current student's favorites |
 | DELETE | `/student/jobs/:id/favorite` | Remove an approved job from current student's favorites |
 
-Applying and saving only accept jobs with status `APPROVED`. Repeating an apply or save request for the same student/job pair returns the existing record instead of creating duplicates.
+Applying and saving only accept jobs with status `APPROVED` and `slots > 0`. Repeating an apply or save request for the same student/job pair returns the existing record instead of creating duplicates.
 
 ## Enterprise Routes
 
@@ -119,6 +119,8 @@ Middleware:
 | --- | --- | --- |
 | GET | `/enterprise/applications` | List applications submitted to current enterprise's jobs |
 | PUT | `/enterprise/applications/:id/status` | Accept or reject an application for current enterprise's job |
+| PUT | `/enterprise/applications/:id/interview` | Schedule or update an interview for an accepted application |
+| PUT | `/enterprise/applications/:id/interview-result` | Submit the final result for an interview after its scheduled time |
 | POST | `/enterprise/jobs/` | Create enterprise job |
 | GET | `/enterprise/jobs/` | List current enterprise jobs |
 | PUT | `/enterprise/jobs/:id` | Update enterprise job |
@@ -136,6 +138,32 @@ Middleware:
 ```
 
 Allowed statuses for enterprise review are `ACCEPTED` and `REJECTED`.
+
+`PUT /enterprise/applications/:id/interview` accepts:
+
+```json
+{
+  "interview_at": "2026-07-20T09:30:00Z",
+  "interview_method": "ONLINE",
+  "interview_location": "Google Meet link or office address",
+  "interview_note": "Bring CV and portfolio."
+}
+```
+
+Only applications already in `ACCEPTED` status can be scheduled. The response returns the updated application, and the backend creates an `INFO` notification for the student.
+
+`PUT /enterprise/applications/:id/interview-result` accepts:
+
+```json
+{
+  "result": "HIRED",
+  "result_note": "Candidate passed the interview."
+}
+```
+
+Allowed `result` values are `HIRED`, `REJECTED`, and `NO_SHOW`. The endpoint only accepts applications already in `ACCEPTED` status, with an existing interview time, after that interview time has passed, and before any previous interview result was stored. `REJECTED` requires `result_note`.
+
+When `result` is `HIRED`, the backend decrements the related job `slots` in a transaction. If slots reach `0`, the job status becomes `CLOSED`, so it is no longer returned by public job APIs or accepted by student apply/save checks. The response returns the updated application with preloaded job and student data, and the backend creates a notification for the student.
 
 `PUT /enterprise/jobs/:id` accepts the editable job fields used by the enterprise UI, including `title`, `description`, `requirements`, `salary`, `location`, `slots`, and optional `status`.
 
@@ -213,6 +241,8 @@ Confirmed against current `main.go`:
 - `JobService.deleteEnterpriseJob` -> `DELETE /enterprise/jobs/:id`
 - `JobService.getEnterpriseApplications` -> `GET /enterprise/applications`
 - `JobService.reviewEnterpriseApplication` -> `PUT /enterprise/applications/:id/status`
+- `JobService.scheduleEnterpriseInterview` -> `PUT /enterprise/applications/:id/interview`
+- `JobService.submitEnterpriseInterviewResult` -> `PUT /enterprise/applications/:id/interview-result`
 - `StudentService.getAppliedJobs` -> `GET /student/applied-jobs`
 - `StudentService.getFavoriteJobs` -> `GET /student/favorite-jobs`
 - `StudentService.getJobActions` -> `GET /student/job-actions`

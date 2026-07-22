@@ -1,6 +1,6 @@
 # Architecture
 
-Last updated: 2026-07-16
+Last updated: 2026-07-20
 
 ## Product Context
 
@@ -31,6 +31,8 @@ Nuxt/Vue page
 ## Backend Entry Point
 
 Source of truth: `backend/cmd/api/main.go`
+
+Detailed backend startup and request lifecycle notes live in `docs/backend-runtime-flow.md`.
 
 Runtime responsibilities:
 
@@ -112,7 +114,7 @@ Frontend auth UI:
 
 - `/login` and `/auth/login` render the shared `AuthLoginExperience` login surface.
 - `/register` and `/auth/register` render the shared `AuthRegisterExperience` registration surface.
-- Normal login without a `redirect` query and Google callback login now land on `/`; protected-route password login still returns to the requested `redirect`.
+- Password login and Google callback use role-based redirects: `ADMIN` lands on `/admin/dashboard`, `ENTERPRISE` lands on `/enterprise`, and `STUDENT` lands on the requested redirect or `/`.
 - The shared auth page shell/input/brand structure lives in:
   - `frontend/app/components/AuthShell.vue`
   - `frontend/app/components/AuthField.vue`
@@ -154,8 +156,11 @@ Public job board:
 Enterprise applications UI:
 
 - `/enterprise/applications` is the primary applicant list for enterprise accounts.
-- `/enterprise/applications/saved` and `/enterprise/applications/rejected` reuse `frontend/app/components/enterprise/CandidateCollectionView.vue` to keep saved/rejected candidate tables visually consistent with the main applicant list.
-- Saved candidates are displayed only when `JobService.getEnterpriseApplications()` returns persisted saved/bookmarked flags; the frontend does not create placeholder candidates.
+- Saved and rejected applicant views are rendered inside `/enterprise/applications` via the `view=saved` and `view=rejected` query states so the sidebar dropdown changes the central dashboard content instead of opening visually separate pages.
+- `/enterprise/applications/saved` and `/enterprise/applications/rejected` are compatibility redirects back to `/enterprise/applications?view=saved` and `/enterprise/applications?view=rejected`.
+- `CandidateCollectionView` renders mode-specific metric cards, filters, source/reason distributions, and table columns while still reading only from `JobService.getEnterpriseApplications()`.
+- Empty saved/rejected datasets keep the same dashboard table shell and show the empty state inside the table body.
+- Saved candidates are displayed when `JobService.getEnterpriseApplications()` returns persisted saved/bookmarked flags, and also include applications whose interview result is `HIRED` so accepted hires remain easy to review. The frontend does not create placeholder candidates.
 - `/enterprise/interviews` and `/enterprise/notifications` are enterprise sidebar pages prepared for real scheduling/notification data and currently render empty states instead of mock lists.
 
 ## Runtime Route Groups

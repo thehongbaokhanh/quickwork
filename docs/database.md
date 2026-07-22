@@ -1,6 +1,6 @@
 # Database Documentation
 
-Last updated: 2026-07-16
+Last updated: 2026-07-17
 
 Schema source of truth:
 
@@ -147,6 +147,14 @@ Important fields:
 - `status`,
 - `employer_note`,
 - `reviewed_at`,
+- `interview_at`,
+- `interview_method`,
+- `interview_location`,
+- `interview_note`,
+- `interview_scheduled_at`,
+- `interview_result`,
+- `interview_result_note`,
+- `interview_result_at`,
 - `created_at`,
 - `updated_at`.
 
@@ -155,6 +163,12 @@ Enums:
 - `APPLIED`
 - `ACCEPTED`
 - `REJECTED`
+
+Interview result enums:
+
+- `HIRED`
+- `REJECTED`
+- `NO_SHOW`
 
 Indexes and relations:
 

@@ -141,36 +141,55 @@
             </NuxtLink>
 
             <div class="space-y-1">
-              <NuxtLink
-                :to="applicationNav.to"
+              <button
+                type="button"
                 :class="[
-                  'flex items-center gap-3 rounded-lg border px-3 py-2.5 transition',
+                  'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition',
                   isApplicationsSection
                     ? 'border-sky-100 bg-sky-50 text-sky-700'
                     : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-950'
                 ]"
-                @click="isSidebarOpen = false"
+                :aria-expanded="isApplicationNavOpen"
+                aria-controls="enterprise-application-nav"
+                @click="toggleApplicationNav"
               >
                 <Icon :name="applicationNav.icon" class="h-5 w-5" />
-                <span>{{ applicationNav.name }}</span>
-              </NuxtLink>
+                <span class="min-w-0 flex-1">{{ applicationNav.name }}</span>
+                <Icon
+                  name="uil:angle-down"
+                  :class="['h-4 w-4 shrink-0 transition-transform duration-200', isApplicationNavOpen ? 'rotate-180' : '']"
+                />
+              </button>
 
-              <div class="ml-5 space-y-1 border-l border-slate-200 pl-4">
-                <NuxtLink
-                  v-for="item in applicationNav.children"
-                  :key="item.to"
-                  :to="item.to"
-                  :class="[
-                    'block rounded-lg px-3 py-2 text-sm transition',
-                    isRouteActive(item.to, true)
-                      ? 'bg-sky-50 font-black text-sky-700'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                  ]"
-                  @click="isSidebarOpen = false"
+              <Transition
+                enter-active-class="transition duration-150 ease-out"
+                enter-from-class="-translate-y-1 opacity-0"
+                enter-to-class="translate-y-0 opacity-100"
+                leave-active-class="transition duration-100 ease-in"
+                leave-from-class="translate-y-0 opacity-100"
+                leave-to-class="-translate-y-1 opacity-0"
+              >
+                <div
+                  v-show="isApplicationNavOpen"
+                  id="enterprise-application-nav"
+                  class="ml-5 space-y-1 border-l border-slate-200 pl-4"
                 >
-                  {{ item.name }}
-                </NuxtLink>
-              </div>
+                  <NuxtLink
+                    v-for="item in applicationNav.children"
+                    :key="item.name"
+                    :to="getApplicationChildTo(item)"
+                    :class="[
+                      'block rounded-lg px-3 py-2 text-sm transition',
+                      isApplicationChildActive(item)
+                        ? 'bg-sky-50 font-black text-sky-700'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                    ]"
+                    @click="isSidebarOpen = false"
+                  >
+                    {{ item.name }}
+                  </NuxtLink>
+                </div>
+              </Transition>
             </div>
 
             <NuxtLink
@@ -238,7 +257,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
@@ -247,6 +266,7 @@ const route = useRoute()
 const isSidebarOpen = ref(false)
 const showUserMenu = ref(false)
 const showNotifications = ref(false)
+const isApplicationNavOpen = ref(route.path.startsWith('/enterprise/applications'))
 
 type EnterpriseSidebarItem = {
   name: string
@@ -255,20 +275,32 @@ type EnterpriseSidebarItem = {
   badge?: number
 }
 
+type ApplicationNavView = '' | 'saved' | 'rejected'
+
+type EnterpriseApplicationChild = {
+  name: string
+  view: ApplicationNavView
+}
+
 const primaryNavItems = [
   { name: 'Tổng quan', to: '/enterprise', icon: 'uil:apps' },
   { name: 'Tin tuyển dụng', to: '/enterprise/jobs', icon: 'uil:file-alt' },
   { name: 'Tạo tin mới', to: '/enterprise/jobs/create', icon: 'uil:plus-circle' }
 ]
 
-const applicationNav = {
+const applicationNav: {
+  name: string
+  to: string
+  icon: string
+  children: EnterpriseApplicationChild[]
+} = {
   name: 'Ứng viên',
   to: '/enterprise/applications',
   icon: 'uil:users-alt',
   children: [
-    { name: 'Danh sách ứng viên', to: '/enterprise/applications' },
-    { name: 'Ứng viên đã lưu', to: '/enterprise/applications/saved' },
-    { name: 'Bị từ chối', to: '/enterprise/applications/rejected' }
+    { name: 'Danh sách ứng viên', view: '' },
+    { name: 'Ứng viên đã lưu', view: 'saved' },
+    { name: 'Bị từ chối', view: 'rejected' }
   ]
 }
 
@@ -301,6 +333,25 @@ const isRouteActive = (to: string, exact = false) => (
   exact ? route.path === to : route.path.startsWith(to)
 )
 
+const getApplicationRouteView = () => {
+  const view = Array.isArray(route.query.view) ? route.query.view[0] : route.query.view
+  return view === 'saved' || view === 'rejected' ? view : ''
+}
+
+const getApplicationChildTo = (item: EnterpriseApplicationChild) => {
+  if (!item.view) return applicationNav.to
+  return { path: applicationNav.to, query: { view: item.view } }
+}
+
+const isApplicationChildActive = (item: EnterpriseApplicationChild) => {
+  if (route.path !== applicationNav.to) return false
+  return getApplicationRouteView() === item.view
+}
+
+const toggleApplicationNav = () => {
+  isApplicationNavOpen.value = !isApplicationNavOpen.value
+}
+
 const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value
   showUserMenu.value = false
@@ -321,6 +372,12 @@ const handleKeyDown = (event: KeyboardEvent) => {
     closeDropdowns()
   }
 }
+
+watch(() => route.path, (path) => {
+  if (path.startsWith('/enterprise/applications')) {
+    isApplicationNavOpen.value = true
+  }
+})
 
 onMounted(() => {
   if (process.client) {

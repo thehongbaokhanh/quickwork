@@ -7,8 +7,10 @@ QuickWork la nen tang ket noi viec lam ngan han/part-time cho sinh vien va doanh
 Bo tai lieu chinh nam trong `docs/` va duoc thiet ke theo huong AI-first documentation: de con nguoi va AI agent co the doc nhanh, biet source-of-truth, va biet can sua tai lieu nao khi code thay doi.
 
 - `docs/README.md`: muc luc va cach dung bo tai lieu.
+- `docs/project-overview.md`: tong quan hien trang du an, luong chay, tinh nang, API, database va source-of-truth.
 - `docs/ai-first-documentation.md`: quy tac AI-first documentation.
 - `docs/architecture.md`: kien truc he thong, entry points, flow doc source.
+- `docs/backend-runtime-flow.md`: cach backend khoi dong, dang ky route, chay middleware va xu ly request.
 - `docs/business-rules.md`: nghiep vu va invariant chinh.
 - `docs/api.md`: route map, response shape, endpoint caveats.
 - `docs/database.md`: model, table, enum, migration.
@@ -49,4 +51,3 @@ npm run build
 - Doi kien truc/entry point/module boundaries thi cap nhat `docs/architecture.md`.
 - Doi quy uoc code/test/docs thi cap nhat `docs/conventions.md` va neu can `AGENTS.md`.
 - Sua loi hoac thay doi hanh vi dang ke thi ghi vao `PROJECT_CHANGELOG.md`.
-

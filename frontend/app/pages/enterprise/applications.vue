@@ -1,5 +1,33 @@
 <template>
-  <div class="space-y-6 pb-8">
+  <CandidateCollectionView
+    v-if="collectionMode === 'saved'"
+    key="enterprise-saved-candidates"
+    mode="saved"
+    title="Ứng viên đã lưu"
+    eyebrow="Danh sách quan tâm"
+    description="Danh sách ứng viên bạn đã lưu để xem xét sau."
+    empty-title="Chưa có ứng viên đã lưu"
+    empty-description="Khi dữ liệu hệ thống có ứng viên được đánh dấu lưu, hồ sơ sẽ xuất hiện ở đây để bạn xem lại nhanh."
+    accent-icon="uil:bookmark"
+    empty-icon="uil:bookmark"
+    accent-pill-class="bg-sky-50 text-sky-700"
+    empty-icon-class="bg-sky-50 text-sky-600"
+  />
+  <CandidateCollectionView
+    v-else-if="collectionMode === 'rejected'"
+    key="enterprise-rejected-candidates"
+    mode="rejected"
+    title="Ứng viên bị từ chối"
+    eyebrow="Hồ sơ đã phản hồi"
+    description="Danh sách ứng viên đã bị từ chối cho các tin tuyển dụng."
+    empty-title="Chưa có ứng viên bị từ chối"
+    empty-description="Các hồ sơ bị từ chối từ danh sách ứng viên sẽ được đồng bộ vào trang này."
+    accent-icon="uil:times-circle"
+    empty-icon="uil:user-times"
+    accent-pill-class="bg-rose-50 text-rose-700"
+    empty-icon-class="bg-rose-50 text-rose-600"
+  />
+  <div v-else class="space-y-6 pb-8">
     <section class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h1 class="text-2xl font-black text-slate-950">Danh sách ứng viên</h1>
@@ -401,6 +429,113 @@
                   </div>
                 </div>
 
+                <div
+                  v-if="isAcceptedApplication(selectedApplication)"
+                  class="overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-sm"
+                >
+                  <div class="border-b border-sky-100 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-5">
+                    <div class="flex items-start gap-3">
+                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-lg shadow-sky-100">
+                        <Icon name="uil:calendar-alt" class="h-6 w-6" />
+                      </span>
+                      <div class="min-w-0">
+                        <p class="text-xs font-black uppercase tracking-wide text-sky-700">Lịch phỏng vấn</p>
+                        <h4 class="mt-1 text-lg font-black leading-6 text-slate-950">Đặt lịch hẹn phỏng vấn cho ứng viên đã duyệt</h4>
+                        <p class="mt-1 text-sm font-semibold leading-6 text-slate-500">
+                          Lịch sẽ được lưu vào đơn ứng tuyển và tạo thông báo cho sinh viên.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="grid gap-3 p-5 sm:grid-cols-2">
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                      <p class="text-xs font-black uppercase tracking-wide text-slate-400">Trạng thái lịch</p>
+                      <p class="mt-1 text-sm font-bold text-slate-800">{{ hasInterviewSchedule(selectedApplication) ? 'Đã đặt lịch' : 'Chưa đặt lịch' }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                      <p class="text-xs font-black uppercase tracking-wide text-slate-400">Thời gian hiện tại</p>
+                      <p class="mt-1 text-sm font-bold text-slate-800">{{ getInterviewTime(selectedApplication) }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                      <p class="text-xs font-black uppercase tracking-wide text-slate-400">Hình thức</p>
+                      <p class="mt-1 text-sm font-bold text-slate-800">{{ getInterviewMethod(selectedApplication) }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                      <p class="text-xs font-black uppercase tracking-wide text-slate-400">Địa điểm/Link</p>
+                      <p class="mt-1 break-words text-sm font-bold text-slate-800">{{ getInterviewLocation(selectedApplication) }}</p>
+                    </div>
+                  </div>
+
+                  <div class="grid gap-4 border-t border-slate-100 p-5">
+                    <div class="grid gap-4 sm:grid-cols-2">
+                      <label class="block">
+                        <span class="text-sm font-black text-slate-950">Thời gian phỏng vấn</span>
+                        <input
+                          v-model="interviewForm.interview_at"
+                          type="datetime-local"
+                          :min="minInterviewDateTime"
+                          class="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        >
+                      </label>
+                      <label class="block">
+                        <span class="text-sm font-black text-slate-950">Hình thức</span>
+                        <ScrollSelect
+                          v-model="interviewForm.interview_method"
+                          class="mt-2"
+                          :options="interviewMethodOptions"
+                          ariaLabel="Chọn hình thức phỏng vấn"
+                          icon="uil:video"
+                        />
+                      </label>
+                    </div>
+
+                    <label class="block">
+                      <span class="text-sm font-black text-slate-950">Địa điểm hoặc link phỏng vấn</span>
+                      <input
+                        v-model="interviewForm.interview_location"
+                        type="text"
+                        placeholder="Ví dụ: Google Meet, Zoom, văn phòng công ty..."
+                        class="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                      >
+                    </label>
+
+                    <label class="block">
+                      <span class="text-sm font-black text-slate-950">Ghi chú lịch hẹn</span>
+                      <textarea
+                        v-model="interviewForm.interview_note"
+                        rows="3"
+                        placeholder="Ví dụ: Chuẩn bị CV, portfolio hoặc laptop khi phỏng vấn..."
+                        class="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-800 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                      />
+                    </label>
+
+                    <div v-if="hasInterviewSchedule(selectedApplication)" class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
+                      <span class="font-black text-slate-800">Ghi chú đã lưu:</span>
+                      {{ getInterviewNote(selectedApplication) }}
+                    </div>
+
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-4 text-sm font-black text-white shadow-lg shadow-sky-100 transition hover:bg-sky-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        :disabled="schedulingId === selectedApplication.id"
+                        @click="scheduleInterview(selectedApplication)"
+                      >
+                        <Icon :name="schedulingId === selectedApplication.id ? 'svg-spinners:180-ring' : 'uil:calendar-alt'" class="h-5 w-5" />
+                        {{ hasInterviewSchedule(selectedApplication) ? 'Cập nhật lịch phỏng vấn' : 'Đặt lịch phỏng vấn' }}
+                      </button>
+                    <NuxtLink
+                      to="/enterprise/interviews"
+                      class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white px-4 text-sm font-black text-sky-700 transition hover:bg-sky-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
+                    >
+                      <Icon name="uil:schedule" class="h-5 w-5" />
+                      Xem lịch phỏng vấn
+                    </NuxtLink>
+                    </div>
+                  </div>
+                </div>
+
                 <a
                   v-if="getCvUrl(selectedApplication)"
                   :href="getCvUrl(selectedApplication)"
@@ -465,7 +600,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import CandidateCollectionView from '~/components/enterprise/CandidateCollectionView.vue'
 import ScrollSelect from '~/components/ui/ScrollSelect.vue'
 import { useToast } from '~/composables/useToast'
 import { JobService } from '~/services/job.service'
@@ -473,6 +609,7 @@ import { JobService } from '~/services/job.service'
 type ApplicationStatus = 'APPLIED' | 'ACCEPTED' | 'REJECTED'
 type StatusFilter = ApplicationStatus | 'ALL'
 type DateFilter = 'ALL' | 'TODAY' | '7_DAYS' | '30_DAYS'
+type CollectionMode = 'saved' | 'rejected'
 
 definePageMeta({
   layout: 'enterprise',
@@ -481,6 +618,7 @@ definePageMeta({
 
 const toast = useToast()
 const config = useRuntimeConfig()
+const route = useRoute()
 const applications = ref<any[]>([])
 const selectedApplication = ref<any | null>(null)
 const profileModalOpen = ref(false)
@@ -490,11 +628,23 @@ const activeJob = ref('ALL')
 const activeDateFilter = ref<DateFilter>('ALL')
 const loading = ref(true)
 const reviewingId = ref<number | null>(null)
+const schedulingId = ref<number | null>(null)
 const errorMessage = ref('')
 const reviewNote = ref('')
+const interviewForm = reactive({
+  interview_at: '',
+  interview_method: 'ONLINE',
+  interview_location: '',
+  interview_note: ''
+})
 const currentPage = ref(1)
 const pageSize = ref(10)
 const selectedIds = ref<any[]>([])
+
+const collectionMode = computed<CollectionMode | null>(() => {
+  const view = Array.isArray(route.query.view) ? route.query.view[0] : route.query.view
+  return view === 'saved' || view === 'rejected' ? view : null
+})
 
 const statusOptions = [
   { value: 'ALL', label: 'Tất cả trạng thái' },
@@ -516,6 +666,13 @@ const pageSizeOptions = [
   { value: 50, label: '50 / trang' }
 ]
 
+const interviewMethodOptions = [
+  { value: 'ONLINE', label: 'Online' },
+  { value: 'OFFLINE', label: 'Trực tiếp' },
+  { value: 'PHONE', label: 'Gọi điện' },
+  { value: 'HYBRID', label: 'Linh hoạt' }
+]
+
 const jobOptions = computed(() => {
   const options = new Map<string, string>()
   applications.value.forEach((application) => {
@@ -533,6 +690,7 @@ const jobFilterOptions = computed(() => [
 
 const statusFilterOptions = computed(() => statusOptions.map((option) => ({ ...option })))
 const dateFilterSelectOptions = computed(() => dateFilterOptions.map((option) => ({ ...option })))
+const minInterviewDateTime = computed(() => toDateTimeLocal(new Date().toISOString()))
 
 const filteredApplications = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -682,6 +840,10 @@ function getStatusIcon(status?: string) {
   return icons[normalizeStatus(status)]
 }
 
+function isAcceptedApplication(application: any) {
+  return normalizeStatus(application?.status) === 'ACCEPTED'
+}
+
 function getStudentName(application: any) {
   return application?.student?.student_profile?.name || application?.student?.name || application?.student?.email?.split('@')[0] || 'Ứng viên'
 }
@@ -730,6 +892,48 @@ function getJobOptionValue(application: any) {
 
 function getApplicationSource(application: any) {
   return application?.source || application?.application_source || 'QuickWork'
+}
+
+function toDateTimeLocal(value?: string) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000)
+  return localDate.toISOString().slice(0, 16)
+}
+
+function getInterviewTime(application: any) {
+  const value = application?.interview_at || application?.interview_time || application?.interview?.scheduled_at
+  if (!value) return 'Chưa đặt lịch'
+  return formatDateTime(value)
+}
+
+function getInterviewMethod(application: any) {
+  return getInterviewMethodLabel(application?.interview_method || application?.interview?.method)
+}
+
+function getInterviewMethodLabel(value?: string) {
+  const normalized = String(value || '').toUpperCase()
+  return interviewMethodOptions.find((option) => option.value === normalized)?.label || 'Chưa chọn hình thức'
+}
+
+function getInterviewLocation(application: any) {
+  return application?.interview_location || application?.interview?.location || 'Chưa cập nhật'
+}
+
+function getInterviewNote(application: any) {
+  return application?.interview_note || application?.interview?.note || 'Chưa có ghi chú'
+}
+
+function hasInterviewSchedule(application: any) {
+  return Boolean(application?.interview_at || application?.interview_time || application?.interview?.scheduled_at)
+}
+
+function syncInterviewForm(application: any) {
+  interviewForm.interview_at = toDateTimeLocal(application?.interview_at || application?.interview_time || application?.interview?.scheduled_at)
+  interviewForm.interview_method = String(application?.interview_method || application?.interview?.method || 'ONLINE').toUpperCase()
+  interviewForm.interview_location = application?.interview_location || application?.interview?.location || ''
+  interviewForm.interview_note = application?.interview_note || application?.interview?.note || ''
 }
 
 function getRating(application: any) {
@@ -789,6 +993,7 @@ function matchesDateFilter(value?: string) {
 function openProfileModal(application: any) {
   selectedApplication.value = application
   reviewNote.value = application?.employer_note || ''
+  syncInterviewForm(application)
   profileModalOpen.value = true
 }
 
@@ -803,6 +1008,7 @@ function replaceApplication(updated: any) {
   }
   selectedApplication.value = updated
   reviewNote.value = updated?.employer_note || ''
+  syncInterviewForm(updated)
 }
 
 function goToPage(page: number) {
@@ -881,6 +1087,49 @@ function openRowActions(application: any) {
   openProfileModal(application)
 }
 
+async function scheduleInterview(application: any) {
+  if (!isAcceptedApplication(application)) {
+    toast.warning('Chưa thể đặt lịch', 'Chỉ có thể đặt lịch phỏng vấn cho ứng viên đã được duyệt.')
+    return
+  }
+
+  const interviewAt = interviewForm.interview_at ? new Date(interviewForm.interview_at) : null
+  if (!interviewAt || Number.isNaN(interviewAt.getTime())) {
+    toast.warning('Thiếu thời gian phỏng vấn', 'Vui lòng chọn ngày và giờ phỏng vấn hợp lệ.')
+    return
+  }
+
+  if (!interviewForm.interview_method) {
+    toast.warning('Thiếu hình thức phỏng vấn', 'Vui lòng chọn hình thức phỏng vấn.')
+    return
+  }
+
+  try {
+    const hadSchedule = hasInterviewSchedule(application)
+    schedulingId.value = application.id
+    const response: any = await JobService.scheduleEnterpriseInterview(application.id, {
+      interview_at: interviewAt.toISOString(),
+      interview_method: interviewForm.interview_method,
+      interview_location: interviewForm.interview_location,
+      interview_note: interviewForm.interview_note
+    })
+
+    if (!response?.success) {
+      throw new Error(response?.message || 'Không thể đặt lịch phỏng vấn.')
+    }
+
+    replaceApplication(response.data)
+    toast.success(
+      hadSchedule ? 'Đã cập nhật lịch phỏng vấn' : 'Đã đặt lịch phỏng vấn',
+      `${getStudentName(response.data)} - ${formatDateTime(response.data?.interview_at)}.`
+    )
+  } catch (error: any) {
+    toast.error('Đặt lịch thất bại', error?.data?.message || error?.message || 'Vui lòng thử lại.')
+  } finally {
+    schedulingId.value = null
+  }
+}
+
 async function fetchApplications() {
   try {
     loading.value = true
@@ -931,7 +1180,15 @@ watch(filteredApplications, () => {
   selectedIds.value = selectedIds.value.filter((id) => visibleIds.has(id))
 })
 
+watch(collectionMode, (mode, previousMode) => {
+  if (!mode && previousMode && applications.value.length === 0) {
+    fetchApplications()
+  }
+})
+
 onMounted(() => {
-  fetchApplications()
+  if (!collectionMode.value) {
+    fetchApplications()
+  }
 })
 </script>

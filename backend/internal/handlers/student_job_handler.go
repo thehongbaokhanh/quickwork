@@ -266,7 +266,7 @@ func (h *StudentJobHandler) GetJobActions(c *fiber.Ctx) error {
 
 func (h *StudentJobHandler) ensureApprovedJob(jobID uint) error {
 	var job models.Job
-	return h.db.Where("id = ? AND status = ?", jobID, models.JobApproved).First(&job).Error
+	return h.db.Where("id = ? AND status = ? AND slots > 0", jobID, models.JobApproved).First(&job).Error
 }
 
 func parseJobID(c *fiber.Ctx) (uint, error) {

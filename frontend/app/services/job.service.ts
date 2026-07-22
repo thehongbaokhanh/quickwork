@@ -32,5 +32,13 @@ export const JobService = {
 
   async reviewEnterpriseApplication(id: string | number, body: any) {
     return apiClient.put(`/enterprise/applications/${id}/status`, body)
+  },
+
+  async scheduleEnterpriseInterview(id: string | number, body: any) {
+    return apiClient.put(`/enterprise/applications/${id}/interview`, body)
+  },
+
+  async submitEnterpriseInterviewResult(id: string | number, body: any) {
+    return apiClient.put(`/enterprise/applications/${id}/interview-result`, body)
   }
 }

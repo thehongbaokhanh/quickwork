@@ -8,6 +8,8 @@ import (
 func RegisterEnterpriseJobRoutes(router fiber.Router, handler *handlers.EnterpriseJobHandler) {
 	router.Get("/applications", handler.ListApplications)
 	router.Put("/applications/:id/status", handler.ReviewApplication)
+	router.Put("/applications/:id/interview", handler.ScheduleInterview)
+	router.Put("/applications/:id/interview-result", handler.SubmitInterviewResult)
 
 	jobs := router.Group("/jobs")
 	jobs.Post("/", handler.CreateJob)

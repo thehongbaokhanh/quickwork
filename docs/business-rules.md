@@ -1,6 +1,6 @@
 # Business Rules
 
-Last updated: 2026-07-16
+Last updated: 2026-07-17
 
 This file describes business behavior and invariants. Implementation details belong in source files; API paths belong in `docs/api.md`; schema details belong in `docs/database.md`.
 
@@ -120,7 +120,7 @@ Public job visibility:
 
 - Public job APIs are under `/api/v1/jobs`.
 - Homepage and student job-board listings must use persisted backend jobs instead of hardcoded job counts/cards.
-- Public APIs only return jobs with status `APPROVED`.
+- Public APIs only return jobs with status `APPROVED` and `slots > 0`.
 - `PENDING`, `REJECTED`, `DRAFT`, and `CLOSED` jobs stay out of public listings.
 
 Student job actions:
@@ -128,7 +128,7 @@ Student job actions:
 - Viewing the homepage and `/student` job board remains public.
 - Applying to a job requires authenticated role `STUDENT`.
 - Saving or removing a favorite job requires authenticated role `STUDENT`.
-- Students can only apply to or save jobs with status `APPROVED`.
+- Students can only apply to or save jobs with status `APPROVED` and `slots > 0`.
 - A student can apply to the same job only once.
 - A student can save the same favorite job only once.
 - Repeated apply/save requests return the existing row instead of creating duplicates.
@@ -136,6 +136,15 @@ Student job actions:
 - Applications are visible only to the enterprise that owns the applied job.
 - Approved enterprise users can review their applications as `ACCEPTED` or `REJECTED`.
 - Enterprise review can store an optional `employer_note` for the latest decision context.
+- Enterprises can schedule or update an interview only after an application is `ACCEPTED`.
+- Interview scheduling stores the proposed time, method, location/link, note, and schedule timestamp on the application.
+- Scheduling an interview creates an `INFO` notification for the student tied to that application.
+- Enterprises can submit an interview result only after the scheduled interview time has passed.
+- Interview results are `HIRED`, `REJECTED`, or `NO_SHOW` and can only be stored once for an application.
+- A `REJECTED` interview result requires a note explaining why the candidate was not accepted.
+- A `HIRED` interview result decrements the related job `slots` in a transaction. If slots reach `0`, the job status becomes `CLOSED`, preventing new public applications for that job.
+- Applications with a `HIRED` interview result are surfaced in the enterprise saved-candidate view so employers can review accepted candidates without searching the full application list.
+- Submitting an interview result creates a notification for the student tied to that application.
 
 Admin job review:
 

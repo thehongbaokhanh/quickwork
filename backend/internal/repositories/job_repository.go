@@ -96,6 +96,10 @@ func (r *jobRepository) FindJobs(filters map[string]any) ([]models.Job, error) {
 				like := "%" + strVal + "%"
 				query = query.Where("title LIKE ? OR description LIKE ? OR requirements LIKE ? OR location LIKE ? OR salary LIKE ?", like, like, like, like, like)
 			}
+		case "available":
+			if isAvailable, ok := val.(bool); ok && isAvailable {
+				query = query.Where("slots > 0")
+			}
 		}
 	}
 
