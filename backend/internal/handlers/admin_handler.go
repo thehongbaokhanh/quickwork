@@ -37,6 +37,7 @@ type updateStudentProfileRequest struct {
 
 type updateEnterpriseProfileRequest struct {
 	CompanyName *string `json:"company_name"`
+	Phone       *string `json:"phone"`
 	TaxCode     *string `json:"tax_code"`
 	GPKDURL     *string `json:"gpkd_url"`
 	KYBStatus   *string `json:"kyb_status"`
@@ -657,6 +658,9 @@ func (h *AdminHandler) updateEnterpriseProfile(tx *gorm.DB, user *models.User, r
 		}
 		profile.CompanyName = companyName
 	}
+	if req.Phone != nil {
+		profile.Phone = strings.TrimSpace(*req.Phone)
+	}
 	if req.TaxCode != nil {
 		taxCode := strings.TrimSpace(*req.TaxCode)
 		if taxCode == "" {
@@ -720,7 +724,8 @@ func (h *AdminHandler) findUsers(filters adminUserQuery) ([]models.User, error) 
 			Joins("LEFT JOIN student_profiles ON student_profiles.user_id = users.id").
 			Joins("LEFT JOIN enterprise_profiles ON enterprise_profiles.user_id = users.id").
 			Where(
-				"LOWER(users.email) LIKE ? OR LOWER(student_profiles.name) LIKE ? OR LOWER(student_profiles.phone) LIKE ? OR LOWER(enterprise_profiles.company_name) LIKE ? OR LOWER(enterprise_profiles.tax_code) LIKE ?",
+				"LOWER(users.email) LIKE ? OR LOWER(student_profiles.name) LIKE ? OR LOWER(student_profiles.phone) LIKE ? OR LOWER(enterprise_profiles.company_name) LIKE ? OR LOWER(enterprise_profiles.phone) LIKE ? OR LOWER(enterprise_profiles.tax_code) LIKE ?",
+				search,
 				search,
 				search,
 				search,

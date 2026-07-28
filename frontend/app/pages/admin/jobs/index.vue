@@ -62,8 +62,8 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-sm">
-            <tr v-for="(job, index) in jobs" :key="job.id" class="hover:bg-slate-50/50 transition-colors">
-              <td class="px-6 py-4 font-black text-slate-400">{{ index + 1 }}</td>
+            <tr v-for="(job, index) in paginatedJobs" :key="job.id" class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 font-black text-slate-400">{{ jobsPageOffset + index + 1 }}</td>
               <td class="px-6 py-4">
                 <div class="font-bold text-slate-800">
                   {{ getCompanyName(job) }}
@@ -93,6 +93,12 @@
           </tbody>
         </table>
       </div>
+      <AdminTablePagination
+        v-model:page="currentPage"
+        v-model:page-size="pageSize"
+        :total="jobs.length"
+        item-label="tin tuyển dụng"
+      />
     </div>
 
     <div v-if="reviewModalOpen" class="qw-detail-backdrop" @click.self="reviewModalOpen = false">
@@ -204,7 +210,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import AdminTablePagination from '~/components/admin/AdminTablePagination.vue'
 import { AdminService } from '~/services/admin.service'
 
 definePageMeta({
@@ -220,6 +227,20 @@ const reviewModalOpen = ref(false)
 const selectedJob = ref<any>(null)
 const decision = ref<'APPROVED' | 'REJECTED'>('APPROVED')
 const rejectReason = ref('')
+const currentPage = ref(1)
+const pageSize = ref(10)
+
+const jobsPageOffset = computed(() => (currentPage.value - 1) * Number(pageSize.value))
+
+const paginatedJobs = computed(() => {
+  const size = Number(pageSize.value)
+  return jobs.value.slice(jobsPageOffset.value, jobsPageOffset.value + size)
+})
+
+watch([jobs, pageSize], () => {
+  const totalPages = Math.max(1, Math.ceil(jobs.value.length / Number(pageSize.value)))
+  if (currentPage.value > totalPages) currentPage.value = totalPages
+})
 
 const getCompanyName = (job: any) => {
   return job?.enterprise_profile?.company_name || 'Doanh nghiệp chưa cập nhật tên'

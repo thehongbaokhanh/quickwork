@@ -81,8 +81,8 @@
       <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div class="space-y-4 border-b border-slate-100 px-5 py-4 lg:px-6">
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 class="text-base font-black text-slate-950">Tin tuyển dụng từ hệ thống</h2>
+            <div class="min-w-0">
+              <h2 class="truncate text-base font-black text-slate-950">Tin tuyển dụng từ hệ thống</h2>
               <p class="mt-1 text-xs font-medium text-slate-500">Danh sách được tải trực tiếp từ API của tài khoản nhà tuyển dụng.</p>
             </div>
 
@@ -157,33 +157,33 @@
           <table class="w-full min-w-[920px] text-left text-sm">
             <thead class="border-b border-slate-100 bg-slate-50 text-xs font-black uppercase text-slate-500">
               <tr>
-                <th class="px-5 py-3">STT</th>
-                <th class="px-5 py-3">Tin tuyển dụng</th>
-                <th class="px-5 py-3">Địa điểm</th>
-                <th class="px-5 py-3">Số lượng</th>
-                <th class="px-5 py-3">Mức lương</th>
-                <th class="px-5 py-3">Trạng thái</th>
-                <th class="px-5 py-3">Ngày tạo</th>
-                <th class="px-5 py-3 text-right">Thao tác</th>
+                <th class="whitespace-nowrap px-5 py-3">STT</th>
+                <th class="whitespace-nowrap px-5 py-3">Tin tuyển dụng</th>
+                <th class="whitespace-nowrap px-5 py-3">Địa điểm</th>
+                <th class="whitespace-nowrap px-5 py-3">Số lượng</th>
+                <th class="whitespace-nowrap px-5 py-3">Mức lương</th>
+                <th class="whitespace-nowrap px-5 py-3">Trạng thái</th>
+                <th class="whitespace-nowrap px-5 py-3">Ngày tạo</th>
+                <th class="whitespace-nowrap px-5 py-3 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
               <tr v-for="(job, index) in filteredJobs" :key="job.id" class="transition hover:bg-slate-50/80">
-                <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
+                <td class="whitespace-nowrap px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
                 <td class="px-5 py-4">
                   <p class="max-w-xs truncate font-black text-slate-950">{{ job.title || 'Chưa có tiêu đề' }}</p>
                   <p class="mt-1 max-w-xs truncate text-xs font-semibold text-slate-500">{{ job.requirements || 'Chưa cập nhật yêu cầu' }}</p>
                 </td>
-                <td class="px-5 py-4 font-semibold text-slate-600">{{ job.location || 'Chưa cập nhật' }}</td>
-                <td class="px-5 py-4 font-semibold text-slate-600">{{ formatSlots(job.slots) }}</td>
-                <td class="px-5 py-4 font-semibold text-slate-600">{{ job.salary || 'Chưa cập nhật' }}</td>
-                <td class="px-5 py-4">
-                  <span :class="['inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black uppercase', getStatusClass(job.status)]">
+                <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-600">{{ job.location || 'Chưa cập nhật' }}</td>
+                <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-600">{{ formatSlots(job.slots) }}</td>
+                <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-600">{{ job.salary || 'Chưa cập nhật' }}</td>
+                <td class="whitespace-nowrap px-5 py-4">
+                  <span :class="['inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-black uppercase', getStatusClass(job.status)]">
                     {{ getStatusLabel(job.status) }}
                   </span>
                 </td>
-                <td class="px-5 py-4 font-semibold text-slate-500">{{ formatDate(job.created_at) }}</td>
-                <td class="px-5 py-4 text-right">
+                <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-500">{{ formatDate(job.created_at) }}</td>
+                <td class="whitespace-nowrap px-5 py-4 text-right">
                   <button
                     v-if="normalizeStatus(job.status) !== 'CLOSED'"
                     class="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-400 transition hover:bg-amber-50 hover:text-amber-700"
@@ -203,8 +203,8 @@
       <aside class="space-y-5">
         <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div class="flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-base font-black text-slate-950">Hiệu suất hiển thị</h2>
+            <div class="min-w-0">
+              <h2 class="truncate text-base font-black text-slate-950">Hiệu suất hiển thị</h2>
               <p class="mt-1 text-xs font-medium text-slate-500">Tin đã duyệt trên tổng tin tuyển dụng.</p>
             </div>
             <Icon name="uil:analytics" class="h-5 w-5 text-slate-400" />
@@ -249,8 +249,8 @@
 
         <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div class="flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-base font-black text-slate-950">Chờ admin duyệt</h2>
+            <div class="min-w-0">
+              <h2 class="truncate text-base font-black text-slate-950">Chờ admin duyệt</h2>
               <p class="mt-1 text-xs font-medium text-slate-500">Các tin đang ở trạng thái PENDING.</p>
             </div>
             <span class="rounded-md bg-amber-50 px-2.5 py-1 text-sm font-black text-amber-700">{{ pendingJobs.length }}</span>
@@ -273,7 +273,7 @@
               </span>
               <div class="min-w-0">
                 <p class="truncate text-sm font-black text-slate-950">{{ job.title || 'Chưa có tiêu đề' }}</p>
-                <p class="mt-1 text-xs font-semibold text-amber-700">{{ formatDate(job.created_at) }}</p>
+                <p class="mt-1 whitespace-nowrap text-xs font-semibold text-amber-700">{{ formatDate(job.created_at) }}</p>
               </div>
             </article>
           </div>
@@ -281,8 +281,8 @@
 
         <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div class="flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-base font-black text-slate-950">Hoạt động gần đây</h2>
+            <div class="min-w-0">
+              <h2 class="truncate text-base font-black text-slate-950">Hoạt động gần đây</h2>
               <p class="mt-1 text-xs font-medium text-slate-500">Sắp xếp theo ngày tạo trong hệ thống.</p>
             </div>
             <Icon name="uil:history" class="h-5 w-5 text-slate-400" />
@@ -311,7 +311,7 @@
               </span>
               <div class="min-w-0">
                 <p class="truncate text-sm font-bold text-slate-900">{{ job.title || 'Chưa có tiêu đề' }}</p>
-                <p class="mt-0.5 text-xs font-medium text-slate-500">
+                <p class="mt-0.5 truncate whitespace-nowrap text-xs font-medium text-slate-500">
                   {{ getStatusLabel(job.status) }} · {{ formatDate(job.created_at) }}
                 </p>
               </div>
@@ -341,7 +341,7 @@
             </button>
           </div>
 
-          <form class="space-y-4 px-5 py-5 text-sm" @submit.prevent="submitCreateJob">
+          <form class="space-y-4 px-5 py-5 text-sm" @submit.prevent="submitCreateJob('PENDING')">
             <div>
               <label class="mb-1.5 block font-bold text-slate-700">Tiêu đề tin tuyển dụng</label>
               <input
@@ -408,21 +408,33 @@
               />
             </div>
 
-            <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+            <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-end">
               <button
-                class="rounded-md border border-slate-200 px-4 py-2.5 font-bold text-slate-700 transition hover:bg-slate-50"
+                class="rounded-md border border-slate-200 px-4 py-2.5 font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                :disabled="submitting"
                 type="button"
                 @click="createModalOpen = false"
               >
                 Hủy
               </button>
               <button
+                class="inline-flex items-center justify-center gap-2 rounded-md border border-sky-100 bg-sky-50 px-4 py-2.5 font-bold text-sky-700 transition hover:bg-sky-100 disabled:opacity-60"
+                :disabled="submitting"
+                type="button"
+                @click="submitCreateJob('DRAFT')"
+              >
+                <Icon v-if="submitting && submitIntent === 'DRAFT'" name="svg-spinners:180-ring" class="h-4 w-4" />
+                <Icon v-else name="uil:save" class="h-4 w-4" />
+                {{ submitting && submitIntent === 'DRAFT' ? 'Đang lưu nháp...' : 'Lưu nháp' }}
+              </button>
+              <button
                 class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 font-bold text-white transition hover:bg-slate-800 disabled:opacity-60"
                 :disabled="submitting"
                 type="submit"
               >
-                <Icon v-if="submitting" name="svg-spinners:180-ring" class="h-4 w-4" />
-                {{ submitting ? 'Đang lưu...' : 'Gửi duyệt' }}
+                <Icon v-if="submitting && submitIntent === 'PENDING'" name="svg-spinners:180-ring" class="h-4 w-4" />
+                <Icon v-else name="uil:message" class="h-4 w-4" />
+                {{ submitting && submitIntent === 'PENDING' ? 'Đang gửi duyệt...' : 'Gửi duyệt' }}
               </button>
             </div>
           </form>
@@ -436,6 +448,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { JobService } from '~/services/job.service'
+import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 type StatusKey = 'ALL' | 'APPROVED' | 'PENDING' | 'DRAFT' | 'REJECTED' | 'CLOSED'
 type BreakdownStatusKey = Exclude<StatusKey, 'ALL'>
@@ -446,9 +459,11 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
+const toast = useToast()
 
 const isLoading = ref(true)
 const submitting = ref(false)
+const submitIntent = ref<'DRAFT' | 'PENDING' | null>(null)
 const searchQuery = ref('')
 const activeStatus = ref('ALL')
 const createModalOpen = ref(false)
@@ -546,22 +561,19 @@ const sortedJobs = computed(() => {
 })
 
 const filteredJobs = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
+  const query = normalizeSearchText(searchQuery.value)
 
   return sortedJobs.value.filter((job) => {
     const status = normalizeStatus(job.status)
     const matchesStatus = activeStatus.value === 'ALL' || status === activeStatus.value
-    const searchable = [
+    const searchable = buildSearchText([
       job.title,
       job.location,
       job.salary,
       job.requirements,
       job.description,
       getStatusLabel(status)
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
+    ])
 
     return matchesStatus && (!query || searchable.includes(query))
   })
@@ -669,9 +681,15 @@ function openCreateJobModal() {
   createModalOpen.value = true
 }
 
-async function submitCreateJob() {
+async function submitCreateJob(status: 'DRAFT' | 'PENDING' = 'PENDING') {
+  if (!newJobForm.value.title || !newJobForm.value.salary || !newJobForm.value.description || !newJobForm.value.slots) {
+    toast.warning('Thiếu thông tin bắt buộc', 'Vui lòng điền tiêu đề, mức lương, mô tả và số lượng tuyển dụng trước khi lưu.')
+    return
+  }
+
   try {
     submitting.value = true
+    submitIntent.value = status
     errorMessage.value = ''
     const payload = {
       title: newJobForm.value.title.trim(),
@@ -680,19 +698,29 @@ async function submitCreateJob() {
       requirements: newJobForm.value.requirements.trim(),
       description: newJobForm.value.description.trim(),
       slots: Number(newJobForm.value.slots),
-      status: 'PENDING'
+      status
     }
     const response: any = await JobService.createEnterpriseJob(payload)
     if (!response?.success) {
       throw new Error(response?.message || 'Không thể lưu tin tuyển dụng.')
     }
     createModalOpen.value = false
-    activeStatus.value = 'PENDING'
+    activeStatus.value = status
+    toast.addToast({
+      type: 'success',
+      title: status === 'DRAFT' ? 'Đã lưu bản nháp' : 'Đã tạo tin tuyển dụng',
+      message: status === 'DRAFT'
+        ? 'Tin đã được lưu vào bản nháp để bạn tiếp tục hoàn thiện trước khi gửi duyệt.'
+        : 'Tin mới đã được gửi duyệt và đang chờ admin xử lý trong danh sách tin tuyển dụng.',
+      duration: 5200
+    })
     await fetchJobs()
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || 'Có lỗi xảy ra khi tạo tin tuyển dụng.'
+    toast.error('Không thể tạo tin tuyển dụng', errorMessage.value)
   } finally {
     submitting.value = false
+    submitIntent.value = null
   }
 }
 

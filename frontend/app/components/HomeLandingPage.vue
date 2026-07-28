@@ -18,7 +18,7 @@
       <HomeFeaturedJobs
         :jobs="bestJobs"
         :categories="jobCategories"
-        :active-category="activeCategory"
+        :category-filter-request="categoryFilterRequest"
         :loading="isJobsLoading"
         :selected-job="selectedJob"
         :is-applied-job="isAppliedJob"
@@ -26,7 +26,6 @@
         :is-favorite-job="isFavoriteJob"
         :is-favorite-loading="isFavoriteLoading"
         @apply="handleApplyJob"
-        @category="handleCategory"
         @close-detail="handleCloseJobDetail"
         @reset="handleReset"
         @save="handleSaveJob"
@@ -66,7 +65,6 @@ import { useHomeJobs } from '~/composables/useHomeJobs'
 import { useAuthStore } from '~/stores/auth'
 
 const {
-  activeCategory,
   bestJobs,
   categoryStats,
   companyCount,
@@ -82,7 +80,6 @@ const {
   jobs,
   quickStats,
   resetSearch,
-  setCategory,
   setHeroKeyword,
   applyToJob,
   toggleFavoriteJob,
@@ -92,6 +89,8 @@ const {
 
 const authStore = useAuthStore()
 const selectedJob = ref<DisplayJob | null>(null)
+const categoryFilterRequest = ref<{ category: string; requestId: number } | null>(null)
+let categoryFilterRequestId = 0
 
 function scrollToJobs() {
   document.getElementById('featured-jobs')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -102,8 +101,18 @@ function handleKeyword(keyword: string) {
   scrollToJobs()
 }
 
-function handleCategory(category: string) {
-  setCategory(category)
+function handleCategory(category: unknown) {
+  const selectedCategory = typeof category === 'string' ? category.trim() : ''
+  if (!selectedCategory) {
+    scrollToJobs()
+    return
+  }
+
+  categoryFilterRequestId += 1
+  categoryFilterRequest.value = {
+    category: selectedCategory,
+    requestId: categoryFilterRequestId
+  }
   scrollToJobs()
 }
 

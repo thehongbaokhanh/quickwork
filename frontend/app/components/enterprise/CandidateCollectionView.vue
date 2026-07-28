@@ -657,6 +657,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ScrollSelect from '~/components/ui/ScrollSelect.vue'
 import { useToast } from '~/composables/useToast'
 import { JobService } from '~/services/job.service'
+import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 type ApplicationStatus = 'APPLIED' | 'ACCEPTED' | 'REJECTED'
 type CandidateMode = 'saved' | 'rejected'
@@ -762,12 +763,12 @@ const metaFilterOptions = computed(() => {
 })
 
 const filteredApplications = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
+  const query = normalizeSearchText(searchQuery.value)
   const filtered = baseApplications.value.filter((application) => {
     const metaValue = props.mode === 'rejected' ? getRejectionReason(application) : getApplicationSource(application)
     const matchesJob = activeJob.value === 'ALL' || getJobOptionValue(application) === activeJob.value
     const matchesMeta = activeMetaFilter.value === 'ALL' || metaValue === activeMetaFilter.value
-    const searchable = [
+    const searchable = buildSearchText([
       getStudentName(application),
       application.student?.email,
       getStudentPhone(application),
@@ -778,7 +779,7 @@ const filteredApplications = computed(() => {
       getRejectionReason(application),
       getCandidateNote(application),
       ...getSkills(application)
-    ].filter(Boolean).join(' ').toLowerCase()
+    ])
 
     return matchesJob && matchesMeta && (!query || searchable.includes(query))
   })

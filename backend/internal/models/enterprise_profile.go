@@ -18,6 +18,8 @@ type EnterpriseProfile struct {
 
 	CompanyName string `gorm:"column:company_name;type:varchar(255);not null" json:"company_name"`
 
+	Phone string `gorm:"column:phone;type:varchar(20)" json:"phone"`
+
 	TaxCode string `gorm:"column:tax_code;type:varchar(100);uniqueIndex" json:"tax_code"`
 
 	GPKDURL string `gorm:"column:gpkd_url;type:varchar(255)" json:"gpkd_url"`
@@ -36,4 +38,3 @@ type EnterpriseProfile struct {
 func (EnterpriseProfile) TableName() string {
 	return "enterprise_profiles"
 }
-

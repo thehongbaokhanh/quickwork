@@ -105,6 +105,7 @@ func main() {
 	protected := api.Group("/", middleware.AuthMiddleware(db))
 
 	protected.Get("/profile", testHandler.Profile)
+	protected.Post("/auth/change-password", authHandler.ChangePassword)
 
 	routes.RegisterTestRoutes(protected, testHandler)
 

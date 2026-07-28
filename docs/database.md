@@ -83,6 +83,7 @@ Important fields:
 
 - `user_id` as primary key,
 - `company_name`,
+- `phone`,
 - `tax_code`,
 - `gpkd_url`,
 - `kyb_status`,
@@ -130,6 +131,7 @@ Relations:
 
 - enterprise profile via `enterprise_id -> enterprise_profiles.user_id`,
 - many-to-many `skills` through `job_skills`.
+- enterprise create/update job APIs can populate `job_skills` from submitted `skill_ids`.
 
 ## job_applications
 
@@ -248,6 +250,13 @@ The project also migrates:
 - `Transaction`
 
 Read their model files before changing features that depend on categories, skills, payments, or transactions.
+
+Runtime skill catalog behavior:
+
+- approved enterprise accounts can read skills through `/api/v1/enterprise/skills`.
+- approved enterprise accounts can add a missing skill through `/api/v1/enterprise/skills`.
+- when a new skill is created without an explicit category, backend creates or reuses the default category `Kỹ năng khác`.
+- job creation/update stores selected skills in `job_skills`; the textual `requirements` field remains the compatibility summary shown in job details.
 
 ## Seed Data
 

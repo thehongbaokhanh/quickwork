@@ -160,7 +160,7 @@ Tài khoản doanh nghiệp có role `ENTERPRISE`.
 
 Luồng đăng ký và truy cập:
 
-1. Doanh nghiệp đăng ký bằng email, mật khẩu, tên công ty, mã số thuế và URL GPKD.
+1. Doanh nghiệp đăng ký bằng email, mật khẩu, tên công ty, số điện thoại liên hệ, mã số thuế và URL GPKD.
 2. Backend tạo user với role `ENTERPRISE`.
 3. Backend tạo hồ sơ doanh nghiệp với KYB status `PENDING`.
 4. Doanh nghiệp không thể hoàn tất đăng nhập khi KYB còn chờ duyệt hoặc bị từ chối.
@@ -182,6 +182,7 @@ Route chính của doanh nghiệp:
 | `/enterprise/applications/rejected` | Điều hướng tương thích về `view=rejected` |
 | `/enterprise/interviews` | Lịch phỏng vấn và xử lý kết quả phỏng vấn |
 | `/enterprise/notifications` | Trang thông báo của doanh nghiệp |
+| `/enterprise/settings` | Cài đặt tài khoản, đổi mật khẩu, cập nhật tên hiển thị và số điện thoại liên hệ |
 
 Doanh nghiệp có thể làm trên bảng điều khiển:
 
@@ -190,6 +191,14 @@ Doanh nghiệp có thể làm trên bảng điều khiển:
 - Xem tin tuyển dụng hiện tại/gần đây.
 - Tạo tin mới từ dashboard hoặc trang quản lý tin.
 - Điều hướng tới quản lý tin, ứng viên, lịch phỏng vấn và thông báo.
+- Cập nhật tên hiển thị và số điện thoại liên hệ trong trang cài đặt.
+- Mở các nhóm cài đặt nâng cao dạng dropdown trong trang cài đặt:
+  - Tùy chọn hiển thị.
+  - Thông báo.
+  - Tuyển dụng mặc định.
+  - Lịch phỏng vấn.
+- Các tùy chọn hiển thị dùng toggle ngay trong dropdown nâng cao.
+- Các mục con chưa có tính năng trong nhóm cài đặt nâng cao chỉ hiển thị thông báo `Đang phát triển` khi bấm vào và chưa gọi API.
 
 Doanh nghiệp có thể làm với tin tuyển dụng:
 
@@ -321,6 +330,8 @@ API của doanh nghiệp:
 | Chấp nhận/từ chối đơn ứng tuyển | `PUT /enterprise/applications/:id/status` |
 | Đặt/cập nhật lịch phỏng vấn | `PUT /enterprise/applications/:id/interview` |
 | Gửi kết quả phỏng vấn | `PUT /enterprise/applications/:id/interview-result` |
+| Lấy hồ sơ doanh nghiệp hiện tại | `GET /enterprise/profile` |
+| Cập nhật tên hiển thị và số điện thoại liên hệ | `PUT /enterprise/profile` |
 
 Các mục sidebar doanh nghiệp đang có nhưng còn ở trạng thái sắp phát triển/giới hạn nếu UI đánh dấu như vậy:
 
@@ -412,6 +423,7 @@ Admin có thể quản lý doanh nghiệp:
 - Sửa email doanh nghiệp.
 - Sửa các trường hồ sơ doanh nghiệp:
   - tên công ty,
+  - số điện thoại liên hệ,
   - mã số thuế,
   - URL GPKD,
   - trạng thái KYB.

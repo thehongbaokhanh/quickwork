@@ -1,5 +1,5 @@
 <template>
-  <section class="relative z-10 bg-white pt-10 sm:pt-12">
+  <section class="relative z-10 bg-white pt-8 sm:pt-10">
     <div class="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8">
       <div class="grid overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-200/55 sm:grid-cols-2 lg:grid-cols-4">
         <article

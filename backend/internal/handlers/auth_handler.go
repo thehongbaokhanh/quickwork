@@ -232,6 +232,62 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	})
 }
 
+func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(uint)
+	if !ok {
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"message": "Phiên đăng nhập không hợp lệ.",
+		})
+	}
+
+	req := new(request.ChangePasswordRequest)
+	if err := c.BodyParser(req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể đọc dữ liệu JSON.",
+		})
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Dữ liệu không hợp lệ.",
+			"errors":  err.Error(),
+		})
+	}
+
+	if err := h.authService.ChangePassword(userID, req); err != nil {
+		switch err {
+		case service.ErrCurrentPasswordInvalid:
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Mật khẩu hiện tại không đúng.",
+			})
+		case service.ErrNewPasswordSame:
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Mật khẩu mới không được trùng mật khẩu hiện tại.",
+			})
+		case service.ErrPasswordPolicyInvalid:
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Mật khẩu mới cần có ít nhất 8 ký tự, chữ hoa, chữ thường, số hoặc ký tự đặc biệt và không chứa khoảng trắng.",
+			})
+		default:
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"message": err.Error(),
+			})
+		}
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Đổi mật khẩu thành công.",
+	})
+}
+
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 
 	accessToken, ok := parseBearerToken(c.Get("Authorization"))

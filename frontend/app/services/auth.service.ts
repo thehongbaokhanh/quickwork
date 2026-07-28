@@ -12,6 +12,10 @@ export const AuthService = {
       credentials: 'include',
     });
   },
+
+  async changePassword(payload: any) {
+    return apiClient.post('/auth/change-password', payload)
+  },
     
   async registerStudent(payload: any) {
     const config = useRuntimeConfig()

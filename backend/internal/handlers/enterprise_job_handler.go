@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -45,6 +46,51 @@ type scheduleInterviewRequest struct {
 type interviewResultRequest struct {
 	Result     string `json:"result"`
 	ResultNote string `json:"result_note"`
+}
+
+type createSkillRequest struct {
+	Name         string `json:"name"`
+	CategoryID   uint   `json:"category_id"`
+	CategoryName string `json:"category_name"`
+}
+
+type updateEnterpriseAccountProfileRequest struct {
+	CompanyName string `json:"company_name"`
+	Phone       string `json:"phone"`
+}
+
+var errInvalidSkillIDs = errors.New("invalid skill ids")
+
+func uniqueSkillIDs(rawIDs []uint) []uint {
+	seen := make(map[uint]struct{}, len(rawIDs))
+	ids := make([]uint, 0, len(rawIDs))
+	for _, id := range rawIDs {
+		if id == 0 {
+			continue
+		}
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		seen[id] = struct{}{}
+		ids = append(ids, id)
+	}
+	return ids
+}
+
+func loadSkillsByIDs(tx *gorm.DB, skillIDs []uint) ([]models.Skill, error) {
+	ids := uniqueSkillIDs(skillIDs)
+	if len(ids) == 0 {
+		return []models.Skill{}, nil
+	}
+
+	var skills []models.Skill
+	if err := tx.Preload("Category").Where("id IN ?", ids).Find(&skills).Error; err != nil {
+		return nil, err
+	}
+	if len(skills) != len(ids) {
+		return nil, errInvalidSkillIDs
+	}
+	return skills, nil
 }
 
 func parseInterviewTime(value string) (time.Time, error) {
@@ -100,6 +146,21 @@ func parseInterviewResult(value string) (models.InterviewResult, bool) {
 	}
 }
 
+func isValidOptionalContactPhone(value string) bool {
+	if value == "" {
+		return true
+	}
+	if len(value) < 10 || len(value) > 11 {
+		return false
+	}
+	for _, char := range value {
+		if char < '0' || char > '9' {
+			return false
+		}
+	}
+	return true
+}
+
 func getInterviewResultLabel(result models.InterviewResult) string {
 	switch result {
 	case models.InterviewResultHired:
@@ -111,6 +172,98 @@ func getInterviewResultLabel(result models.InterviewResult) string {
 	default:
 		return "Chưa cập nhật"
 	}
+}
+
+func (h *EnterpriseJobHandler) GetProfile(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(uint)
+	if !ok {
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"message": "Unauthorized",
+		})
+	}
+
+	var user models.User
+	if err := h.db.Preload("EnterpriseProfile").First(&user, userID).Error; err != nil {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"success": false,
+			"message": "Không tìm thấy hồ sơ nhà tuyển dụng.",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    user,
+	})
+}
+
+func (h *EnterpriseJobHandler) UpdateProfile(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(uint)
+	if !ok {
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"message": "Unauthorized",
+		})
+	}
+
+	var req updateEnterpriseAccountProfileRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Invalid request body",
+		})
+	}
+
+	companyName := strings.TrimSpace(req.CompanyName)
+	phone := strings.TrimSpace(req.Phone)
+	if companyName == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Vui lòng nhập tên hiển thị doanh nghiệp.",
+		})
+	}
+	if !isValidOptionalContactPhone(phone) {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Số điện thoại liên hệ phải có từ 10 đến 11 chữ số.",
+		})
+	}
+
+	var user models.User
+	if err := h.db.Preload("EnterpriseProfile").First(&user, userID).Error; err != nil {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"success": false,
+			"message": "Không tìm thấy hồ sơ nhà tuyển dụng.",
+		})
+	}
+	if user.EnterpriseProfile == nil {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"success": false,
+			"message": "Hồ sơ doanh nghiệp chưa được khởi tạo.",
+		})
+	}
+
+	user.EnterpriseProfile.CompanyName = companyName
+	user.EnterpriseProfile.Phone = phone
+	if err := h.db.Save(user.EnterpriseProfile).Error; err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể cập nhật hồ sơ nhà tuyển dụng.",
+		})
+	}
+
+	if err := h.db.Preload("EnterpriseProfile").First(&user, userID).Error; err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể tải lại hồ sơ nhà tuyển dụng.",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Đã cập nhật hồ sơ nhà tuyển dụng.",
+		"data":    user,
+	})
 }
 
 func buildInterviewResultNotification(application models.JobApplication, result models.InterviewResult, note string) models.Notification {
@@ -142,6 +295,92 @@ func buildInterviewResultNotification(application models.JobApplication, result 
 		Title:   title,
 		Content: strings.Join(parts, "\n"),
 	}
+}
+
+func (h *EnterpriseJobHandler) ListSkills(c *fiber.Ctx) error {
+	var skills []models.Skill
+	if err := h.db.
+		Preload("Category").
+		Order("name ASC").
+		Find(&skills).Error; err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể tải danh sách kỹ năng.",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    skills,
+	})
+}
+
+func (h *EnterpriseJobHandler) CreateSkill(c *fiber.Ctx) error {
+	var req createSkillRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Invalid request body",
+		})
+	}
+
+	name := strings.TrimSpace(req.Name)
+	if name == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Vui lòng nhập tên kỹ năng.",
+		})
+	}
+
+	categoryName := strings.TrimSpace(req.CategoryName)
+	if categoryName == "" {
+		categoryName = "Kỹ năng khác"
+	}
+
+	var skill models.Skill
+	err := h.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.
+			Preload("Category").
+			Where("LOWER(name) = LOWER(?)", name).
+			First(&skill).Error; err == nil {
+			return nil
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		var category models.Category
+		if req.CategoryID > 0 {
+			if err := tx.First(&category, req.CategoryID).Error; err != nil {
+				return err
+			}
+		} else {
+			category = models.Category{Name: categoryName}
+			if err := tx.Where("LOWER(name) = LOWER(?)", categoryName).FirstOrCreate(&category, models.Category{Name: categoryName}).Error; err != nil {
+				return err
+			}
+		}
+
+		skill = models.Skill{
+			Name:       name,
+			CategoryID: category.ID,
+		}
+		if err := tx.Create(&skill).Error; err != nil {
+			return err
+		}
+
+		return tx.Preload("Category").First(&skill, skill.ID).Error
+	})
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể thêm kỹ năng: " + err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusCreated).JSON(fiber.Map{
+		"success": true,
+		"data":    skill,
+	})
 }
 
 func (h *EnterpriseJobHandler) CreateJob(c *fiber.Ctx) error {
@@ -192,7 +431,34 @@ func (h *EnterpriseJobHandler) CreateJob(c *fiber.Ctx) error {
 		Status:       status,
 	}
 
-	if err := h.jobRepo.Create(job); err != nil {
+	var createdJob models.Job
+	if err := h.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(job).Error; err != nil {
+			return err
+		}
+
+		skills, err := loadSkillsByIDs(tx, req.SkillIDs)
+		if err != nil {
+			return err
+		}
+		if len(skills) > 0 {
+			if err := tx.Model(job).Association("Skills").Replace(skills); err != nil {
+				return err
+			}
+		}
+
+		return tx.
+			Preload("EnterpriseProfile").
+			Preload("Skills").
+			Preload("Skills.Category").
+			First(&createdJob, job.ID).Error
+	}); err != nil {
+		if errors.Is(err, errInvalidSkillIDs) {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Một số kỹ năng không tồn tại.",
+			})
+		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
 			"message": "Could not create job: " + err.Error(),
@@ -201,7 +467,7 @@ func (h *EnterpriseJobHandler) CreateJob(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusCreated).JSON(fiber.Map{
 		"success": true,
-		"data":    job,
+		"data":    createdJob,
 	})
 }
 
@@ -791,7 +1057,39 @@ func (h *EnterpriseJobHandler) UpdateJob(c *fiber.Ctx) error {
 		job.Status = models.JobStatus(req.Status)
 	}
 
-	if err := h.jobRepo.Update(job); err != nil {
+	var updatedJob models.Job
+	if err := h.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(job).Error; err != nil {
+			return err
+		}
+
+		if req.SkillIDs != nil {
+			skills, err := loadSkillsByIDs(tx, req.SkillIDs)
+			if err != nil {
+				return err
+			}
+
+			if len(skills) == 0 {
+				if err := tx.Model(job).Association("Skills").Clear(); err != nil {
+					return err
+				}
+			} else if err := tx.Model(job).Association("Skills").Replace(skills); err != nil {
+				return err
+			}
+		}
+
+		return tx.
+			Preload("EnterpriseProfile").
+			Preload("Skills").
+			Preload("Skills.Category").
+			First(&updatedJob, job.ID).Error
+	}); err != nil {
+		if errors.Is(err, errInvalidSkillIDs) {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Một số kỹ năng không tồn tại.",
+			})
+		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
 			"message": "Could not update job",
@@ -800,7 +1098,7 @@ func (h *EnterpriseJobHandler) UpdateJob(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"success": true,
-		"data":    job,
+		"data":    updatedJob,
 	})
 }
 

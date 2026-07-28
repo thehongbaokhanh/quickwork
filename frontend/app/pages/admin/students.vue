@@ -43,8 +43,32 @@
       </article>
     </section>
 
-    <section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-      <div class="rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 class="text-base font-black text-slate-950">Tình trạng hồ sơ</h2>
+          <p class="mt-1 text-xs font-medium text-slate-500">Tính từ dữ liệu học viên đang tải.</p>
+        </div>
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-sky-50 text-sky-700">
+          <Icon name="uil:chart-pie" class="h-5 w-5" />
+        </span>
+      </div>
+
+      <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <article v-for="item in profileBars" :key="item.label" class="rounded-lg border border-slate-100 bg-slate-50/70 p-4">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <span class="truncate text-sm font-bold text-slate-700">{{ item.label }}</span>
+            <span class="shrink-0 text-lg font-black text-slate-950">{{ item.value }}</span>
+          </div>
+          <div class="h-2 overflow-hidden rounded-full bg-white">
+            <div :class="['h-full rounded-full', item.className]" :style="{ width: `${item.percent}%` }" />
+          </div>
+          <p class="mt-2 text-xs font-semibold text-slate-500">{{ item.percent }}% tổng học viên</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-slate-200 bg-white shadow-sm">
         <div class="grid gap-3 border-b border-slate-100 p-4 lg:grid-cols-[minmax(0,1fr)_180px_auto] lg:p-5">
           <label class="relative block">
             <Icon name="uil:search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -56,12 +80,14 @@
             >
           </label>
 
-          <select v-model="activeStatus" class="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang hoạt động</option>
-            <option value="INACTIVE">Tạm khóa</option>
-            <option value="BANNED">Bị cấm</option>
-          </select>
+          <ScrollSelect
+            v-model="activeStatus"
+            :options="statusFilterOptions"
+            ariaLabel="Lọc học viên theo trạng thái"
+            icon="uil:check-circle"
+            size="filter"
+            tone="sky"
+          />
 
           <button class="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-slate-200 px-4 text-sm font-black text-slate-700 transition hover:bg-slate-50" type="button" @click="clearFilters">
             <Icon name="uil:filter-slash" class="h-4 w-4" />
@@ -70,16 +96,16 @@
         </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[960px] text-left text-sm">
+          <table class="w-full min-w-[1120px] text-left text-sm">
             <thead class="border-b border-slate-100 bg-slate-50 text-xs font-black uppercase text-slate-500">
               <tr>
-                <th class="px-5 py-3">STT</th>
-                <th class="px-5 py-3">Học viên</th>
-                <th class="px-5 py-3">Liên hệ</th>
-                <th class="px-5 py-3">Kỹ năng</th>
-                <th class="px-5 py-3">CV</th>
-                <th class="px-5 py-3">Trạng thái</th>
-                <th class="px-5 py-3 text-right">Thao tác</th>
+                <th class="whitespace-nowrap px-5 py-3">STT</th>
+                <th class="whitespace-nowrap px-5 py-3">Học viên</th>
+                <th class="whitespace-nowrap px-5 py-3">Liên hệ</th>
+                <th class="whitespace-nowrap px-5 py-3">Kỹ năng</th>
+                <th class="whitespace-nowrap px-5 py-3">CV</th>
+                <th class="whitespace-nowrap px-5 py-3">Trạng thái</th>
+                <th class="whitespace-nowrap px-5 py-3 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -96,47 +122,64 @@
                 </td>
               </tr>
               <template v-else>
-              <tr v-for="(student, index) in filteredStudents" :key="student.id" class="transition hover:bg-slate-50/80">
-                  <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
+              <tr v-for="(student, index) in paginatedStudents" :key="student.id" class="transition hover:bg-slate-50/80">
+                  <td class="whitespace-nowrap px-5 py-4 font-black text-slate-400">{{ studentsPageOffset + index + 1 }}</td>
                   <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
+                    <div class="flex max-w-[260px] items-center gap-3">
                       <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-sky-50 text-sm font-black text-sky-700">
                         <img v-if="student.student_profile?.avatar" :src="student.student_profile.avatar" alt="" class="h-full w-full object-cover">
                         <span v-else>{{ getInitial(student) }}</span>
                       </div>
                       <div class="min-w-0">
-                        <p class="truncate font-black text-slate-950">{{ getStudentName(student) }}</p>
+                        <p class="truncate font-black text-slate-950" :title="getStudentName(student)">{{ getStudentName(student) }}</p>
                         <p class="truncate text-xs font-medium text-slate-500">{{ student.email }}</p>
                       </div>
                     </div>
                   </td>
-                  <td class="px-5 py-4 font-semibold text-slate-600">{{ student.student_profile?.phone || 'Chưa cập nhật' }}</td>
-                  <td class="px-5 py-4">
-                    <div class="flex max-w-[220px] flex-wrap gap-1">
-                      <span v-for="skill in getSkills(student).slice(0, 3)" :key="skill" class="rounded bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">
-                        {{ skill }}
-                      </span>
-                      <span v-if="getSkills(student).length === 0" class="text-xs font-semibold text-slate-400">Chưa cập nhật</span>
-                      <span v-else-if="getSkills(student).length > 3" class="rounded bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-500">
-                        +{{ getSkills(student).length - 3 }}
-                      </span>
+                  <td class="max-w-[160px] whitespace-nowrap px-5 py-4 font-semibold text-slate-600">
+                    <span class="block truncate" :title="student.student_profile?.phone || 'Chưa cập nhật'">{{ student.student_profile?.phone || 'Chưa cập nhật' }}</span>
+                  </td>
+                  <td class="whitespace-nowrap px-5 py-4">
+                    <div class="group relative inline-flex">
+                      <button
+                        type="button"
+                        :class="[
+                          'inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs font-black transition focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100',
+                          hasStudentSkills(student)
+                            ? 'border-sky-100 bg-sky-50 text-sky-700 hover:border-sky-200 hover:bg-sky-100'
+                            : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
+                        ]"
+                        :aria-label="studentSkillsTooltip(student)"
+                      >
+                        <Icon :name="hasStudentSkills(student) ? 'uil:check-circle' : 'uil:info-circle'" class="h-4 w-4" />
+                        {{ hasStudentSkills(student) ? 'Đã cập nhật' : 'Chưa cập nhật' }}
+                      </button>
+                      <div class="pointer-events-none invisible absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-3 text-xs font-semibold leading-5 text-slate-600 opacity-0 shadow-2xl shadow-slate-200/80 ring-1 ring-slate-950/5 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                        <p class="font-black text-slate-950">{{ hasStudentSkills(student) ? 'Kỹ năng đã cập nhật' : 'Thông tin kỹ năng' }}</p>
+                        <div v-if="hasStudentSkills(student)" class="mt-2 flex flex-wrap gap-1.5">
+                          <span v-for="skill in getSkills(student)" :key="skill" class="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-black text-sky-700">
+                            {{ skill }}
+                          </span>
+                        </div>
+                        <p v-else class="mt-2 text-slate-500">Học viên này chưa cập nhật kỹ năng.</p>
+                      </div>
                     </div>
                   </td>
-                  <td class="px-5 py-4">
+                  <td class="whitespace-nowrap px-5 py-4">
                     <a v-if="student.student_profile?.cv_url" :href="student.student_profile.cv_url" target="_blank" class="qw-chip bg-sky-50 text-sky-700 hover:bg-sky-100">
                       <Icon name="uil:file-download" class="h-4 w-4" />
                       Xem CV
                     </a>
-                    <span v-else class="text-xs font-semibold text-slate-400">Chưa có</span>
+                      <span v-else class="text-xs font-semibold text-slate-400">Chưa có</span>
                   </td>
-                  <td class="px-5 py-4">
+                  <td class="whitespace-nowrap px-5 py-4">
                     <span :class="['qw-chip', statusClass(student.status)]">
                       {{ statusLabel(student.status) }}
                     </span>
                   </td>
-                  <td class="px-5 py-4">
+                  <td class="whitespace-nowrap px-5 py-4">
                     <div class="flex items-center justify-end gap-2">
-                      <button class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:bg-slate-50" type="button" title="Xem chi tiết" @click="selectedStudent = student">
+                      <button class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:bg-slate-50" type="button" title="Xem chi tiết" @click="openStudentDetail(student)">
                         <Icon name="uil:eye" class="h-4 w-4" />
                       </button>
                       <select
@@ -156,28 +199,12 @@
             </tbody>
           </table>
         </div>
-      </div>
-
-      <aside class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <h2 class="text-base font-black text-slate-950">Tình trạng hồ sơ</h2>
-            <p class="mt-1 text-xs font-medium text-slate-500">Tính từ dữ liệu học viên đang tải.</p>
-          </div>
-          <Icon name="uil:chart-pie" class="h-5 w-5 text-slate-400" />
-        </div>
-        <div class="mt-5 space-y-4">
-          <div v-for="item in profileBars" :key="item.label">
-            <div class="mb-2 flex items-center justify-between text-sm">
-              <span class="font-bold text-slate-700">{{ item.label }}</span>
-              <span class="font-black text-slate-950">{{ item.value }}</span>
-            </div>
-            <div class="h-2 overflow-hidden rounded-full bg-slate-100">
-              <div :class="['h-full rounded-full', item.className]" :style="{ width: `${item.percent}%` }" />
-            </div>
-          </div>
-        </div>
-      </aside>
+        <AdminTablePagination
+          v-model:page="currentPage"
+          v-model:page-size="pageSize"
+          :total="filteredStudents.length"
+          item-label="học viên"
+        />
     </section>
 
     <div v-if="selectedStudent" class="qw-detail-backdrop" @click.self="closeStudentDetail">
@@ -268,9 +295,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import AdminTablePagination from '~/components/admin/AdminTablePagination.vue'
+import ScrollSelect from '~/components/ui/ScrollSelect.vue'
 import { AdminService } from '~/services/admin.service'
 import { useToast } from '~/composables/useToast'
+import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 definePageMeta({
   layout: 'admin',
@@ -285,6 +315,8 @@ const isLoading = ref(true)
 const errorMessage = ref('')
 const searchQuery = ref('')
 const activeStatus = ref('ALL')
+const currentPage = ref(1)
+const pageSize = ref(10)
 const selectedStudent = ref<any | null>(null)
 const updatingUserId = ref<number | null>(null)
 const isEditingStudent = ref(false)
@@ -299,6 +331,13 @@ const editStudentForm = reactive({
     cv_url: ''
   }
 })
+
+const statusFilterOptions = [
+  { value: 'ALL', label: 'Tất cả trạng thái' },
+  { value: 'ACTIVE', label: 'Đang hoạt động' },
+  { value: 'INACTIVE', label: 'Tạm khóa' },
+  { value: 'BANNED', label: 'Bị cấm' }
+]
 
 const summaryCards = computed(() => [
   {
@@ -332,19 +371,35 @@ const summaryCards = computed(() => [
 ])
 
 const filteredStudents = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
+  const query = normalizeSearchText(searchQuery.value)
   return students.value.filter((student) => {
     const matchesStatus = activeStatus.value === 'ALL' || normalizeStatus(student.status) === activeStatus.value
-    const searchable = [
+    const searchable = buildSearchText([
       getStudentName(student),
       student.email,
       student?.student_profile?.phone,
       statusLabel(student.status),
       ...getSkills(student)
-    ].filter(Boolean).join(' ').toLowerCase()
+    ])
 
     return matchesStatus && (!query || searchable.includes(query))
   })
+})
+
+const studentsPageOffset = computed(() => (currentPage.value - 1) * Number(pageSize.value))
+
+const paginatedStudents = computed(() => {
+  const size = Number(pageSize.value)
+  return filteredStudents.value.slice(studentsPageOffset.value, studentsPageOffset.value + size)
+})
+
+watch([searchQuery, activeStatus], () => {
+  currentPage.value = 1
+})
+
+watch([filteredStudents, pageSize], () => {
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.value.length / Number(pageSize.value)))
+  if (currentPage.value > totalPages) currentPage.value = totalPages
 })
 
 const profileBars = computed(() => {
@@ -511,6 +566,15 @@ function getSkills(student: any) {
   const skills = student?.student_profile?.skills
   if (!Array.isArray(skills)) return []
   return skills.map((skill: any) => skill?.name || skill?.title || skill).filter(Boolean)
+}
+
+function hasStudentSkills(student: any) {
+  return getSkills(student).length > 0
+}
+
+function studentSkillsTooltip(student: any) {
+  const skills = getSkills(student)
+  return skills.length > 0 ? `Kỹ năng: ${skills.join(', ')}` : 'Học viên này chưa cập nhật kỹ năng.'
 }
 
 function detailItems(student: any) {

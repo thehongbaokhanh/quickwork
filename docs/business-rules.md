@@ -38,13 +38,14 @@ Student registration:
 
 Enterprise registration:
 
-- requires email, password, company name, tax code, and `gpkd_url`,
+- requires email, password, company name, contact phone, tax code, and `gpkd_url`,
+- contact phone must contain 10-11 digits,
 - rejects missing or blank `gpkd_url`,
 - rejects duplicate email,
 - rejects duplicate tax code,
 - hashes password,
 - creates a `users` row with role `ENTERPRISE`,
-- creates an `enterprise_profiles` row with KYB status `PENDING`.
+- creates an `enterprise_profiles` row with contact phone and KYB status `PENDING`.
 
 First admin registration:
 
@@ -62,6 +63,14 @@ Login:
 - creates access and refresh tokens,
 - returns role and user metadata,
 - for enterprise users also returns KYB/GPKD access metadata.
+
+Password change:
+
+- is available only through authenticated protected API access,
+- verifies the current password before changing anything,
+- rejects a new password that is the same as the current password,
+- requires at least 8 characters, uppercase and lowercase letters, a digit or special character, and no whitespace,
+- hashes the new password before updating the `users.password` column.
 
 Logout:
 
@@ -110,6 +119,9 @@ Enterprise job rules:
 - Enterprise job APIs are under `/api/v1/enterprise/jobs`.
 - Creating a job uses the authenticated enterprise user id as `enterprise_id`.
 - Enterprise-created jobs can be submitted as `PENDING`.
+- Enterprise-created jobs can attach existing skills by `skill_ids`; backend validates every submitted skill id before writing `job_skills`.
+- Enterprise users can add missing skills from the create-job UI. New skills are stored in the shared `skills` catalog and default to category `Kỹ năng khác` when no category is provided.
+- The create-job UI separates requirements into skills, experience, and work-time choices, then stores the readable summary in the existing `requirements` text field for compatibility.
 - Draft jobs can be submitted to admin review from the enterprise edit screen by changing status to `PENDING`.
 - Rejected jobs can be edited and requested for reposting by changing status back to `PENDING`.
 - Closing/deleting an enterprise job changes its status to `CLOSED`; it is not a hard delete.
@@ -166,7 +178,7 @@ Admin account-management rule:
 - Admin can view user details from admin user/student/enterprise pages.
 - Admin can edit email and status for non-admin accounts.
 - Admin can edit student profile fields: name, phone, avatar URL, and CV URL.
-- Admin can edit enterprise profile fields: company name, tax code, GPKD URL, and KYB status.
+- Admin can edit enterprise profile fields: company name, contact phone, tax code, GPKD URL, and KYB status.
 - Admin cannot approve enterprise KYB if GPKD URL is blank.
 
 ## Uploads And GPKD Files

@@ -132,6 +132,10 @@
           </AuthField>
         </div>
 
+        <AuthField label="Số điện thoại liên hệ" icon="uil:phone" input-id="company-phone" :error="companyErrors.phone">
+          <input id="company-phone" v-model="companyForm.phone" type="tel" autocomplete="tel" required class="qw-auth-input" placeholder="Nhập số điện thoại liên hệ" :aria-invalid="Boolean(companyErrors.phone)" :aria-describedby="companyErrors.phone ? 'company-phone-error' : undefined" @blur="validateCompanyPhone" @input="validateCompanyPhone">
+        </AuthField>
+
         <AuthField label="Email doanh nghiệp" icon="uil:envelope" input-id="company-email" :error="companyErrors.email">
           <input id="company-email" v-model="companyForm.email" type="email" autocomplete="email" required class="qw-auth-input" placeholder="Nhập email doanh nghiệp" :aria-invalid="Boolean(companyErrors.email)" :aria-describedby="companyErrors.email ? 'company-email-error' : undefined" @blur="validateCompanyEmail" @input="validateCompanyEmail">
         </AuthField>
@@ -387,6 +391,7 @@ const handleStudentRegister = async () => {
 const companyForm = reactive({
   company_name: '',
   tax_code: '',
+  phone: '',
   gpkd_url: '',
   email: '',
   password: '',
@@ -396,6 +401,7 @@ const companyForm = reactive({
 const companyErrors = reactive({
   company_name: '',
   tax_code: '',
+  phone: '',
   gpkd_url: '',
   email: '',
   password: '',
@@ -421,6 +427,18 @@ const validateCompanyTax = () => {
     companyErrors.tax_code = 'Mã số thuế phải từ 10 đến 13 ký số.'
   } else {
     companyErrors.tax_code = ''
+  }
+}
+
+const validateCompanyPhone = () => {
+  if (!companyForm.phone) {
+    companyErrors.phone = 'Vui lòng nhập số điện thoại liên hệ.'
+  } else if (!/^\d+$/.test(companyForm.phone)) {
+    companyErrors.phone = 'Số điện thoại liên hệ chỉ được chứa ký tự số.'
+  } else if (companyForm.phone.length < 10 || companyForm.phone.length > 11) {
+    companyErrors.phone = 'Số điện thoại liên hệ phải từ 10 đến 11 số.'
+  } else {
+    companyErrors.phone = ''
   }
 }
 
@@ -480,6 +498,7 @@ const handleFileUpload = async (event: Event) => {
 const handleCompanyRegister = async () => {
   validateCompanyName()
   validateCompanyTax()
+  validateCompanyPhone()
   validateCompanyEmail()
   validateCompanyPassword()
   validateCompanyConfirmPassword()
@@ -489,6 +508,7 @@ const handleCompanyRegister = async () => {
   if (
     companyErrors.company_name ||
     companyErrors.tax_code ||
+    companyErrors.phone ||
     companyErrors.gpkd_url ||
     companyErrors.email ||
     companyErrors.password ||
@@ -506,6 +526,7 @@ const handleCompanyRegister = async () => {
       email: companyForm.email,
       password: companyForm.password,
       company_name: companyForm.company_name,
+      phone: companyForm.phone,
       tax_code: companyForm.tax_code,
       gpkd_url: companyForm.gpkd_url
     })

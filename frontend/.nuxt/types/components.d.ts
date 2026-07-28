@@ -39,6 +39,7 @@ interface _GlobalComponents {
   PaginationVue: typeof import("../../app/components/Pagination.vue")['default']
   SearchBox: typeof import("../../app/components/SearchBox.vue")['default']
   SearchBoxVue: typeof import("../../app/components/SearchBox.vue")['default']
+  AdminTablePagination: typeof import("../../app/components/admin/AdminTablePagination.vue")['default']
   EnterpriseCandidateCollectionView: typeof import("../../app/components/enterprise/CandidateCollectionView.vue")['default']
   HomeCareerCta: typeof import("../../app/components/home/HomeCareerCta.vue")['default']
   HomeCategories: typeof import("../../app/components/home/HomeCategories.vue")['default']
@@ -115,6 +116,7 @@ interface _GlobalComponents {
   LazyPaginationVue: LazyComponent<typeof import("../../app/components/Pagination.vue")['default']>
   LazySearchBox: LazyComponent<typeof import("../../app/components/SearchBox.vue")['default']>
   LazySearchBoxVue: LazyComponent<typeof import("../../app/components/SearchBox.vue")['default']>
+  LazyAdminTablePagination: LazyComponent<typeof import("../../app/components/admin/AdminTablePagination.vue")['default']>
   LazyEnterpriseCandidateCollectionView: LazyComponent<typeof import("../../app/components/enterprise/CandidateCollectionView.vue")['default']>
   LazyHomeCareerCta: LazyComponent<typeof import("../../app/components/home/HomeCareerCta.vue")['default']>
   LazyHomeCategories: LazyComponent<typeof import("../../app/components/home/HomeCategories.vue")['default']>

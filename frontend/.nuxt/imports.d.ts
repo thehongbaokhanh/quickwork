@@ -36,5 +36,6 @@ export { useToast, ToastMessage } from '../app/composables/useToast';
 export { getDefaultRouteForRole, getLoginRedirectForRole } from '../app/utils/authRedirect';
 export { mapJobForDisplay, getDateTime, getSalaryRange, salaryRank, ApiSkill, ApiJob, DisplayJob } from '../app/utils/jobDisplay';
 export { getJobTypeMeta, JobTypeMeta } from '../app/utils/jobTypeMeta';
+export { normalizeSearchText, buildSearchText } from '../app/utils/searchText';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
 export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

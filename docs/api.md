@@ -51,6 +51,19 @@ Registered by `routes.RegisterAuthRoutes(api, authHandler)`.
 | POST | `/auth/google` | Login/register through Google flow |
 | GET | `/auth/google/config` | Return Google OAuth config/mock config |
 
+`POST /auth/register-enterprise` accepts enterprise contact phone as required profile data:
+
+```json
+{
+  "email": "company@example.com",
+  "password": "secret123",
+  "company_name": "Company name",
+  "phone": "0900000000",
+  "tax_code": "0100000000",
+  "gpkd_url": "/uploads/gpkd.pdf"
+}
+```
+
 ## Public Job Routes
 
 Registered directly in `backend/cmd/api/main.go`.
@@ -81,9 +94,22 @@ When initialized with DB access in `cmd/api/main.go`, `AuthMiddleware` also chec
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/profile` | Authenticated profile/test endpoint |
+| POST | `/auth/change-password` | Change password for the current authenticated user |
 | GET | `/admin/test` | Admin test endpoint |
 | GET | `/student/test` | Student test endpoint |
 | GET | `/enterprise/test` | Enterprise test endpoint |
+
+`POST /auth/change-password` accepts:
+
+```json
+{
+  "current_password": "CurrentPass123",
+  "new_password": "NewPass123",
+  "confirm_password": "NewPass123"
+}
+```
+
+The endpoint verifies the current password, rejects reusing the same password, hashes the new password, and updates the current `users.password` row. The new password must be at least 8 characters, include uppercase and lowercase letters, include a digit or special character, and contain no whitespace.
 
 ## Student Job Action Routes
 
@@ -117,14 +143,29 @@ Middleware:
 
 | Method | Path | Purpose |
 | --- | --- | --- |
+| GET | `/enterprise/profile` | Return the current enterprise account and profile |
+| PUT | `/enterprise/profile` | Update current enterprise company name and contact phone |
 | GET | `/enterprise/applications` | List applications submitted to current enterprise's jobs |
 | PUT | `/enterprise/applications/:id/status` | Accept or reject an application for current enterprise's job |
 | PUT | `/enterprise/applications/:id/interview` | Schedule or update an interview for an accepted application |
 | PUT | `/enterprise/applications/:id/interview-result` | Submit the final result for an interview after its scheduled time |
+| GET | `/enterprise/skills` | List skills available for enterprise job requirements |
+| POST | `/enterprise/skills` | Create a skill in the catalog for enterprise job requirements |
 | POST | `/enterprise/jobs/` | Create enterprise job |
 | GET | `/enterprise/jobs/` | List current enterprise jobs |
 | PUT | `/enterprise/jobs/:id` | Update enterprise job |
 | DELETE | `/enterprise/jobs/:id` | Delete/close enterprise job |
+
+`PUT /enterprise/profile` accepts:
+
+```json
+{
+  "company_name": "Company name",
+  "phone": "0900000000"
+}
+```
+
+`phone` can be blank for existing accounts, but when present it must contain 10-11 digits. The response returns the current user with preloaded `enterprise_profile`.
 
 `GET /enterprise/applications` supports optional `status` and `job_id` query params. Responses preload the applied job plus the student's user profile, phone, CV URL, and skills.
 
@@ -167,6 +208,35 @@ When `result` is `HIRED`, the backend decrements the related job `slots` in a tr
 
 `PUT /enterprise/jobs/:id` accepts the editable job fields used by the enterprise UI, including `title`, `description`, `requirements`, `salary`, `location`, `slots`, and optional `status`.
 
+`POST /enterprise/jobs/` and `PUT /enterprise/jobs/:id` also accept optional `skill_ids`:
+
+```json
+{
+  "title": "Backend Developer",
+  "description": "Build APIs",
+  "requirements": "Kỹ năng: Go, PostgreSQL\nKinh nghiệm: Junior (1-2 năm)",
+  "salary": "15 - 25 triệu",
+  "location": "Phường Cầu Giấy, Thành phố Hà Nội",
+  "slots": 2,
+  "status": "PENDING",
+  "skill_ids": [1, 2]
+}
+```
+
+When `skill_ids` is present, the backend validates that every skill exists and stores the relation in `job_skills`. `PUT /enterprise/jobs/:id` replaces the existing skill list when `skill_ids` is sent.
+
+`POST /enterprise/skills` accepts:
+
+```json
+{
+  "name": "Laravel",
+  "category_id": 1,
+  "category_name": "Kỹ năng khác"
+}
+```
+
+`name` is required. `category_id` is optional; without it, the backend uses `category_name` or creates/uses the default `Kỹ năng khác` category. If a skill with the same name already exists, the existing skill is returned.
+
 `DELETE /enterprise/jobs/:id` is a soft close: it sets the job status to `CLOSED` instead of physically deleting the row. The enterprise UI can restore a closed job by sending `status: "DRAFT"` through the update endpoint.
 
 ## Admin Routes
@@ -206,6 +276,7 @@ Middleware:
   },
   "enterprise_profile": {
     "company_name": "Company name",
+    "phone": "0900000000",
     "tax_code": "0100000000",
     "gpkd_url": "/uploads/gpkd.pdf",
     "kyb_status": "APPROVED"
@@ -228,15 +299,20 @@ Confirmed against current `main.go`:
 
 - `AuthService.login` -> `POST /auth/login`
 - `AuthService.logout` -> `POST /auth/logout`
+- `AuthService.changePassword` -> `POST /auth/change-password`
 - `AuthService.registerStudent` -> `POST /auth/register-student`
 - `AuthService.registerEnterprise` -> `POST /auth/register-enterprise`
 - `AuthService.uploadGPKD` -> `POST /auth/upload`
+- `CompanyService.getProfile` -> `GET /enterprise/profile`
+- `CompanyService.updateProfile` -> `PUT /enterprise/profile`
 - `AdminService.updateUser` -> `PUT /admin/users/:id`
 - `AdminService.*` -> `/admin/*` routes listed above
 - `JobService.getAllJobs` -> `GET /jobs`
 - `JobService.getJobDetail` -> `GET /jobs/:id`
 - `JobService.getEnterpriseJobs` -> `GET /enterprise/jobs`
 - `JobService.createEnterpriseJob` -> `POST /enterprise/jobs`
+- `JobService.getEnterpriseSkills` -> `GET /enterprise/skills`
+- `JobService.createEnterpriseSkill` -> `POST /enterprise/skills`
 - `JobService.updateEnterpriseJob` -> `PUT /enterprise/jobs/:id`
 - `JobService.deleteEnterpriseJob` -> `DELETE /enterprise/jobs/:id`
 - `JobService.getEnterpriseApplications` -> `GET /enterprise/applications`
@@ -255,7 +331,6 @@ Verify before relying:
 - `AuthService.forgotPassword` -> `POST /auth/forgot-password`
 - `StudentService.getProfile` -> `GET /student/profile`
 - `StudentService.updateProfile` -> `PUT /student/profile`
-- `CompanyService.getProfile` -> `GET /company/profile`
 
 Legacy/alternate route caveat:
 

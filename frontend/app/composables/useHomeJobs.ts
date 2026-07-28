@@ -4,6 +4,7 @@ import { JobService } from '~/services/job.service'
 import { StudentService } from '~/services/student.service'
 import { useAuthStore } from '~/stores/auth'
 import { type ApiJob, type DisplayJob, mapJobForDisplay, salaryRank } from '~/utils/jobDisplay'
+import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 export type HomeSearchState = {
   keyword: string
@@ -74,13 +75,12 @@ export function useHomeJobs() {
   ])
 
   const filteredJobs = computed(() => {
-    const keyword = homeSearch.value.keyword.trim().toLowerCase()
-    const location = homeSearch.value.location.trim().toLowerCase()
+    const keyword = normalizeSearchText(homeSearch.value.keyword)
+    const location = normalizeSearchText(homeSearch.value.location)
     const selectedType = homeSearch.value.type
 
     return jobs.value.filter((job) => {
-      const matchesCategory = activeCategory.value === ALL_CATEGORY || job.category === activeCategory.value || job.type === activeCategory.value
-      const matchesKeyword = !keyword || [
+      const searchableJob = buildSearchText([
         job.title,
         job.company,
         job.description,
@@ -90,11 +90,12 @@ export function useHomeJobs() {
         job.category,
         job.salary,
         ...job.skills
-      ].join(' ').toLowerCase().includes(keyword)
-      const matchesLocation = !location || job.location.toLowerCase().includes(location)
+      ])
+      const matchesKeyword = !keyword || searchableJob.includes(keyword)
+      const matchesLocation = !location || normalizeSearchText(job.location).includes(location)
       const matchesType = selectedType === ALL_JOB_TYPES || job.type === selectedType
 
-      return matchesCategory && matchesKeyword && matchesLocation && matchesType
+      return matchesKeyword && matchesLocation && matchesType
     })
   })
 

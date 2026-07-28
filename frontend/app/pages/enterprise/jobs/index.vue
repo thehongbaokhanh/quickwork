@@ -1,156 +1,224 @@
 <template>
-  <div class="space-y-8 py-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-xl md:text-2xl font-black text-slate-900">Danh sách tin tuyển dụng</h1>
-        <p class="text-xs text-slate-400 font-semibold mt-1">Quản lý và cập nhật các tin tuyển dụng của doanh nghiệp của bạn.</p>
-      </div>
-      <div>
-        <NuxtLink 
+  <div class="space-y-6 py-6">
+    <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div class="grid gap-5 bg-slate-950 px-5 py-6 text-white lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:px-7">
+        <div class="min-w-0">
+          <div class="mb-3 flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 rounded-2xl bg-sky-400/15 px-3 py-1.5 text-xs font-bold text-sky-100 ring-1 ring-sky-300/20">
+              <Icon name="uil:briefcase" class="h-4 w-4" />
+              Quản lý tin tuyển dụng
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-2xl bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-100 ring-1 ring-white/10">
+              {{ jobs.length }} tin trong bộ lọc
+            </span>
+          </div>
+          <h1 class="text-2xl font-black leading-tight tracking-normal md:text-3xl">Danh sách tin tuyển dụng</h1>
+          <p class="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-300">
+            Theo dõi trạng thái, chỉnh sửa nội dung, gửi duyệt lại hoặc đóng các tin tuyển dụng đang có.
+          </p>
+        </div>
+        <NuxtLink
           to="/enterprise/jobs/create"
-          class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-sky-100 flex items-center gap-2 transition-all active:scale-98"
+          class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-sky-400 px-5 text-sm font-black text-slate-950 shadow-lg shadow-sky-950/20 transition hover:bg-sky-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-300/30"
         >
-          <Icon name="uil:plus-circle" class="w-4 h-4" />
-          <span>Tạo tin tuyển dụng</span>
+          <Icon name="uil:plus-circle" class="h-5 w-5" />
+          Tạo tin tuyển dụng
         </NuxtLink>
       </div>
+    </section>
+
+    <div v-if="errorMessage" class="flex items-start gap-3 rounded-3xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">
+      <Icon name="uil:exclamation-triangle" class="mt-0.5 h-5 w-5 shrink-0" />
+      <span>{{ errorMessage }}</span>
     </div>
 
-    <div v-if="errorMessage" class="bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl px-4 py-3 text-sm font-semibold">
-      {{ errorMessage }}
-    </div>
-
-    <!-- Filter Toolbar -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Lọc trạng thái:</span>
-        <div class="flex items-center gap-1.5 flex-wrap">
-          <button 
-            v-for="status in statusOptions" 
+    <section class="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-col gap-4 border-b border-slate-100 px-5 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
+        <div class="min-w-0">
+          <h2 class="truncate text-base font-black text-slate-950">Bảng tin tuyển dụng</h2>
+          <p class="mt-1 text-xs font-semibold text-slate-500">Dữ liệu được tải trực tiếp từ API nhà tuyển dụng.</p>
+        </div>
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <button
+            v-for="status in statusOptions"
             :key="status.value"
-            @click="changeStatusFilter(status.value)"
+            type="button"
             :class="[
-              'px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
-              activeFilter === status.value 
-                ? 'bg-sky-50 text-sky-600 shadow-sm'
-                : 'text-slate-500 hover:bg-slate-50'
+              'inline-flex h-10 shrink-0 items-center rounded-2xl border px-4 text-xs font-extrabold transition focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100',
+              activeFilter === status.value
+                ? 'border-sky-200 bg-sky-50 text-sky-700 shadow-sm'
+                : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
             ]"
+            @click="changeStatusFilter(status.value)"
           >
             {{ status.label }}
           </button>
         </div>
       </div>
-    </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="flex flex-col items-center justify-center py-12 space-y-3">
-      <Icon name="svg-spinners:180-ring" class="w-8 h-8 text-sky-600 animate-spin" />
-      <span class="text-xs font-bold text-slate-400">Đang tải danh sách tin...</span>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="jobs.length === 0" class="bg-white rounded-3xl border border-slate-100 shadow-sm p-12 text-center max-w-md mx-auto space-y-4">
-      <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto text-3xl">
-        <Icon name="uil:folder-question" />
-      </div>
-      <div class="space-y-1">
-        <h3 class="font-extrabold text-slate-800 text-sm">Chưa có tin tuyển dụng</h3>
-        <p class="text-slate-400 text-xs font-medium">Bạn chưa đăng tin nào với bộ lọc này.</p>
-      </div>
-      <NuxtLink 
-        to="/enterprise/jobs/create"
-        class="inline-block px-5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-600 font-extrabold text-xs rounded-xl transition-all"
-      >
-        Tạo tin ngay
-      </NuxtLink>
-    </div>
-
-    <!-- Jobs Grid -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div 
-        v-for="(job, index) in jobs" 
-        :key="job.id"
-        class="bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/30 transition-all flex flex-col justify-between overflow-hidden"
-      >
-        <!-- Body -->
-        <div class="p-6 space-y-4 flex-1">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-extrabold uppercase text-slate-500">
-                Tin số {{ index + 1 }}
-              </span>
-              <span :class="['text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border', getStatusBadge(job.status)]">
-                {{ getStatusLabel(job.status) }}
-              </span>
-            </div>
-            <span class="text-[10px] font-bold text-slate-400">
-              Số lượng: {{ job.slots }}
-            </span>
+      <div v-if="loading" class="space-y-3 px-5 py-6">
+        <div v-for="index in 5" :key="index" class="grid gap-3 rounded-3xl border border-slate-100 p-4 md:grid-cols-[minmax(0,1fr)_160px_120px_120px]">
+          <div class="space-y-2">
+            <div class="h-4 w-2/3 animate-pulse rounded bg-slate-100" />
+            <div class="h-3 w-1/2 animate-pulse rounded bg-slate-100" />
           </div>
-
-          <div class="space-y-1">
-            <h3 class="font-extrabold text-slate-800 text-sm line-clamp-1 hover:text-sky-600 transition-colors">
-              {{ job.title }}
-            </h3>
-            <p class="text-[11px] text-slate-400 font-medium line-clamp-2 leading-relaxed">
-              {{ job.description || 'Không có mô tả chi tiết.' }}
-            </p>
-            <div v-if="job.status === 'REJECTED' && job.reject_reason" class="mt-2.5 p-2.5 bg-rose-50 border border-rose-100 rounded-xl text-[10px] text-rose-600 font-bold leading-normal flex items-start gap-1.5 animate-fadeIn">
-              <Icon name="uil:exclamation-octagon" class="w-4 h-4 shrink-0" />
-              <span><strong>Lý do từ chối:</strong> {{ job.reject_reason }}</span>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-50 text-[11px] font-semibold text-slate-500">
-            <div class="flex items-center gap-1.5">
-              <Icon name="uil:money-bill" class="w-4 h-4 text-slate-400" />
-              <span>{{ job.salary }}</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <Icon name="uil:map-marker" class="w-4 h-4 text-slate-400" />
-              <span class="truncate">{{ job.location || 'Không xác định' }}</span>
-            </div>
-          </div>
+          <div class="h-4 animate-pulse rounded bg-slate-100" />
+          <div class="h-4 animate-pulse rounded bg-slate-100" />
+          <div class="h-4 animate-pulse rounded bg-slate-100" />
         </div>
+      </div>
 
-        <!-- Footer actions -->
-        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
-          <span class="text-[10px] text-slate-400 font-bold">
-            {{ new Date(job.created_at).toLocaleDateString('vi-VN') }}
+      <div v-else-if="jobs.length === 0" class="px-5 py-16 text-center">
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-50 text-slate-400">
+          <Icon name="uil:folder-question" class="h-8 w-8" />
+        </div>
+        <h3 class="mt-4 text-base font-black text-slate-950">Chưa có tin tuyển dụng</h3>
+        <p class="mx-auto mt-2 max-w-sm text-sm font-medium leading-6 text-slate-500">
+          Bạn chưa có tin nào trong bộ lọc này. Tạo tin mới để gửi admin duyệt và bắt đầu nhận ứng viên.
+        </p>
+        <NuxtLink
+          to="/enterprise/jobs/create"
+          class="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 text-sm font-extrabold text-white shadow-lg shadow-sky-100 transition hover:bg-sky-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
+        >
+          <Icon name="uil:plus-circle" class="h-5 w-5" />
+          Tạo tin ngay
+        </NuxtLink>
+      </div>
+
+      <div v-else class="overflow-x-auto">
+        <table class="w-full min-w-[980px] text-left text-sm">
+          <thead class="border-b border-slate-100 bg-slate-50 text-xs font-black uppercase text-slate-500">
+            <tr>
+              <th class="whitespace-nowrap px-5 py-3">STT</th>
+              <th class="whitespace-nowrap px-5 py-3">Tin tuyển dụng</th>
+              <th class="whitespace-nowrap px-5 py-3">Mức lương</th>
+              <th class="whitespace-nowrap px-5 py-3">Địa điểm</th>
+              <th class="whitespace-nowrap px-5 py-3">Số lượng</th>
+              <th class="whitespace-nowrap px-5 py-3">Trạng thái</th>
+              <th class="whitespace-nowrap px-5 py-3">Ngày tạo</th>
+              <th class="whitespace-nowrap px-5 py-3 text-right">Hành động</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="(job, index) in paginatedJobs" :key="job.id" class="transition hover:bg-slate-50/80">
+              <td class="whitespace-nowrap px-5 py-4 font-black text-slate-400">{{ pageStart + index }}</td>
+              <td class="px-5 py-4">
+                <div class="flex min-w-0 items-start gap-3">
+                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sm font-black text-sky-700">
+                    {{ String(job.title || 'QW').slice(0, 2).toUpperCase() }}
+                  </span>
+                  <div class="min-w-0">
+                    <p class="max-w-sm truncate font-black text-slate-950">{{ job.title || 'Chưa có tiêu đề' }}</p>
+                    <p class="mt-1 max-w-sm truncate text-xs font-semibold text-slate-500">{{ job.description || 'Không có mô tả chi tiết.' }}</p>
+                    <div v-if="normalizeStatus(job.status) === 'REJECTED' && job.reject_reason" class="mt-2 inline-flex max-w-sm items-start gap-1.5 rounded-2xl border border-rose-100 bg-rose-50 px-3 py-1.5 text-[11px] font-bold text-rose-700">
+                      <Icon name="uil:exclamation-octagon" class="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span class="truncate">Lý do: {{ job.reject_reason }}</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="whitespace-nowrap px-5 py-4 font-bold text-slate-700">{{ job.salary || 'Chưa cập nhật' }}</td>
+              <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-600">{{ job.location || 'Không xác định' }}</td>
+              <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-600">{{ job.slots || 0 }} vị trí</td>
+              <td class="whitespace-nowrap px-5 py-4">
+                <span :class="['inline-flex whitespace-nowrap rounded-full border px-3 py-1 text-[11px] font-black uppercase', getStatusBadge(job.status)]">
+                  {{ getStatusLabel(job.status) }}
+                </span>
+              </td>
+              <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-500">{{ formatDate(job.created_at) }}</td>
+              <td class="whitespace-nowrap px-5 py-4 text-right">
+                <div class="inline-flex items-center justify-end gap-2">
+                  <button
+                    v-if="isClosedJob(job)"
+                    type="button"
+                    class="inline-flex h-10 items-center justify-center gap-1.5 rounded-2xl border border-sky-100 bg-sky-50 px-3 text-xs font-extrabold text-sky-700 transition hover:bg-sky-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
+                    title="Hoàn tác tin đã đóng"
+                    @click="restoreClosedJob(job.id)"
+                  >
+                    <Icon name="uil:history" class="h-4 w-4" />
+                    Hoàn tác
+                  </button>
+                  <button
+                    v-if="!isClosedJob(job)"
+                    type="button"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
+                    title="Sửa tin"
+                    @click="editJob(job)"
+                  >
+                    <Icon name="uil:edit" class="h-4 w-4" />
+                  </button>
+                  <button
+                    v-if="!isClosedJob(job)"
+                    type="button"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-100"
+                    title="Đóng tin"
+                    @click="closeJob(job.id)"
+                  >
+                    <Icon name="uil:times-circle" class="h-4 w-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        v-if="!loading && !errorMessage && jobs.length > 0"
+        class="flex flex-col gap-4 border-t border-slate-100 px-4 py-4 md:flex-row md:items-center md:justify-between"
+      >
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <span class="text-sm font-semibold text-slate-500">
+            Hiển thị {{ pageStart }} đến {{ pageEnd }} của {{ jobs.length }} tin tuyển dụng
           </span>
-          <div class="flex items-center gap-2">
+          <ScrollSelect
+            v-model="pageSize"
+            class="w-36"
+            :options="pageSizeOptions"
+            size="sm"
+            ariaLabel="Số lượng tin tuyển dụng trong 1 trang"
+          />
+        </div>
+
+        <div class="flex items-center justify-center gap-2">
+          <button
+            type="button"
+            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="currentPage === 1"
+            aria-label="Trang trước"
+            @click="goToPage(currentPage - 1)"
+          >
+            <Icon name="uil:angle-left" class="h-5 w-5" />
+          </button>
+          <template v-for="(page, pageIndex) in visiblePages" :key="`${page}-${pageIndex}`">
+            <span v-if="page === '...'" class="px-2 text-sm font-black text-slate-400">...</span>
             <button
-              v-if="isClosedJob(job)"
-              @click="restoreClosedJob(job.id)"
-              class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-sky-100 bg-white px-3 py-2 text-[10px] font-extrabold text-sky-700 transition-all hover:border-sky-200 hover:bg-sky-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 active:scale-95"
-              title="Hoàn tác tin đã đóng"
+              v-else
+              type="button"
+              :class="[
+                'flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black transition',
+                currentPage === page
+                  ? 'bg-sky-600 text-white shadow-lg shadow-sky-100'
+                  : 'border border-slate-200 text-slate-600 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700'
+              ]"
+              :aria-label="`Đi tới trang ${page}`"
+              @click="goToPage(Number(page))"
             >
-              <Icon name="uil:history" class="w-4 h-4" />
-              Hoàn tác
+              {{ page }}
             </button>
-            <!-- Edit Button -->
-            <button 
-              v-if="!isClosedJob(job)"
-              @click="editJob(job)"
-              class="p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-sky-600 hover:border-sky-200 transition-all active:scale-95 flex items-center justify-center"
-              title="Sửa tin"
-            >
-              <Icon name="uil:edit" class="w-4 h-4" />
-            </button>
-            <!-- Close/Delete Button -->
-            <button 
-              v-if="!isClosedJob(job)"
-              @click="closeJob(job.id)"
-              class="p-2 bg-white border border-slate-200 rounded-lg text-slate-450 hover:text-rose-600 hover:border-rose-200 transition-all active:scale-95 flex items-center justify-center"
-              title="Đóng tin"
-            >
-              <Icon name="uil:times-circle" class="w-4 h-4" />
-            </button>
-          </div>
+          </template>
+          <button
+            type="button"
+            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="currentPage === totalPages"
+            aria-label="Trang sau"
+            @click="goToPage(currentPage + 1)"
+          >
+            <Icon name="uil:angle-right" class="h-5 w-5" />
+          </button>
         </div>
       </div>
-    </div>
+    </section>
 
     <Teleport to="body">
       <!-- Detailed Edit Modal -->
@@ -475,7 +543,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useToast } from '~/composables/useToast'
 import { JobService } from '~/services/job.service'
 
@@ -492,6 +560,8 @@ const toast = useToast()
 const jobs = ref<any[]>([])
 const loading = ref(true)
 const activeFilter = ref('')
+const currentPage = ref(1)
+const pageSize = ref(10)
 const editModalOpen = ref(false)
 const editForm = ref<any>({})
 const errorMessage = ref('')
@@ -524,6 +594,53 @@ const statusOptions = [
   { value: 'REJECTED', label: 'Bị từ chối' },
   { value: 'CLOSED', label: 'Đã đóng' }
 ]
+
+const pageSizeOptions = [
+  { value: 10, label: '10 / trang' },
+  { value: 20, label: '20 / trang' },
+  { value: 50, label: '50 / trang' }
+]
+
+const totalPages = computed(() => Math.max(1, Math.ceil(jobs.value.length / Number(pageSize.value))))
+
+const pageStart = computed(() => {
+  if (jobs.value.length === 0) return 0
+  return (currentPage.value - 1) * Number(pageSize.value) + 1
+})
+
+const pageEnd = computed(() => Math.min(currentPage.value * Number(pageSize.value), jobs.value.length))
+
+const paginatedJobs = computed(() => {
+  const start = (currentPage.value - 1) * Number(pageSize.value)
+  return jobs.value.slice(start, start + Number(pageSize.value))
+})
+
+const visiblePages = computed(() => {
+  const pages: Array<number | string> = []
+  const total = totalPages.value
+  const current = currentPage.value
+
+  if (total <= 6) {
+    for (let page = 1; page <= total; page += 1) pages.push(page)
+    return pages
+  }
+
+  pages.push(1)
+  if (current > 3) pages.push('...')
+
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let page = start; page <= end; page += 1) pages.push(page)
+
+  if (current < total - 2) pages.push('...')
+  pages.push(total)
+
+  return pages
+})
+
+const goToPage = (page: number) => {
+  currentPage.value = Math.min(Math.max(page, 1), totalPages.value)
+}
 
 const openConfirmDialog = (options: {
   title: string
@@ -670,6 +787,7 @@ const fetchJobs = async () => {
 
 const changeStatusFilter = (status: string) => {
   activeFilter.value = status
+  currentPage.value = 1
   fetchJobs()
 }
 
@@ -806,5 +924,13 @@ const saveJobEdit = async () => {
 
 onMounted(() => {
   fetchJobs()
+})
+
+watch(pageSize, () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, (total) => {
+  if (currentPage.value > total) currentPage.value = total
 })
 </script>

@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -25,6 +26,7 @@ type AuthService interface {
 	RegisterStudent(req *request.RegisterStudentRequest) (*response.RegisterResponse, error)
 	RegisterEnterprise(req *request.RegisterEnterpriseRequest) (*response.RegisterResponse, error)
 	Login(req *request.LoginRequest) (*response.LoginResponse, error)
+	ChangePassword(userID uint, req *request.ChangePasswordRequest) error
 	Logout(
 		ctx context.Context,
 		accessToken string,
@@ -129,6 +131,7 @@ func (s *authService) RegisterStudent(req *request.RegisterStudentRequest) (*res
 
 func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest) (*response.RegisterResponse, error) {
 	req.GPKDURL = strings.TrimSpace(req.GPKDURL)
+	req.Phone = strings.TrimSpace(req.Phone)
 	if req.GPKDURL == "" {
 		return nil, ErrBusinessLicenseRequired
 	}
@@ -174,6 +177,7 @@ func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest)
 	enterpriseProfile := &models.EnterpriseProfile{
 		UserID:      user.ID,
 		CompanyName: req.CompanyName,
+		Phone:       req.Phone,
 		TaxCode:     req.TaxCode,
 		GPKDURL:     req.GPKDURL,
 		KYBStatus:   models.KYBPending,
@@ -235,6 +239,59 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 		Email:        user.Email,
 		Role:         string(user.Role),
 	}, user), nil
+}
+
+func (s *authService) ChangePassword(userID uint, req *request.ChangePasswordRequest) error {
+	user, err := s.userRepo.FindByID(s.db, userID)
+	if err != nil {
+		return err
+	}
+
+	if err := password.Compare(user.Password, req.CurrentPassword); err != nil {
+		return ErrCurrentPasswordInvalid
+	}
+
+	if req.CurrentPassword == req.NewPassword {
+		return ErrNewPasswordSame
+	}
+
+	if !isPasswordPolicyValid(req.NewPassword) {
+		return ErrPasswordPolicyInvalid
+	}
+
+	hashedPassword, err := password.Hash(req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.UpdatePassword(s.db, userID, hashedPassword)
+}
+
+func isPasswordPolicyValid(value string) bool {
+	if len([]rune(value)) < 8 {
+		return false
+	}
+
+	hasUpper := false
+	hasLower := false
+	hasNumberOrSpecial := false
+
+	for _, char := range value {
+		if unicode.IsSpace(char) {
+			return false
+		}
+
+		switch {
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsDigit(char) || unicode.IsPunct(char) || unicode.IsSymbol(char):
+			hasNumberOrSpecial = true
+		}
+	}
+
+	return hasUpper && hasLower && hasNumberOrSpecial
 }
 
 func (s *authService) Logout(

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="flex flex-col gap-6">
     <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div class="grid gap-6 bg-slate-950 px-5 py-6 text-white lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-6">
         <div class="min-w-0">
@@ -72,81 +72,43 @@
       <span>{{ dashboardError }}</span>
     </div>
 
-    <section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-      <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:p-6">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 class="text-base font-black text-slate-950">Sức khỏe dữ liệu</h2>
-            <p class="mt-1 text-xs font-medium text-slate-500">So sánh các nhóm dữ liệu chính đang có trong hệ thống.</p>
-          </div>
-          <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">
-            <Icon name="uil:analytics" class="h-4 w-4" />
-            {{ activeJobRate }}% tin đang hiển thị
-          </span>
-        </div>
-
-        <div v-if="isLoading" class="mt-6 space-y-4">
-          <div v-for="index in 4" :key="index" class="h-12 animate-pulse rounded-md bg-slate-100" />
-        </div>
-        <div v-else class="mt-6 space-y-5">
-          <div v-for="item in systemBars" :key="item.label">
-            <div class="mb-2 flex items-center justify-between gap-3">
-              <div class="flex items-center gap-2">
-                <span :class="['h-2.5 w-2.5 rounded-full', item.dotClass]" />
-                <span class="text-sm font-bold text-slate-700">{{ item.label }}</span>
-              </div>
-              <span class="text-sm font-black text-slate-950">{{ item.value }}</span>
+    <section class="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div class="space-y-5 xl:min-w-0">
+        <div class="self-start rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:p-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-base font-black text-slate-950">Sức khỏe dữ liệu</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">So sánh các nhóm dữ liệu chính đang có trong hệ thống.</p>
             </div>
-            <div class="h-3 overflow-hidden rounded-full bg-slate-100">
-              <div :class="['h-full rounded-full', item.barClass]" :style="{ width: `${item.percent}%` }" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <aside class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <h2 class="text-base font-black text-slate-950">Hàng chờ duyệt</h2>
-            <p class="mt-1 text-xs font-medium text-slate-500">Tin tuyển dụng đang cần admin xử lý.</p>
-          </div>
-          <span class="rounded-md bg-amber-50 px-2.5 py-1 text-sm font-black text-amber-700">{{ pendingJobs.length }}</span>
-        </div>
-
-        <div v-if="isLoading" class="mt-5 space-y-3">
-          <div v-for="index in 4" :key="index" class="h-16 animate-pulse rounded-md bg-slate-100" />
-        </div>
-        <div v-else-if="pendingJobs.length === 0" class="mt-5 rounded-md bg-slate-50 px-4 py-5 text-sm text-slate-500">
-          Không có tin nào đang chờ duyệt.
-        </div>
-        <div v-else class="mt-5 space-y-3">
-          <article
-            v-for="(job, index) in pendingJobs.slice(0, 4)"
-            :key="job.id"
-            class="flex items-start gap-3 rounded-md border border-amber-100 bg-amber-50/60 px-4 py-3"
-          >
-            <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-xs font-black text-amber-700">
-              {{ index + 1 }}
+            <span class="inline-flex w-fit items-center gap-1.5 rounded-md bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 ring-1 ring-sky-100">
+              <Icon name="uil:analytics" class="h-4 w-4" />
+              {{ activeJobRate }}% tin đang hiển thị
             </span>
-            <div class="min-w-0">
-              <p class="truncate text-sm font-black text-slate-950">{{ job.title || 'Chưa có tiêu đề' }}</p>
-              <p class="mt-1 truncate text-xs font-semibold text-amber-700">{{ getJobCompany(job) }}</p>
-              <p class="mt-0.5 text-xs font-medium text-slate-500">{{ formatDate(job.created_at) }}</p>
+          </div>
+
+          <div v-if="isLoading" class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div v-for="index in 4" :key="index" class="h-20 animate-pulse rounded-lg bg-slate-100" />
+          </div>
+          <div v-else class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div
+              v-for="item in systemBars"
+              :key="item.label"
+              class="rounded-lg border border-slate-100 bg-slate-50/60 p-2.5"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <span :class="['flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white shadow-sm', getSystemBarTextClass(item.barClass)]">
+                  <Icon :name="getSystemBarIcon(item.label)" class="h-4 w-4" />
+                </span>
+                <span class="text-base font-black leading-none text-slate-950">{{ item.value }}</span>
+              </div>
+              <p class="mt-2 truncate text-xs font-black text-slate-700">{{ item.label }}</p>
+              <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white">
+                <div :class="['h-full rounded-full', item.barClass]" :style="{ width: `${item.percent}%` }" />
+              </div>
             </div>
-          </article>
+          </div>
         </div>
 
-        <NuxtLink
-          to="/admin/jobs"
-          class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
-        >
-          <Icon name="uil:arrow-right" class="h-4 w-4" />
-          Mở danh sách việc làm
-        </NuxtLink>
-      </aside>
-    </section>
-
-    <section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div class="space-y-4 border-b border-slate-100 px-5 py-4 lg:px-6">
           <div>
@@ -207,7 +169,284 @@
                   Chưa có tài khoản phù hợp trong dữ liệu gần đây.
                 </td>
               </tr>
-              <tr v-for="(user, index) in filteredRecentUsers" :key="user.id" class="transition hover:bg-slate-50/80">
+              <tr v-for="(user, index) in sampleRecentUsers" :key="user.id" class="transition hover:bg-slate-50/80">
+                <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-black text-slate-600">
+                      {{ getUserInitial(user) }}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="truncate font-black text-slate-950">{{ getUserDisplayName(user) }}</p>
+                      <p class="truncate text-xs font-medium text-slate-500">{{ user.email }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4">
+                  <span :class="['qw-chip qw-chip--compact', roleColors[user.role] || 'bg-slate-50 text-slate-600']">
+                    {{ getRoleLabel(user.role) }}
+                  </span>
+                </td>
+                <td class="px-5 py-4">
+                  <span :class="['qw-chip', statusClass(user.status)]">{{ statusLabel(user.status) }}</span>
+                </td>
+                <td class="px-5 py-4 font-semibold text-slate-500">{{ formatDate(user.created_at) }}</td>
+              </tr>
+              <tr v-if="isLoading">
+                <td colspan="5" class="px-5 py-6">
+                  <div class="space-y-3">
+                    <div v-for="index in 3" :key="index" class="h-10 animate-pulse rounded-md bg-slate-100" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </div>
+
+      <div class="space-y-5 xl:min-w-0">
+        <aside class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-black text-slate-950">Hàng chờ duyệt</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">Tin tuyển dụng đang cần admin xử lý.</p>
+            </div>
+            <span class="rounded-md bg-amber-50 px-2.5 py-1 text-sm font-black text-amber-700">{{ pendingJobs.length }}</span>
+          </div>
+
+          <div v-if="isLoading" class="mt-5 space-y-3">
+            <div v-for="index in 3" :key="index" class="h-16 animate-pulse rounded-md bg-slate-100" />
+          </div>
+          <div v-else-if="pendingJobs.length === 0" class="mt-5 rounded-md bg-slate-50 px-4 py-5 text-sm text-slate-500">
+            Không có tin nào đang chờ duyệt.
+          </div>
+          <div v-else class="mt-5 space-y-3">
+            <article
+              v-for="(job, index) in pendingJobs.slice(0, 3)"
+              :key="job.id"
+              class="flex items-start gap-3 rounded-md border border-amber-100 bg-amber-50/60 px-4 py-3"
+            >
+              <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-xs font-black text-amber-700">
+                {{ index + 1 }}
+              </span>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-black text-slate-950">{{ job.title || 'Chưa có tiêu đề' }}</p>
+                <p class="mt-1 truncate text-xs font-semibold text-amber-700">{{ getJobCompany(job) }}</p>
+                <p class="mt-0.5 text-xs font-medium text-slate-500">{{ formatDate(job.created_at) }}</p>
+              </div>
+            </article>
+          </div>
+
+          <NuxtLink
+            to="/admin/jobs"
+            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+          >
+            <Icon name="uil:arrow-right" class="h-4 w-4" />
+            Mở danh sách việc làm
+          </NuxtLink>
+        </aside>
+
+      <aside class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 bg-gradient-to-br from-sky-50 via-white to-cyan-50 px-5 py-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-black text-slate-950">Nhịp hoạt động</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">Cập nhật mới từ người dùng và tin chờ duyệt.</p>
+            </div>
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white text-sky-700 shadow-sm ring-1 ring-sky-100">
+              <Icon name="uil:bolt-alt" class="h-5 w-5" />
+            </span>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <div class="rounded-md bg-white/80 px-3 py-2 ring-1 ring-sky-100">
+              <p class="text-[11px] font-black uppercase text-slate-400">Tài khoản</p>
+              <p class="mt-0.5 text-lg font-black text-slate-950">{{ recentUsers.length }}</p>
+            </div>
+            <div class="rounded-md bg-white/80 px-3 py-2 ring-1 ring-amber-100">
+              <p class="text-[11px] font-black uppercase text-slate-400">Chờ duyệt</p>
+              <p class="mt-0.5 text-lg font-black text-amber-700">{{ pendingJobs.length }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="notifications.length === 0 && !isLoading" class="m-5 rounded-md bg-slate-50 px-4 py-5 text-sm text-slate-500">
+          Chưa có dữ liệu mới từ hệ thống.
+        </div>
+        <div v-else class="space-y-3 p-5">
+          <article
+            v-for="(notif, index) in notifications"
+            :key="notif.id"
+            :class="[
+              'rounded-lg border px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
+              notif.icon === 'uil:briefcase' ? 'border-amber-100 bg-amber-50/60' : 'border-sky-100 bg-sky-50/60'
+            ]"
+          >
+            <div class="flex items-start gap-3">
+              <span
+                :class="[
+                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white shadow-sm',
+                  notif.icon === 'uil:briefcase' ? 'text-amber-700 ring-1 ring-amber-100' : 'text-sky-700 ring-1 ring-sky-100'
+                ]"
+              >
+                <Icon :name="notif.icon" class="h-4.5 w-4.5" />
+              </span>
+              <div class="min-w-0 flex-1">
+                <div class="mb-1 flex items-center justify-between gap-2">
+                  <span class="rounded bg-white/80 px-2 py-0.5 text-[10px] font-black text-slate-400">#{{ index + 1 }}</span>
+                  <span class="truncate text-[11px] font-bold text-slate-500">{{ notif.time }}</span>
+                </div>
+                <p class="text-sm font-semibold leading-5 text-slate-700">
+                  <span class="font-black text-slate-950">{{ notif.user }}</span> {{ notif.action }}
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </aside>
+      </div>
+    </section>
+
+    <section v-if="false" class="order-2 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div class="self-start rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:p-5">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-base font-black text-slate-950">Sức khỏe dữ liệu</h2>
+            <p class="mt-1 text-xs font-medium text-slate-500">So sánh các nhóm dữ liệu chính đang có trong hệ thống.</p>
+          </div>
+          <span class="inline-flex w-fit items-center gap-1.5 rounded-md bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 ring-1 ring-sky-100">
+            <Icon name="uil:analytics" class="h-4 w-4" />
+            {{ activeJobRate }}% tin đang hiển thị
+          </span>
+        </div>
+
+        <div v-if="isLoading" class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div v-for="index in 4" :key="index" class="h-20 animate-pulse rounded-lg bg-slate-100" />
+        </div>
+        <div v-else class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div
+            v-for="item in systemBars"
+            :key="item.label"
+            class="rounded-lg border border-slate-100 bg-slate-50/60 p-2.5"
+          >
+            <div class="flex items-start justify-between gap-2">
+              <span :class="['flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white shadow-sm', getSystemBarTextClass(item.barClass)]">
+                <Icon :name="getSystemBarIcon(item.label)" class="h-4 w-4" />
+              </span>
+              <span class="text-base font-black leading-none text-slate-950">{{ item.value }}</span>
+            </div>
+            <p class="mt-2 truncate text-xs font-black text-slate-700">{{ item.label }}</p>
+            <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white">
+              <div :class="['h-full rounded-full', item.barClass]" :style="{ width: `${item.percent}%` }" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-black text-slate-950">Hàng chờ duyệt</h2>
+            <p class="mt-1 text-xs font-medium text-slate-500">Tin tuyển dụng đang cần admin xử lý.</p>
+          </div>
+          <span class="rounded-md bg-amber-50 px-2.5 py-1 text-sm font-black text-amber-700">{{ pendingJobs.length }}</span>
+        </div>
+
+        <div v-if="isLoading" class="mt-5 space-y-3">
+          <div v-for="index in 3" :key="index" class="h-16 animate-pulse rounded-md bg-slate-100" />
+        </div>
+        <div v-else-if="pendingJobs.length === 0" class="mt-5 rounded-md bg-slate-50 px-4 py-5 text-sm text-slate-500">
+          Không có tin nào đang chờ duyệt.
+        </div>
+        <div v-else class="mt-5 space-y-3">
+          <article
+            v-for="(job, index) in pendingJobs.slice(0, 3)"
+            :key="job.id"
+            class="flex items-start gap-3 rounded-md border border-amber-100 bg-amber-50/60 px-4 py-3"
+          >
+            <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-xs font-black text-amber-700">
+              {{ index + 1 }}
+            </span>
+            <div class="min-w-0">
+              <p class="truncate text-sm font-black text-slate-950">{{ job.title || 'Chưa có tiêu đề' }}</p>
+              <p class="mt-1 truncate text-xs font-semibold text-amber-700">{{ getJobCompany(job) }}</p>
+              <p class="mt-0.5 text-xs font-medium text-slate-500">{{ formatDate(job.created_at) }}</p>
+            </div>
+          </article>
+        </div>
+
+        <NuxtLink
+          to="/admin/jobs"
+          class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+        >
+          <Icon name="uil:arrow-right" class="h-4 w-4" />
+          Mở danh sách việc làm
+        </NuxtLink>
+      </aside>
+    </section>
+
+    <section v-if="false" class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="space-y-4 border-b border-slate-100 px-5 py-4 lg:px-6">
+          <div>
+            <h2 class="text-base font-black text-slate-950">Người dùng gần đây theo loại tài khoản</h2>
+            <p class="mt-1 text-xs font-medium text-slate-500">Tách nhanh tài khoản Admin, Sinh viên và Doanh nghiệp từ dữ liệu mới nhất.</p>
+          </div>
+
+          <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <button
+              v-for="type in accountTypeCards"
+              :key="type.role"
+              :class="[
+                'flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left transition',
+                activeUserRole === type.role
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+              ]"
+              type="button"
+              @click="activeUserRole = type.role"
+            >
+              <span class="flex min-w-0 items-center gap-2">
+                <span
+                  :class="[
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-md',
+                    activeUserRole === type.role ? 'bg-white/10 text-white' : type.iconClass
+                  ]"
+                >
+                  <Icon :name="type.icon" class="h-4 w-4" />
+                </span>
+                <span class="truncate text-xs font-black">{{ type.label }}</span>
+              </span>
+              <span
+                :class="[
+                  'rounded px-2 py-0.5 text-xs font-black',
+                  activeUserRole === type.role ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-600'
+                ]"
+              >
+                {{ type.count }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[720px] text-left text-sm">
+            <thead class="border-b border-slate-100 bg-slate-50 text-xs font-black uppercase text-slate-500">
+              <tr>
+                <th class="px-5 py-3">STT</th>
+                <th class="px-5 py-3">Tên hiển thị</th>
+                <th class="px-5 py-3">Loại tài khoản</th>
+                <th class="px-5 py-3">Trạng thái</th>
+                <th class="px-5 py-3">Ngày đăng ký</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr v-if="filteredRecentUsers.length === 0 && !isLoading">
+                <td colspan="5" class="px-5 py-10 text-center text-sm font-semibold text-slate-400">
+                  Chưa có tài khoản phù hợp trong dữ liệu gần đây.
+                </td>
+              </tr>
+              <tr v-for="(user, index) in sampleRecentUsers" :key="user.id" class="transition hover:bg-slate-50/80">
                 <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
                 <td class="px-5 py-4">
                   <div class="flex items-center gap-3">
@@ -346,6 +585,19 @@ const systemBars = computed(() => {
   }))
 })
 
+const getSystemBarTextClass = (barClass: string) => {
+  if (barClass.includes('teal')) return 'text-teal-700'
+  if (barClass.includes('amber')) return 'text-amber-700'
+  return 'text-sky-700'
+}
+
+const getSystemBarIcon = (label: string) => {
+  if (label.includes('Doanh')) return 'uil:building'
+  if (label.includes('Tin') && label.includes('ch')) return 'uil:clock'
+  if (label.includes('Tin')) return 'uil:check-circle'
+  return 'uil:graduation-cap'
+}
+
 const roleColors: Record<string, string> = {
   STUDENT: 'bg-sky-50 text-sky-700',
   ENTERPRISE: 'bg-teal-50 text-teal-700',
@@ -405,6 +657,8 @@ const filteredRecentUsers = computed(() => {
   if (activeUserRole.value === 'ALL') return recentUsers.value
   return recentUsers.value.filter((user) => user.role === activeUserRole.value)
 })
+
+const sampleRecentUsers = computed(() => filteredRecentUsers.value.slice(0, 10))
 
 const getShare = (value: number, total: number) => {
   if (total === 0) return 0
@@ -479,7 +733,7 @@ onMounted(async () => {
     dashboardError.value = ''
     const [statsRes, usersRes, jobsRes] = await Promise.all([
       AdminService.getDashboardStats(),
-      AdminService.getRecentUsers(5),
+      AdminService.getRecentUsers(10),
       AdminService.getPendingJobs({ status: 'PENDING' })
     ])
 

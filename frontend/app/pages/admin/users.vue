@@ -56,19 +56,23 @@
             >
           </label>
 
-          <select v-model="activeRole" class="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
-            <option value="ALL">Tất cả vai trò</option>
-            <option value="ADMIN">Admin</option>
-            <option value="STUDENT">Học viên</option>
-            <option value="ENTERPRISE">Doanh nghiệp</option>
-          </select>
+          <ScrollSelect
+            v-model="activeRole"
+            :options="roleFilterOptions"
+            ariaLabel="Lọc người dùng theo vai trò"
+            icon="uil:users-alt"
+            size="filter"
+            tone="slate"
+          />
 
-          <select v-model="activeStatus" class="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang hoạt động</option>
-            <option value="INACTIVE">Tạm khóa</option>
-            <option value="BANNED">Bị cấm</option>
-          </select>
+          <ScrollSelect
+            v-model="activeStatus"
+            :options="statusFilterOptions"
+            ariaLabel="Lọc người dùng theo trạng thái"
+            icon="uil:check-circle"
+            size="filter"
+            tone="sky"
+          />
 
           <button class="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-slate-200 px-4 text-sm font-black text-slate-700 transition hover:bg-slate-50" type="button" @click="clearFilters">
             <Icon name="uil:filter-slash" class="h-4 w-4" />
@@ -120,8 +124,8 @@
               </td>
             </tr>
             <template v-else>
-              <tr v-for="(user, index) in visibleUsers" :key="user.id" class="transition hover:bg-slate-50/80">
-                <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
+              <tr v-for="(user, index) in paginatedUsers" :key="user.id" class="transition hover:bg-slate-50/80">
+                <td class="px-5 py-4 font-black text-slate-400">{{ usersPageOffset + index + 1 }}</td>
                 <td class="px-5 py-4">
                   <div class="flex items-center gap-3">
                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-black text-slate-600">
@@ -171,6 +175,12 @@
           </tbody>
         </table>
       </div>
+      <AdminTablePagination
+        v-model:page="currentPage"
+        v-model:page-size="pageSize"
+        :total="visibleUsers.length"
+        item-label="tài khoản"
+      />
     </section>
 
     <div v-if="selectedUser" class="qw-detail-backdrop" @click.self="closeDetail">
@@ -287,10 +297,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import AdminTablePagination from '~/components/admin/AdminTablePagination.vue'
+import ScrollSelect from '~/components/ui/ScrollSelect.vue'
 import { AdminService } from '~/services/admin.service'
 import { useToast } from '~/composables/useToast'
 import { useAuthStore } from '~/stores/auth'
+import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 definePageMeta({
   layout: 'admin',
@@ -308,6 +321,8 @@ const errorMessage = ref('')
 const searchQuery = ref('')
 const activeRole = ref('ALL')
 const activeStatus = ref('ALL')
+const currentPage = ref(1)
+const pageSize = ref(10)
 const selectedUser = ref<any | null>(null)
 const updatingUserId = ref<number | null>(null)
 const isEditingUser = ref(false)
@@ -328,6 +343,20 @@ const editUserForm = reactive({
     kyb_status: 'PENDING' as KYBStatus
   }
 })
+
+const roleFilterOptions = [
+  { value: 'ALL', label: 'Tất cả vai trò' },
+  { value: 'ADMIN', label: 'Admin' },
+  { value: 'STUDENT', label: 'Học viên' },
+  { value: 'ENTERPRISE', label: 'Doanh nghiệp' }
+]
+
+const statusFilterOptions = [
+  { value: 'ALL', label: 'Tất cả trạng thái' },
+  { value: 'ACTIVE', label: 'Đang hoạt động' },
+  { value: 'INACTIVE', label: 'Tạm khóa' },
+  { value: 'BANNED', label: 'Bị cấm' }
+]
 
 const summaryCards = computed(() => [
   {
@@ -368,19 +397,18 @@ const roleQuickFilters = computed(() => [
 ])
 
 const filteredUsers = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
+  const query = normalizeSearchText(searchQuery.value)
   return users.value.filter((user) => {
     const matchesRole = activeRole.value === 'ALL' || user.role === activeRole.value
     const matchesStatus = activeStatus.value === 'ALL' || normalizeStatus(user.status) === activeStatus.value
-    const searchable = [
+    const searchable = buildSearchText([
       user.email,
       getDisplayName(user),
       user?.student_profile?.phone,
       user?.enterprise_profile?.tax_code,
       roleLabel(user.role),
       statusLabel(user.status)
-    ].filter(Boolean).join(' ').toLowerCase()
-
+    ])
     return matchesRole && matchesStatus && (!query || searchable.includes(query))
   })
 })
@@ -391,6 +419,22 @@ const visibleUsers = computed(() => {
     if (rankDiff !== 0) return rankDiff
     return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
   })
+})
+
+const usersPageOffset = computed(() => (currentPage.value - 1) * Number(pageSize.value))
+
+const paginatedUsers = computed(() => {
+  const size = Number(pageSize.value)
+  return visibleUsers.value.slice(usersPageOffset.value, usersPageOffset.value + size)
+})
+
+watch([searchQuery, activeRole, activeStatus], () => {
+  currentPage.value = 1
+})
+
+watch([visibleUsers, pageSize], () => {
+  const totalPages = Math.max(1, Math.ceil(visibleUsers.value.length / Number(pageSize.value)))
+  if (currentPage.value > totalPages) currentPage.value = totalPages
 })
 
 async function fetchUsers() {

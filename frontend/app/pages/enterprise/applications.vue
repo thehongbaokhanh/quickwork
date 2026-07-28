@@ -605,6 +605,7 @@ import CandidateCollectionView from '~/components/enterprise/CandidateCollection
 import ScrollSelect from '~/components/ui/ScrollSelect.vue'
 import { useToast } from '~/composables/useToast'
 import { JobService } from '~/services/job.service'
+import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 type ApplicationStatus = 'APPLIED' | 'ACCEPTED' | 'REJECTED'
 type StatusFilter = ApplicationStatus | 'ALL'
@@ -693,13 +694,13 @@ const dateFilterSelectOptions = computed(() => dateFilterOptions.map((option) =>
 const minInterviewDateTime = computed(() => toDateTimeLocal(new Date().toISOString()))
 
 const filteredApplications = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
+  const query = normalizeSearchText(searchQuery.value)
   return applications.value.filter((application) => {
     const status = normalizeStatus(application.status)
     const matchesStatus = activeStatus.value === 'ALL' || status === activeStatus.value
     const matchesJob = activeJob.value === 'ALL' || getJobOptionValue(application) === activeJob.value
     const matchesDate = matchesDateFilter(application.created_at)
-    const searchable = [
+    const searchable = buildSearchText([
       getStudentName(application),
       application.student?.email,
       getStudentPhone(application),
@@ -707,7 +708,7 @@ const filteredApplications = computed(() => {
       application.job?.location,
       application.job?.salary,
       ...getSkills(application)
-    ].filter(Boolean).join(' ').toLowerCase()
+    ])
 
     return matchesStatus && matchesJob && matchesDate && (!query || searchable.includes(query))
   })

@@ -39,6 +39,7 @@ export const Pagination: typeof import("../app/components/Pagination.vue")['defa
 export const PaginationVue: typeof import("../app/components/Pagination.vue")['default']
 export const SearchBox: typeof import("../app/components/SearchBox.vue")['default']
 export const SearchBoxVue: typeof import("../app/components/SearchBox.vue")['default']
+export const AdminTablePagination: typeof import("../app/components/admin/AdminTablePagination.vue")['default']
 export const EnterpriseCandidateCollectionView: typeof import("../app/components/enterprise/CandidateCollectionView.vue")['default']
 export const HomeCareerCta: typeof import("../app/components/home/HomeCareerCta.vue")['default']
 export const HomeCategories: typeof import("../app/components/home/HomeCategories.vue")['default']
@@ -115,6 +116,7 @@ export const LazyPagination: LazyComponent<typeof import("../app/components/Pagi
 export const LazyPaginationVue: LazyComponent<typeof import("../app/components/Pagination.vue")['default']>
 export const LazySearchBox: LazyComponent<typeof import("../app/components/SearchBox.vue")['default']>
 export const LazySearchBoxVue: LazyComponent<typeof import("../app/components/SearchBox.vue")['default']>
+export const LazyAdminTablePagination: LazyComponent<typeof import("../app/components/admin/AdminTablePagination.vue")['default']>
 export const LazyEnterpriseCandidateCollectionView: LazyComponent<typeof import("../app/components/enterprise/CandidateCollectionView.vue")['default']>
 export const LazyHomeCareerCta: LazyComponent<typeof import("../app/components/home/HomeCareerCta.vue")['default']>
 export const LazyHomeCategories: LazyComponent<typeof import("../app/components/home/HomeCategories.vue")['default']>

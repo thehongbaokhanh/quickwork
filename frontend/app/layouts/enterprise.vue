@@ -223,6 +223,16 @@
                 Sắp có
               </span>
             </button>
+
+            <NuxtLink
+              :to="settingsNavItem.to"
+              class="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-slate-600 transition hover:bg-slate-50 hover:text-slate-950"
+              active-class="border-sky-100 bg-sky-50 text-sky-700"
+              @click="isSidebarOpen = false"
+            >
+              <Icon :name="settingsNavItem.icon" class="h-5 w-5" />
+              <span>{{ settingsNavItem.name }}</span>
+            </NuxtLink>
           </nav>
 
           <div class="border-t border-slate-100 pt-5">
@@ -310,9 +320,14 @@ const secondaryNavItems: EnterpriseSidebarItem[] = [
 ]
 
 const disabledNavItems = [
-  { name: 'Hồ sơ công ty', icon: 'uil:building' },
-  { name: 'Cài đặt', icon: 'uil:setting' }
+  { name: 'Hồ sơ công ty', icon: 'uil:building' }
 ]
+
+const settingsNavItem: EnterpriseSidebarItem = {
+  name: 'Cài đặt',
+  to: '/enterprise/settings',
+  icon: 'uil:setting'
+}
 
 const companyName = computed(() => authStore.user?.name || authStore.user?.email?.split('@')[0] || 'Doanh nghiệp')
 const userEmail = computed(() => authStore.user?.email || '')

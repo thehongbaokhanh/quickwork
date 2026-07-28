@@ -217,8 +217,9 @@ Bang tong quan:
 | `/api/v1/auth` | Public | Dang ky, dang nhap, logout, upload GPKD, Google auth |
 | `/api/v1/jobs` | Public | Danh sach va chi tiet job da duyet |
 | `/api/v1/profile` | `AuthMiddleware` | Endpoint profile/test da dang nhap |
+| `/api/v1/auth/change-password` | `AuthMiddleware` | Doi mat khau cho user dang dang nhap |
 | `/api/v1/student` | `AuthMiddleware`, `RoleMiddleware("STUDENT")` | Ung tuyen, yeu thich, viec da ung tuyen |
-| `/api/v1/enterprise` | `AuthMiddleware`, `RoleMiddleware("ENTERPRISE")`, `EnterpriseApprovedMiddleware` | Tin tuyen dung, ung vien, phong van |
+| `/api/v1/enterprise` | `AuthMiddleware`, `RoleMiddleware("ENTERPRISE")`, `EnterpriseApprovedMiddleware` | Ho so nha tuyen dung, tin tuyen dung, ung vien, phong van |
 | `/api/v1/admin` | `AuthMiddleware`, `RoleMiddleware("ADMIN")` | Quan ly user, doanh nghiep, job, dashboard |
 | `/uploads/*` | Public static | File upload local |
 | `/swagger/*` | Public | Swagger UI |
@@ -304,6 +305,21 @@ POST /api/v1/auth/login
   -> kiem tra status/KYB theo role
   -> tao JWT
   -> tra ve token va thong tin user
+```
+
+### Doi mat khau
+
+```text
+POST /api/v1/auth/change-password
+  -> AuthMiddleware
+  -> AuthHandler.ChangePassword
+  -> AuthService.ChangePassword
+  -> UserRepository tim user hien tai theo user_id
+  -> verify current_password
+  -> kiem tra mat khau moi khong trung, du manh va khong co khoang trang
+  -> hash mat khau moi
+  -> UserRepository.UpdatePassword cap nhat users.password
+  -> tra ve thong bao doi mat khau thanh cong
 ```
 
 ### Sinh vien ung tuyen
@@ -392,7 +408,7 @@ Doc theo khu vuc thay doi:
 | Config | `backend/config/config.go` |
 | Database connect | `backend/database/mysql.go` |
 | Migration/seed | `backend/database/migration.go`, `backend/database/seed.go`, `backend/internal/models/*` |
-| Auth | `backend/routes/auth.go`, `backend/internal/handlers/auth_handler.go`, `backend/internal/services/auth_service.go` |
+| Auth | `backend/routes/auth.go`, `backend/internal/dto/request/change_password_request.go`, `backend/internal/handlers/auth_handler.go`, `backend/internal/services/auth_service.go` |
 | Middleware | `backend/internal/middlewares/*.go` |
 | Student jobs | `backend/routes/student_routes.go`, `backend/internal/handlers/student_job_handler.go` |
 | Enterprise jobs/applications | `backend/routes/enterprise_routes.go`, `backend/internal/handlers/enterprise_job_handler.go` |

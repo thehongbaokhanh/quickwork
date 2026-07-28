@@ -55,19 +55,23 @@
           >
         </label>
 
-        <select v-model="activeKYB" class="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
-          <option value="ALL">Tất cả KYB</option>
-          <option value="APPROVED">Đã xác minh</option>
-          <option value="PENDING">Chờ xác minh</option>
-          <option value="REJECTED">Từ chối</option>
-        </select>
+        <ScrollSelect
+          v-model="activeKYB"
+          :options="kybFilterOptions"
+          ariaLabel="Lọc doanh nghiệp theo trạng thái KYB"
+          icon="uil:shield-check"
+          size="filter"
+          tone="amber"
+        />
 
-        <select v-model="activeStatus" class="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
-          <option value="ALL">Tất cả tài khoản</option>
-          <option value="ACTIVE">Đang hoạt động</option>
-          <option value="INACTIVE">Tạm khóa</option>
-          <option value="BANNED">Bị cấm</option>
-        </select>
+        <ScrollSelect
+          v-model="activeStatus"
+          :options="statusFilterOptions"
+          ariaLabel="Lọc doanh nghiệp theo trạng thái tài khoản"
+          icon="uil:check-circle"
+          size="filter"
+          tone="sky"
+        />
 
         <button class="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-slate-200 px-4 text-sm font-black text-slate-700 transition hover:bg-slate-50" type="button" @click="clearFilters">
           <Icon name="uil:filter-slash" class="h-4 w-4" />
@@ -103,8 +107,8 @@
               </td>
             </tr>
             <template v-else>
-              <tr v-for="(enterprise, index) in filteredEnterprises" :key="enterprise.id" class="transition hover:bg-slate-50/80">
-                <td class="px-5 py-4 font-black text-slate-400">{{ index + 1 }}</td>
+              <tr v-for="(enterprise, index) in paginatedEnterprises" :key="enterprise.id" class="transition hover:bg-slate-50/80">
+                <td class="px-5 py-4 font-black text-slate-400">{{ enterprisesPageOffset + index + 1 }}</td>
                 <td class="px-5 py-4">
                   <div class="flex items-center gap-3">
                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-teal-50 text-sm font-black text-teal-700">
@@ -177,6 +181,12 @@
           </tbody>
         </table>
       </div>
+      <AdminTablePagination
+        v-model:page="currentPage"
+        v-model:page-size="pageSize"
+        :total="filteredEnterprises.length"
+        item-label="doanh nghiệp"
+      />
     </section>
 
     <div v-if="selectedEnterprise" class="qw-detail-backdrop" @click.self="closeEnterpriseDetail">
@@ -227,6 +237,10 @@
               <label class="space-y-1.5">
                 <span class="text-xs font-black uppercase text-slate-500">Tên doanh nghiệp</span>
                 <input v-model.trim="editEnterpriseForm.enterprise_profile.company_name" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="text">
+              </label>
+              <label class="space-y-1.5">
+                <span class="text-xs font-black uppercase text-slate-500">Số điện thoại liên hệ</span>
+                <input v-model.trim="editEnterpriseForm.enterprise_profile.phone" class="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100" type="tel">
               </label>
               <label class="space-y-1.5">
                 <span class="text-xs font-black uppercase text-slate-500">Mã số thuế</span>
@@ -284,9 +298,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import AdminTablePagination from '~/components/admin/AdminTablePagination.vue'
+import ScrollSelect from '~/components/ui/ScrollSelect.vue'
 import { AdminService } from '~/services/admin.service'
 import { useToast } from '~/composables/useToast'
+import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 definePageMeta({
   layout: 'admin',
@@ -304,6 +321,8 @@ const errorMessage = ref('')
 const searchQuery = ref('')
 const activeKYB = ref('ALL')
 const activeStatus = ref('ALL')
+const currentPage = ref(1)
+const pageSize = ref(10)
 const selectedEnterprise = ref<any | null>(null)
 const updatingUserId = ref<number | null>(null)
 const updatingKYBId = ref<number | null>(null)
@@ -315,11 +334,26 @@ const editEnterpriseForm = reactive({
   status: 'ACTIVE' as UserStatus,
   enterprise_profile: {
     company_name: '',
+    phone: '',
     tax_code: '',
     gpkd_url: '',
     kyb_status: 'PENDING' as KYBStatus
   }
 })
+
+const kybFilterOptions = [
+  { value: 'ALL', label: 'Tất cả KYB' },
+  { value: 'APPROVED', label: 'Đã xác minh' },
+  { value: 'PENDING', label: 'Chờ xác minh' },
+  { value: 'REJECTED', label: 'Từ chối' }
+]
+
+const statusFilterOptions = [
+  { value: 'ALL', label: 'Tất cả tài khoản' },
+  { value: 'ACTIVE', label: 'Đang hoạt động' },
+  { value: 'INACTIVE', label: 'Tạm khóa' },
+  { value: 'BANNED', label: 'Bị cấm' }
+]
 
 const jobCountMap = computed(() => {
   return jobs.value.reduce((counts, job) => {
@@ -372,21 +406,38 @@ const summaryCards = computed(() => [
 ])
 
 const filteredEnterprises = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
+  const query = normalizeSearchText(searchQuery.value)
   return enterprises.value.filter((enterprise) => {
     const kyb = getKYBStatus(enterprise)
     const matchesKYB = activeKYB.value === 'ALL' || kyb === activeKYB.value
     const matchesStatus = activeStatus.value === 'ALL' || normalizeStatus(enterprise.status) === activeStatus.value
-    const searchable = [
+    const searchable = buildSearchText([
       getCompanyName(enterprise),
       enterprise.email,
+      enterprise?.enterprise_profile?.phone,
       enterprise?.enterprise_profile?.tax_code,
       kybLabel(kyb),
       statusLabel(enterprise.status)
-    ].filter(Boolean).join(' ').toLowerCase()
+    ])
 
     return matchesKYB && matchesStatus && (!query || searchable.includes(query))
   })
+})
+
+const enterprisesPageOffset = computed(() => (currentPage.value - 1) * Number(pageSize.value))
+
+const paginatedEnterprises = computed(() => {
+  const size = Number(pageSize.value)
+  return filteredEnterprises.value.slice(enterprisesPageOffset.value, enterprisesPageOffset.value + size)
+})
+
+watch([searchQuery, activeKYB, activeStatus], () => {
+  currentPage.value = 1
+})
+
+watch([filteredEnterprises, pageSize], () => {
+  const totalPages = Math.max(1, Math.ceil(filteredEnterprises.value.length / Number(pageSize.value)))
+  if (currentPage.value > totalPages) currentPage.value = totalPages
 })
 
 async function fetchEnterprises() {
@@ -483,6 +534,7 @@ function startEditEnterprise(enterprise: any) {
   editEnterpriseForm.email = enterprise.email || ''
   editEnterpriseForm.status = normalizeStatus(enterprise.status) as UserStatus
   editEnterpriseForm.enterprise_profile.company_name = enterprise?.enterprise_profile?.company_name || ''
+  editEnterpriseForm.enterprise_profile.phone = enterprise?.enterprise_profile?.phone || ''
   editEnterpriseForm.enterprise_profile.tax_code = enterprise?.enterprise_profile?.tax_code || ''
   editEnterpriseForm.enterprise_profile.gpkd_url = enterprise?.enterprise_profile?.gpkd_url || ''
   editEnterpriseForm.enterprise_profile.kyb_status = getKYBStatus(enterprise)
@@ -649,6 +701,7 @@ function detailItems(enterprise: any) {
   return [
     { label: 'Tên doanh nghiệp', value: getCompanyName(enterprise) },
     { label: 'Email', value: enterprise.email || 'Chưa cập nhật' },
+    { label: 'Số điện thoại liên hệ', value: enterprise?.enterprise_profile?.phone || 'Chưa cập nhật' },
     { label: 'Mã số thuế', value: enterprise?.enterprise_profile?.tax_code || 'Chưa cập nhật' },
     { label: 'Giấy phép kinh doanh', value: hasBusinessLicense(enterprise) ? 'Đã nộp' : 'Chưa có giấy phép kinh doanh' },
     { label: 'KYB', value: kybLabel(getKYBStatus(enterprise)) },

@@ -18,6 +18,14 @@ export const JobService = {
     return apiClient.post('/enterprise/jobs', body)
   },
 
+  async getEnterpriseSkills() {
+    return apiClient.get('/enterprise/skills')
+  },
+
+  async createEnterpriseSkill(body: any) {
+    return apiClient.post('/enterprise/skills', body)
+  },
+
   async updateEnterpriseJob(id: string | number, body: any) {
     return apiClient.put(`/enterprise/jobs/${id}`, body)
   },

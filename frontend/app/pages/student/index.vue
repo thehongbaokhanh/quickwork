@@ -331,6 +331,7 @@ import { JobService } from '~/services/job.service'
 import { StudentService } from '~/services/student.service'
 import { useAuthStore } from '~/stores/auth'
 import { type ApiJob, type DisplayJob, mapJobForDisplay, salaryRank } from '~/utils/jobDisplay'
+import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 definePageMeta({
   layout: 'student'
@@ -390,10 +391,10 @@ const salaryOptions = computed(() => countOptions(jobs.value.map((job) => job.sa
 const suggestedJobs = computed(() => [...jobs.value].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3))
 
 const filteredJobs = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
+  const query = normalizeSearchText(searchQuery.value)
 
   const filtered = jobs.value.filter((job) => {
-    const matchesQuery = !query || [
+    const searchableJob = buildSearchText([
       job.title,
       job.company,
       job.description,
@@ -402,7 +403,8 @@ const filteredJobs = computed(() => {
       job.level,
       job.salary,
       ...job.skills
-    ].join(' ').toLowerCase().includes(query)
+    ])
+    const matchesQuery = !query || searchableJob.includes(query)
 
     const matchesLocation = activeLocation.value === 'Địa điểm' || job.location === activeLocation.value
     const matchesTypeSelect = activeType.value === 'Tất cả loại hình' || job.type === activeType.value

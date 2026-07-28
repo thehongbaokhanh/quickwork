@@ -1,5 +1,5 @@
 <template>
-  <section id="featured-jobs" class="bg-slate-50 py-16 sm:py-20">
+  <section id="featured-jobs" class="bg-slate-50 py-12 sm:py-14">
     <div class="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -46,8 +46,8 @@
         </div>
       </div>
 
-      <div class="mt-7 flex flex-col gap-4 xl:flex-row xl:items-center">
-        <div class="relative shrink-0">
+      <div class="mt-5 flex flex-col gap-4 xl:flex-row xl:items-center">
+        <div ref="filterDropdownRef" class="relative shrink-0">
           <button
             type="button"
             class="flex h-14 w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 text-left text-base font-bold text-slate-700 shadow-sm transition hover:border-sky-200 hover:bg-sky-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 sm:min-w-[280px]"
@@ -72,7 +72,7 @@
           <div
             v-if="isFilterMenuOpen"
             id="home-featured-filter-menu"
-            class="absolute left-0 top-[calc(100%+8px)] z-30 w-full min-w-[280px] overflow-hidden rounded-[22px] border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-200/70"
+            class="absolute left-0 top-[calc(100%+8px)] z-30 w-full min-w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white py-2 shadow-2xl shadow-slate-200/70"
             role="menu"
           >
             <button
@@ -80,10 +80,10 @@
               :key="option.key"
               type="button"
               :class="[
-                'flex h-14 w-full items-center justify-between gap-3 rounded-2xl border px-5 text-left text-base font-bold shadow-sm transition focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100',
+                'flex h-12 w-full items-center justify-between gap-3 border-b border-slate-100 px-5 text-left text-base font-bold transition last:border-b-0 focus:outline-none focus-visible:bg-sky-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-100',
                 activeFilterKey === option.key
-                  ? 'border-sky-200 bg-sky-50 text-sky-700'
-                  : 'border-slate-200 bg-white text-slate-700 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700'
+                  ? 'bg-sky-50 text-sky-700'
+                  : 'text-slate-700 hover:bg-slate-50 hover:text-sky-700'
               ]"
               role="menuitemradio"
               :aria-checked="activeFilterKey === option.key"
@@ -117,21 +117,31 @@
         </div>
       </div>
 
-      <div class="mt-4 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-slate-700">
+      <div
+        v-if="isFilterHintVisible"
+        class="mt-4 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-slate-700"
+      >
         <Icon name="uil:lightbulb-alt" class="mt-0.5 h-5 w-5 shrink-0 text-sky-600" aria-hidden="true" />
-        <p>
+        <p class="min-w-0 flex-1">
           Gợi ý: chọn bộ lọc theo {{ activeFilterOption.label.toLowerCase() }} để xem nhóm việc phù hợp hơn.
-          <span v-if="activeCategory !== allValue" class="text-sky-700">Đang xem ngành {{ activeCategory }}.</span>
         </p>
+        <button
+          type="button"
+          class="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-white hover:text-sky-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
+          aria-label="An goi y"
+          @click="isFilterHintVisible = false"
+        >
+          <Icon name="uil:times" class="h-4 w-4" aria-hidden="true" />
+        </button>
       </div>
 
-      <div v-if="loading" class="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div v-if="loading" class="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <div v-for="item in pageSize" :key="item" class="h-[158px] animate-pulse rounded-2xl border border-slate-200 bg-white" />
       </div>
 
       <div
         v-else-if="filteredJobs.length"
-        class="relative mt-8"
+        class="relative mt-6"
       >
         <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           <div
@@ -185,7 +195,7 @@
         </Transition>
       </div>
 
-      <div v-else class="mt-8 rounded-[24px] border border-dashed border-slate-300 bg-white p-10 text-center">
+      <div v-else class="mt-6 rounded-[24px] border border-dashed border-slate-300 bg-white p-10 text-center">
         <Icon name="uil:search" class="mx-auto h-10 w-10 text-slate-400" aria-hidden="true" />
         <h3 class="mt-4 text-xl font-extrabold text-slate-950">Chưa tìm thấy việc làm phù hợp</h3>
         <p class="mt-2 text-base text-slate-600">Thử đổi từ khóa, địa điểm, mức lương hoặc nhóm ngành để xem thêm cơ hội đang có.</p>
@@ -198,7 +208,7 @@
         </button>
       </div>
 
-      <div v-if="!loading && filteredJobs.length && pageCount > 1" class="mt-8 flex items-center justify-center gap-4">
+      <div v-if="!loading && filteredJobs.length && pageCount > 1" class="mt-6 flex items-center justify-center gap-4">
         <button
           type="button"
           class="flex h-12 w-12 items-center justify-center rounded-full border border-sky-200 bg-white text-sky-700 transition hover:bg-sky-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
@@ -267,7 +277,7 @@ const filterOptions: FilterOption[] = [
 const props = defineProps<{
   jobs: DisplayJob[]
   categories: string[]
-  activeCategory: string
+  categoryFilterRequest?: { category: string; requestId: number } | null
   isAppliedJob?: (job: DisplayJob) => boolean
   isApplyingJob?: (job: DisplayJob) => boolean
   isFavoriteJob?: (job: DisplayJob) => boolean
@@ -278,7 +288,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   apply: [job: DisplayJob]
-  category: [category: string]
   closeDetail: []
   detail: [job: DisplayJob, source?: 'hover' | 'click']
   reset: []
@@ -289,7 +298,9 @@ const activeFilterKey = ref<FilterKey>('location')
 const activeFilterValue = ref(allValue)
 const currentPage = ref(1)
 const isFilterMenuOpen = ref(false)
+const isFilterHintVisible = ref(true)
 const lastInteractionAt = ref(Date.now())
+const filterDropdownRef = ref<HTMLElement | null>(null)
 const detailPanelRef = ref<HTMLElement | null>(null)
 const previewAnchor = ref<PreviewAnchor | null>(null)
 const isTitleHovered = ref(false)
@@ -314,7 +325,15 @@ const filterValueMap = computed<Record<FilterKey, string[]>>(() => ({
 
 const currentFilterOptions = computed(() => {
   const values = filterValueMap.value[activeFilterKey.value]
-  return [allValue, ...values].slice(0, 12)
+  const options = [allValue, ...values]
+  const selectedValue = activeFilterValue.value
+  const visibleOptions = options.slice(0, 12)
+
+  if (selectedValue !== allValue && values.includes(selectedValue) && !visibleOptions.includes(selectedValue)) {
+    return [allValue, selectedValue, ...values.filter((value) => value !== selectedValue)].slice(0, 12)
+  }
+
+  return visibleOptions
 })
 
 const filteredJobs = computed(() => {
@@ -373,6 +392,10 @@ function uniqueValues(values: Array<string | null | undefined>) {
   return Array.from(new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]))
 }
 
+function normalizeFilterValue(value: string) {
+  return value.trim().toLowerCase()
+}
+
 function getJobFilterValue(job: DisplayJob, key: FilterKey) {
   if (key === 'location') return job.location
   if (key === 'salary') return job.salaryRange
@@ -408,6 +431,19 @@ function selectFilterValue(value: string) {
   markInteraction()
   activeFilterValue.value = value
   currentPage.value = 1
+}
+
+function applyCategoryFilter(category: unknown) {
+  const selectedCategory = typeof category === 'string' ? category.trim() : ''
+  if (!selectedCategory || selectedCategory === allValue) return
+  const normalizedCategory = normalizeFilterValue(selectedCategory)
+  const matchedCategory = filterValueMap.value.category.find((value) => normalizeFilterValue(value) === normalizedCategory)
+
+  markInteraction()
+  activeFilterKey.value = 'category'
+  activeFilterValue.value = matchedCategory || allValue
+  currentPage.value = 1
+  isFilterMenuOpen.value = false
 }
 
 function goToPage(page: number, userInitiated = true) {
@@ -481,8 +517,13 @@ function schedulePreviewClose() {
 }
 
 function handleDocumentClick(event: MouseEvent) {
-  if (!props.selectedJob) return
   if (!(event.target instanceof Node)) return
+
+  if (isFilterMenuOpen.value && !filterDropdownRef.value?.contains(event.target)) {
+    isFilterMenuOpen.value = false
+  }
+
+  if (!props.selectedJob) return
   if (detailPanelRef.value?.contains(event.target)) return
   emit('closeDetail')
 }
@@ -499,6 +540,12 @@ watch(currentFilterOptions, (options) => {
   if (!options.includes(activeFilterValue.value)) {
     activeFilterValue.value = allValue
   }
+})
+
+watch(() => props.categoryFilterRequest?.requestId, () => {
+  const request = props.categoryFilterRequest
+  if (!request) return
+  applyCategoryFilter(request.category)
 })
 
 watch(pageCount, (count) => {
