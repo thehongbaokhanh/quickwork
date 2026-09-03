@@ -102,10 +102,10 @@ if (__VLS_ctx.totalPages > 1) {
     /** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
     /** @type {__VLS_StyleScopedClasses['text-gray-700']} */ ;
     __VLS_asFunctionalElement1(__VLS_intrinsics.span, __VLS_intrinsics.span)({
-        ...{ class: "font-semibold text-blue-600" },
+        ...{ class: "font-semibold text-sky-600" },
     });
     /** @type {__VLS_StyleScopedClasses['font-semibold']} */ ;
-    /** @type {__VLS_StyleScopedClasses['text-blue-600']} */ ;
+    /** @type {__VLS_StyleScopedClasses['text-sky-600']} */ ;
     (__VLS_ctx.currentPage);
     __VLS_asFunctionalElement1(__VLS_intrinsics.span, __VLS_intrinsics.span)({
         ...{ class: "font-semibold text-gray-900" },
@@ -174,7 +174,7 @@ if (__VLS_ctx.totalPages > 1) {
             ...{ class: ([
                     'relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20',
                     page === __VLS_ctx.currentPage
-                        ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                        ? 'z-10 bg-sky-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600'
                         : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
                 ]) },
         });

@@ -390,7 +390,7 @@ import { JobService } from '~/services/job.service'
 
 definePageMeta({
   layout: 'enterprise',
-  middleware: ['company']
+  middleware: ['company', 'enterprise-approved']
 })
 
 type InterviewResult = 'HIRED' | 'REJECTED' | 'NO_SHOW'

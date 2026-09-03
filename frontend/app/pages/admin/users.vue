@@ -157,17 +157,17 @@
                     <span v-if="isAdminUser(user)" class="inline-flex h-9 items-center rounded-md border border-rose-100 bg-rose-50 px-3 text-xs font-black text-rose-700">
                       Được bảo vệ
                     </span>
-                    <select
+                    <ScrollSelect
                       v-else
-                      class="h-9 rounded-md border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                      class="w-28"
                       :disabled="updatingUserId === user.id"
-                      :value="normalizeStatus(user.status)"
-                      @change="handleStatusChange(user, $event)"
-                    >
-                      <option value="ACTIVE">Kích hoạt</option>
-                      <option value="INACTIVE">Tạm khóa</option>
-                      <option value="BANNED">Cấm</option>
-                    </select>
+                      :model-value="normalizeStatus(user.status)"
+                      :options="statusActionOptions"
+                      :ariaLabel="`Thay đổi trạng thái ${getDisplayName(user)}`"
+                      size="action"
+                      tone="slate"
+                      @update:model-value="handleStatusChange(user, $event)"
+                    />
                   </div>
                 </td>
               </tr>
@@ -358,6 +358,12 @@ const statusFilterOptions = [
   { value: 'BANNED', label: 'Bị cấm' }
 ]
 
+const statusActionOptions = [
+  { value: 'ACTIVE', label: 'Kích hoạt' },
+  { value: 'INACTIVE', label: 'Tạm khóa' },
+  { value: 'BANNED', label: 'Cấm' }
+]
+
 const summaryCards = computed(() => [
   {
     label: 'Tổng tài khoản',
@@ -473,9 +479,8 @@ async function updateUserStatus(user: any, status: UserStatus) {
   }
 }
 
-function handleStatusChange(user: any, event: Event) {
-  const target = event.target as HTMLSelectElement
-  updateUserStatus(user, target.value as UserStatus)
+function handleStatusChange(user: any, status: string | number) {
+  updateUserStatus(user, String(status) as UserStatus)
 }
 
 function clearFilters() {

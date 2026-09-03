@@ -47,6 +47,7 @@ definePageMeta({
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
+import { AuthService } from '~/services/auth.service'
 import { getLoginRedirectForRole } from '~/utils/authRedirect'
 
 const route = useRoute()
@@ -66,24 +67,10 @@ onMounted(async () => {
 
   try {
     // Call backend endpoint to verify / register Google user
-    const response: any = await $fetch('http://localhost:8080/api/v1/auth/google', {
-      method: 'POST',
-      body: { code }
-    })
+    const response: any = await AuthService.googleLogin(code)
 
     if (response.success && response.data) {
       const data = response.data
-      
-      // Save tokens and user info in authStore
-      authStore.token = data.access_token
-      
-      // Update cookies
-      const accessTokenCookie = useCookie('access_token', { path: '/', sameSite: 'lax' })
-      const refreshTokenCookie = useCookie('refresh_token', { path: '/', sameSite: 'lax' })
-      const userProfileCookie = useCookie<any>('user_profile', { path: '/', sameSite: 'lax' })
-      
-      accessTokenCookie.value = data.access_token
-      refreshTokenCookie.value = data.refresh_token
       
       const userProfile = {
         id: String(data.user_id),
@@ -92,16 +79,11 @@ onMounted(async () => {
         role: data.role as 'STUDENT' | 'ENTERPRISE' | 'ADMIN',
         enterpriseKybStatus: data.enterprise_kyb_status || null,
         enterpriseApproved: data.enterprise_approved === true,
-        businessLicenseUrl: data.business_license_url || ''
+        enterpriseRequireKyb: data.enterprise_require_kyb !== false,
+        businessLicenseUrl: data.business_license_url || '',
+        enterpriseKybRejectReason: data.enterprise_kyb_reject_reason || ''
       }
-      authStore.user = userProfile
-      userProfileCookie.value = userProfile
-
-      if (process.client) {
-        localStorage.setItem('qw_access_token', data.access_token)
-        localStorage.setItem('qw_refresh_token', data.refresh_token)
-        localStorage.setItem('qw_user_profile', JSON.stringify(userProfile))
-      }
+      authStore.setCurrentUser(userProfile)
 
       status.value = 'success'
       

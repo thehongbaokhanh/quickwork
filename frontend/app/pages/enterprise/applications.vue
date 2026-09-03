@@ -234,6 +234,15 @@
                 <div class="inline-flex items-center justify-end gap-2 whitespace-nowrap">
                   <button
                     type="button"
+                    class="inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-sky-200 bg-white px-3 text-xs font-black text-sky-700 transition hover:bg-sky-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-wait disabled:opacity-60"
+                    :disabled="openingChatId === Number(application.id)"
+                    @click="openApplicationChat(application)"
+                  >
+                    <Icon :name="openingChatId === Number(application.id) ? 'svg-spinners:180-ring' : 'uil:comment-alt-message'" class="h-4 w-4" />
+                    Nhắn tin
+                  </button>
+                  <button
+                    type="button"
                     class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-xl bg-sky-50 px-3 text-xs font-black text-sky-700 transition hover:bg-sky-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
                     @click="openProfileModal(application)"
                   >
@@ -604,6 +613,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import CandidateCollectionView from '~/components/enterprise/CandidateCollectionView.vue'
 import ScrollSelect from '~/components/ui/ScrollSelect.vue'
 import { useToast } from '~/composables/useToast'
+import { ConversationService } from '~/services/conversation.service'
 import { JobService } from '~/services/job.service'
 import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
@@ -614,12 +624,13 @@ type CollectionMode = 'saved' | 'rejected'
 
 definePageMeta({
   layout: 'enterprise',
-  middleware: ['company']
+  middleware: ['company', 'enterprise-approved']
 })
 
 const toast = useToast()
 const config = useRuntimeConfig()
 const route = useRoute()
+const router = useRouter()
 const applications = ref<any[]>([])
 const selectedApplication = ref<any | null>(null)
 const profileModalOpen = ref(false)
@@ -630,6 +641,7 @@ const activeDateFilter = ref<DateFilter>('ALL')
 const loading = ref(true)
 const reviewingId = ref<number | null>(null)
 const schedulingId = ref<number | null>(null)
+const openingChatId = ref<number | null>(null)
 const errorMessage = ref('')
 const reviewNote = ref('')
 const interviewForm = reactive({
@@ -1166,6 +1178,26 @@ async function reviewApplication(application: any, status: ApplicationStatus) {
     toast.error('Cập nhật thất bại', error?.data?.message || error?.message || 'Vui lòng thử lại.')
   } finally {
     reviewingId.value = null
+  }
+}
+
+async function openApplicationChat(application: any) {
+  const applicationID = Number(application?.id)
+  if (!applicationID || openingChatId.value !== null) return
+  try {
+    openingChatId.value = applicationID
+    const response = await ConversationService.openByApplication(applicationID)
+    if (!response?.success || !response.data?.id) {
+      throw new Error(response?.message || 'Không thể mở hội thoại.')
+    }
+    await router.push({
+      path: '/enterprise',
+      query: { view: 'messages', conversation: String(response.data.id) }
+    })
+  } catch (error: any) {
+    toast.error('Không thể mở hội thoại', error?.data?.message || error?.message || 'Vui lòng thử lại.')
+  } finally {
+    openingChatId.value = null
   }
 }
 

@@ -17,4 +17,9 @@ func RegisterAdminRoutes(router fiber.Router, handler *handlers.AdminHandler) {
 	router.Put("/jobs/:id/review", handler.ReviewJob)
 	router.Get("/dashboard/stats", handler.GetDashboardStats)
 	router.Get("/users/recent", handler.ListRecentUsers)
+	router.Get("/reports/summary", handler.GetReportsSummary)
+	router.Get("/categories", handler.ListCategories)
+	router.Post("/categories", handler.CreateCategory)
+	router.Put("/categories/:id", handler.UpdateCategory)
+	router.Delete("/categories/:id", handler.DeleteCategory)
 }

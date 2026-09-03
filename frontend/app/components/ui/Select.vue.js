@@ -76,24 +76,26 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.select, __VLS_intrinsics.select)({
     disabled: (__VLS_ctx.disabled),
     required: (__VLS_ctx.required),
     ...{ class: ([
-            'block w-full rounded-lg sm:text-sm transition-colors duration-200 outline-none appearance-none',
-            'px-3 py-2.5',
+            'block min-h-12 w-full rounded-2xl text-sm font-semibold transition-colors duration-200 outline-none appearance-none',
+            'px-4 py-3',
             __VLS_ctx.error
                 ? 'border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500'
-                : 'border-slate-300 text-slate-900 focus:ring-blue-500 focus:border-blue-500 border',
+                : 'border-slate-300 text-slate-900 focus:ring-sky-500 focus:border-sky-500 border',
             __VLS_ctx.disabled ? 'bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-white shadow-sm'
         ]) },
 });
 /** @type {__VLS_StyleScopedClasses['block']} */ ;
+/** @type {__VLS_StyleScopedClasses['min-h-12']} */ ;
 /** @type {__VLS_StyleScopedClasses['w-full']} */ ;
-/** @type {__VLS_StyleScopedClasses['rounded-lg']} */ ;
-/** @type {__VLS_StyleScopedClasses['sm:text-sm']} */ ;
+/** @type {__VLS_StyleScopedClasses['rounded-2xl']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
+/** @type {__VLS_StyleScopedClasses['font-semibold']} */ ;
 /** @type {__VLS_StyleScopedClasses['transition-colors']} */ ;
 /** @type {__VLS_StyleScopedClasses['duration-200']} */ ;
 /** @type {__VLS_StyleScopedClasses['outline-none']} */ ;
 /** @type {__VLS_StyleScopedClasses['appearance-none']} */ ;
-/** @type {__VLS_StyleScopedClasses['px-3']} */ ;
-/** @type {__VLS_StyleScopedClasses['py-2.5']} */ ;
+/** @type {__VLS_StyleScopedClasses['px-4']} */ ;
+/** @type {__VLS_StyleScopedClasses['py-3']} */ ;
 if (__VLS_ctx.placeholder) {
     __VLS_asFunctionalElement1(__VLS_intrinsics.option, __VLS_intrinsics.option)({
         value: "",
@@ -113,7 +115,7 @@ for (const [option] of __VLS_vFor((__VLS_ctx.options))) {
     [id, modelValue, disabled, disabled, required, error, placeholder, placeholder, options,];
 }
 __VLS_asFunctionalElement1(__VLS_intrinsics.div, __VLS_intrinsics.div)({
-    ...{ class: "pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500" },
+    ...{ class: "pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500" },
 });
 /** @type {__VLS_StyleScopedClasses['pointer-events-none']} */ ;
 /** @type {__VLS_StyleScopedClasses['absolute']} */ ;
@@ -121,7 +123,7 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.div, __VLS_intrinsics.div)({
 /** @type {__VLS_StyleScopedClasses['right-0']} */ ;
 /** @type {__VLS_StyleScopedClasses['flex']} */ ;
 /** @type {__VLS_StyleScopedClasses['items-center']} */ ;
-/** @type {__VLS_StyleScopedClasses['px-2']} */ ;
+/** @type {__VLS_StyleScopedClasses['px-3']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-slate-500']} */ ;
 let __VLS_0;
 /** @ts-ignore @type { | typeof __VLS_components.Icon} */

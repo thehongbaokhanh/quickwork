@@ -11,14 +11,20 @@ func Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
 		&models.StudentProfile{},
+		&models.StudentWorkExperience{},
+		&models.StudentEducation{},
+		&models.StudentPortfolio{},
 		&models.EnterpriseProfile{},
 		&models.Job{},
 		&models.JobApplication{},
 		&models.FavoriteJob{},
 		&models.Category{},
 		&models.Skill{},
+		&models.Conversation{},
 		&models.Notification{},
+		&models.OutboxEvent{},
 		&models.Transaction{},
 		&models.Message{},
+		&models.SystemSetting{},
 	)
 }

@@ -1,9 +1,9 @@
-/// <reference types="@nuxt/eslint" />
 /// <reference types="@pinia/nuxt" />
+/// <reference types="@nuxt/eslint" />
+/// <reference types="@nuxt/icon" />
+/// <reference types="@nuxtjs/tailwindcss" />
 /// <reference types="@nuxt/fonts" />
 /// <reference types="@nuxt/devtools" />
-/// <reference types="@nuxtjs/tailwindcss" />
-/// <reference types="@nuxt/icon" />
 /// <reference types="@nuxt/telemetry" />
 /// <reference path="types/nitro-layouts.d.ts" />
 /// <reference path="types/builder-env.d.ts" />
@@ -23,6 +23,5 @@
 /// <reference path="types/imports.d.ts" />
 /// <reference path="schema/nuxt.schema.d.ts" />
 /// <reference path="types/nitro.d.ts" />
-/// <reference path="./eslint-typegen.d.ts" />
 
 export {}

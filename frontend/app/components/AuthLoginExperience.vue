@@ -60,6 +60,11 @@
         <span>{{ errorMessage }}</span>
       </div>
 
+      <div v-if="loginNotice" class="mt-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800" role="status" aria-live="polite">
+        <Icon name="uil:exclamation-triangle" class="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+        <span>{{ loginNotice }}</span>
+      </div>
+
       <div class="mt-7 space-y-5">
         <AuthField label="Email" icon="uil:envelope" input-id="login-email" :error="errors.email">
           <input
@@ -143,14 +148,19 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthField from '~/components/AuthField.vue'
 import AuthShell from '~/components/AuthShell.vue'
+import { useToast } from '~/composables/useToast'
 import { useAuthStore } from '~/stores/auth'
 import { getLoginRedirectForRole } from '~/utils/authRedirect'
 
 const route = useRoute()
 const authStore = useAuthStore()
+const toast = useToast()
 const isLoading = ref(false)
 const errorMessage = ref('')
+const loginNotice = ref('')
 const showPassword = ref(false)
+
+const LOGIN_NOTICE_REDIRECT_DELAY_MS = 1400
 
 const trustItems = [
   { title: 'Cơ hội đa dạng', description: 'Hàng nghìn việc làm từ các công ty uy tín đang chờ bạn.', icon: 'uil:briefcase-alt', iconClass: 'bg-sky-50 text-sky-700' },
@@ -162,7 +172,7 @@ onMounted(() => {
   if (route.query.error === 'invalid_role') {
     errorMessage.value = 'Tài khoản của bạn có quyền truy cập không hợp lệ hoặc chưa được phân quyền.'
   } else if (route.query.error === 'enterprise_pending') {
-    errorMessage.value = 'Tài khoản doanh nghiệp của bạn chưa được duyệt.'
+    loginNotice.value = 'Tài khoản doanh nghiệp của bạn chưa được duyệt. Bạn vẫn có thể đăng nhập để xem thông báo và nộp GPKD trong phần cài đặt.'
   } else if (route.query.error === 'account_blocked') {
     errorMessage.value = 'Tài khoản của bạn đang bị khóa hoặc bị cấm. Vui lòng liên hệ quản trị viên.'
   }
@@ -196,6 +206,18 @@ const validatePassword = () => {
   }
 }
 
+const waitForLoginNotice = () => new Promise((resolve) => setTimeout(resolve, LOGIN_NOTICE_REDIRECT_DELAY_MS))
+
+const getEnterpriseLoginNotice = () => {
+  if (authStore.userRole !== 'ENTERPRISE' || !authStore.enterpriseKybRequired || authStore.enterpriseApproved) return ''
+
+  if (authStore.enterpriseKybStatus === 'REJECTED') {
+    return 'Hồ sơ doanh nghiệp của bạn chưa được duyệt. Vui lòng kiểm tra thông báo và cập nhật lại GPKD trong phần cài đặt.'
+  }
+
+  return 'Tài khoản doanh nghiệp của bạn chưa được duyệt. Bạn vẫn có thể đăng nhập để xem thông báo và nộp GPKD trong phần cài đặt.'
+}
+
 const handleLogin = async () => {
   validateEmail()
   validatePassword()
@@ -204,6 +226,7 @@ const handleLogin = async () => {
 
   isLoading.value = true
   errorMessage.value = ''
+  loginNotice.value = ''
   try {
     await authStore.login({
       email: form.email,
@@ -216,9 +239,18 @@ const handleLogin = async () => {
 
     const requestedRedirect = typeof route.query.redirect === 'string' ? route.query.redirect : undefined
     const redirectTo = getLoginRedirectForRole(authStore.userRole, requestedRedirect)
+    const enterpriseNotice = getEnterpriseLoginNotice()
+
+    if (enterpriseNotice) {
+      loginNotice.value = enterpriseNotice
+      toast.warning('Tài khoản doanh nghiệp chưa được duyệt', enterpriseNotice)
+      await waitForLoginNotice()
+    }
+
     await navigateTo(redirectTo)
   } catch (err: any) {
     errorMessage.value = err?.data?.message || err?.message || 'Thông tin tài khoản hoặc mật khẩu chưa chính xác.'
+    loginNotice.value = ''
   } finally {
     isLoading.value = false
   }
@@ -228,6 +260,7 @@ const handleGoogleLogin = async () => {
   try {
     isLoading.value = true
     errorMessage.value = ''
+    loginNotice.value = ''
 
     const configResponse: any = await $fetch('http://localhost:8080/api/v1/auth/google/config')
     const config = configResponse.data

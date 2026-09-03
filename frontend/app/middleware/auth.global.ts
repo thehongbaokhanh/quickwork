@@ -5,8 +5,9 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const authStore = useAuthStore()
 
   // Các trang không yêu cầu đăng nhập
-  const publicPages = ['/auth/login', '/auth/register', '/login', '/register', '/', '/student', '/forgot-password', '/403', '/404', '/500']
-  const isPublicPage = publicPages.includes(to.path)
+  const publicPages = ['/auth/login', '/auth/register', '/login', '/register', '/', '/student', '/blog', '/forgot-password', '/403', '/404', '/500']
+  const isPublicJobDetail = /^\/jobs\/\d+$/.test(to.path)
+  const isPublicPage = publicPages.includes(to.path) || isPublicJobDetail
 
   // 1. Chưa đăng nhập
   if (!authStore.isAuthenticated) {
@@ -40,12 +41,26 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return navigateTo('/403')
   }
 
-  if (to.path.startsWith('/enterprise') && role === 'ENTERPRISE' && !authStore.enterpriseApproved) {
-    authStore.clearAuth()
-    return navigateTo('/auth/login?error=enterprise_pending')
-  }
-
   if (to.path.startsWith('/enterprise') && role !== 'ENTERPRISE') {
     return navigateTo('/403')
+  }
+
+  const enterpriseProtectedPrefixes = ['/enterprise/jobs', '/enterprise/applications', '/enterprise/interviews']
+  const isEnterpriseProtectedRoute = enterpriseProtectedPrefixes.some((prefix) => (
+    to.path === prefix || to.path.startsWith(`${prefix}/`)
+  ))
+
+  if (
+    to.path.startsWith('/enterprise')
+    && role === 'ENTERPRISE'
+    && !authStore.canAccessEnterpriseFeatures
+    && isEnterpriseProtectedRoute
+  ) {
+    return navigateTo({
+      path: '/enterprise',
+      query: {
+        kyb: authStore.enterpriseKybStatus === 'REJECTED' ? 'rejected' : 'pending'
+      }
+    })
   }
 })

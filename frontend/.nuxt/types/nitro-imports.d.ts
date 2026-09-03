@@ -84,6 +84,7 @@ declare global {
   const nitroPlugin: typeof import('../../node_modules/nitropack/dist/runtime/internal/plugin').nitroPlugin
   const parseCookies: typeof import('../../node_modules/h3').parseCookies
   const promisifyNodeListener: typeof import('../../node_modules/h3').promisifyNodeListener
+  const proxyBackendRequest: typeof import('../../server/utils/backendProxy').proxyBackendRequest
   const proxyRequest: typeof import('../../node_modules/h3').proxyRequest
   const readBody: typeof import('../../node_modules/h3').readBody
   const readFormData: typeof import('../../node_modules/h3').readFormData
@@ -147,3 +148,4 @@ export { defineTask, runTask } from 'nitropack/runtime/internal/task';
 export { defineNitroErrorHandler } from 'nitropack/runtime/internal/error/utils';
 export { buildAssetsURL as __buildAssetsURL, publicAssetsURL as __publicAssetsURL } from 'D:/GOLANG/QuickWork/frontend/node_modules/@nuxt/nitro-server/dist/runtime/utils/paths';
 export { defineAppConfig } from 'D:/GOLANG/QuickWork/frontend/node_modules/@nuxt/nitro-server/dist/runtime/utils/config';
+export { proxyBackendRequest } from 'D:/GOLANG/QuickWork/frontend/server/utils/backendProxy';

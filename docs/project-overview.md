@@ -1,6 +1,6 @@
 # Tổng quan hiện trạng dự án QuickWork
 
-Cập nhật lần cuối: 2026-07-21
+Cập nhật lần cuối: 2026-08-26
 
 Tài liệu này dùng để bàn giao nhanh dự án QuickWork cho người mới. Mục tiêu là đọc một file vẫn hiểu được dự án đang làm gì, có những vai trò nào, luồng chạy ra sao, backend/frontend/API/database hiện có gì và cần đọc file nào khi muốn sửa tiếp.
 
@@ -25,6 +25,7 @@ Các nhóm người dùng chính:
 | Backend | Go, Fiber, GORM | API REST dưới `/api/v1` |
 | Database | MySQL | GORM `AutoMigrate` khi backend start |
 | Cache/session phụ | Redis | Blacklist token khi logout |
+| Message queue | RabbitMQ | Notification bất đồng bộ qua transactional outbox, mặc định tắt |
 | Auth | JWT | Access token và refresh token |
 | Upload | Local `/uploads`, Cloudinary nếu cấu hình | GPKD và file upload |
 | Docs | Markdown trong `docs/` | AI-first documentation |
@@ -46,7 +47,7 @@ Người dùng
   -> JSON response về frontend
 ```
 
-Redis tham gia chủ yếu ở logout/token blacklist. File upload local được backend serve qua `/uploads`.
+Redis tham gia chủ yếu ở logout/token blacklist. RabbitMQ la dependency tuy chon cho notification bat dong bo; khi bat, MySQL `outbox_events` dam bao business transaction va event khong tach roi nhau. File upload local được backend serve qua `/uploads`.
 
 ## 4. Cách chạy dự án
 
@@ -502,7 +503,8 @@ Hiện tại có một số handler query DB trực tiếp, đặc biệt ở ad
 | `/student` | Đang là public all-jobs board, không còn chỉ dành riêng cho role `STUDENT` |
 | Student profile service | Có method frontend nhưng cần verify runtime route trước khi dùng |
 | Company profile/settings | Sidebar doanh nghiệp có mục nhưng còn giới hạn/sắp phát triển nếu UI đánh dấu |
-| Admin applications/categories/reports/settings | Một số trang admin là placeholder hoặc đang phát triển |
+| Admin applications | Không có trang quản trị đơn ứng tuyển riêng; dữ liệu được tổng hợp trong báo cáo và xử lý ở luồng doanh nghiệp |
+| Admin categories/reports/settings | Đã dùng API thật; Settings là aggregate dùng chung có version/capability, còn email/2FA/backup provider được ghi rõ chưa hỗ trợ |
 | `backend/routes/job_routes.go` | Tồn tại nhưng không active nếu `main.go` không gọi |
 | `backend/routes/routes.go` | Có `SetupRoutes`, nhưng current `main.go` không gọi |
 | Generated frontend files | `frontend/.nuxt/*` là generated, không nên coi là source of truth |

@@ -13,7 +13,9 @@ declare module 'nuxt/app' {
     default: ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/default.vue").default>
     "default-vue": ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/default.vue.js").default>
     enterprise: ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/enterprise.vue").default>
+    "enterprise-vue": ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/enterprise.vue.js").default>
     student: ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/student.vue").default>
+    "student-vue": ComponentProps<typeof import("D:/GOLANG/QuickWork/frontend/app/layouts/student.vue.js").default>
   }
   export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts
   interface PageMeta {

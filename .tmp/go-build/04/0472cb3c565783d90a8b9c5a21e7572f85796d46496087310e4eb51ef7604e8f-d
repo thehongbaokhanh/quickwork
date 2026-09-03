@@ -1,0 +1,9 @@
+./admin_routes.go
+./auth.go
+./conversation_routes.go
+./enterprise_routes.go
+./job_routes.go
+./notification_routes.go
+./routes.go
+./student_routes.go
+./test_routes.go

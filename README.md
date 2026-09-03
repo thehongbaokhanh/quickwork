@@ -11,6 +11,7 @@ Bo tai lieu chinh nam trong `docs/` va duoc thiet ke theo huong AI-first documen
 - `docs/ai-first-documentation.md`: quy tac AI-first documentation.
 - `docs/architecture.md`: kien truc he thong, entry points, flow doc source.
 - `docs/backend-runtime-flow.md`: cach backend khoi dong, dang ky route, chay middleware va xu ly request.
+- `docs/message-queue.md`: RabbitMQ, transactional outbox, retry, dead-letter queue va cach chay local.
 - `docs/business-rules.md`: nghiep vu va invariant chinh.
 - `docs/api.md`: route map, response shape, endpoint caveats.
 - `docs/database.md`: model, table, enum, migration.
@@ -20,7 +21,7 @@ Bo tai lieu chinh nam trong `docs/` va duoc thiet ke theo huong AI-first documen
 
 ## Stack chinh
 
-- Backend: Go, Fiber, GORM, MySQL, Redis, JWT.
+- Backend: Go, Fiber, GORM, MySQL, Redis, RabbitMQ, JWT.
 - Frontend: Nuxt/Vue, TypeScript, Pinia, TailwindCSS.
 - API base local: `http://localhost:8080/api/v1`.
 
@@ -33,6 +34,14 @@ cd backend
 go run ./cmd/api
 go test ./...
 ```
+
+RabbitMQ local (optional):
+
+```bash
+docker compose -f docker-compose.rabbitmq.yml up -d
+```
+
+Sau khi broker healthy, dat `MQ_ENABLED=true` trong bien moi truong backend. Management UI chay tai `http://localhost:15672`; thong tin dev mac dinh nam trong `backend/.env.example` va khong duoc dung cho production.
 
 Frontend:
 

@@ -13,12 +13,12 @@
       <div class="flex items-start gap-4">
         <div class="flex min-w-0 items-center gap-4">
           <span :class="['flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-base font-extrabold text-white shadow-sm', job.logoClass]">
-            {{ job.logo }}
+            <HomeCompanyLogo :logo-url="job.logoUrl" :company-name="job.company" :initials="job.logo" />
           </span>
           <div class="min-w-0">
             <span
               class="inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-extrabold"
-              :style="{ backgroundColor: jobTypeMeta.background, color: jobTypeMeta.text }"
+              :style="{ backgroundColor: jobTypeMeta.border, color: jobTypeMeta.text }"
             >
               <Icon :name="jobTypeMeta.icon" class="h-3.5 w-3.5" aria-hidden="true" />
               <span class="truncate">{{ job.type }}</span>
@@ -121,6 +121,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import HomeCompanyLogo from '~/components/home/CompanyLogo.vue'
 import type { DisplayJob } from '~/utils/jobDisplay'
 import { getJobTypeMeta } from '~/utils/jobTypeMeta'
 

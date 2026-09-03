@@ -66,29 +66,18 @@ const __VLS_2 = __VLS_1({
 /** @type {__VLS_StyleScopedClasses['w-6']} */ ;
 /** @type {__VLS_StyleScopedClasses['h-6']} */ ;
 __VLS_asFunctionalElement1(__VLS_intrinsics.div, __VLS_intrinsics.div)({
-    ...{ class: "flex items-center gap-2 font-bold text-xl text-blue-600" },
+    ...{ class: "flex items-center" },
 });
 /** @type {__VLS_StyleScopedClasses['flex']} */ ;
 /** @type {__VLS_StyleScopedClasses['items-center']} */ ;
-/** @type {__VLS_StyleScopedClasses['gap-2']} */ ;
-/** @type {__VLS_StyleScopedClasses['font-bold']} */ ;
-/** @type {__VLS_StyleScopedClasses['text-xl']} */ ;
-/** @type {__VLS_StyleScopedClasses['text-blue-600']} */ ;
-let __VLS_5;
-/** @ts-ignore @type { | typeof __VLS_components.Icon} */
-Icon;
-// @ts-ignore
-const __VLS_6 = __VLS_asFunctionalComponent1(__VLS_5, new __VLS_5({
-    name: "uil:briefcase",
-    ...{ class: "w-6 h-6" },
-}));
-const __VLS_7 = __VLS_6({
-    name: "uil:briefcase",
-    ...{ class: "w-6 h-6" },
-}, ...__VLS_functionalComponentArgsRest(__VLS_6));
-/** @type {__VLS_StyleScopedClasses['w-6']} */ ;
-/** @type {__VLS_StyleScopedClasses['h-6']} */ ;
-__VLS_asFunctionalElement1(__VLS_intrinsics.span, __VLS_intrinsics.span)({});
+__VLS_asFunctionalElement1(__VLS_intrinsics.img)({
+    src: "/images/brand/quickwork-wordmark-transparent.png",
+    alt: "QuickWork",
+    ...{ class: "h-10 w-auto object-contain" },
+});
+/** @type {__VLS_StyleScopedClasses['h-10']} */ ;
+/** @type {__VLS_StyleScopedClasses['w-auto']} */ ;
+/** @type {__VLS_StyleScopedClasses['object-contain']} */ ;
 __VLS_asFunctionalElement1(__VLS_intrinsics.div, __VLS_intrinsics.div)({
     ...{ class: "flex items-center gap-4" },
 });
@@ -103,12 +92,12 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.span, __VLS_intrinsics.span)({
 /** @type {__VLS_StyleScopedClasses['hidden']} */ ;
 /** @type {__VLS_StyleScopedClasses['sm:inline']} */ ;
 __VLS_asFunctionalElement1(__VLS_intrinsics.div, __VLS_intrinsics.div)({
-    ...{ class: "w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold text-sm" },
+    ...{ class: "w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center font-semibold text-sm" },
 });
 /** @type {__VLS_StyleScopedClasses['w-8']} */ ;
 /** @type {__VLS_StyleScopedClasses['h-8']} */ ;
 /** @type {__VLS_StyleScopedClasses['rounded-full']} */ ;
-/** @type {__VLS_StyleScopedClasses['bg-blue-500']} */ ;
+/** @type {__VLS_StyleScopedClasses['bg-sky-500']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-white']} */ ;
 /** @type {__VLS_StyleScopedClasses['flex']} */ ;
 /** @type {__VLS_StyleScopedClasses['items-center']} */ ;
@@ -189,18 +178,18 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.a, __VLS_intrinsics.a)({
 /** @type {__VLS_StyleScopedClasses['hover:bg-gray-100']} */ ;
 /** @type {__VLS_StyleScopedClasses['group']} */ ;
 /** @type {__VLS_StyleScopedClasses['bg-gray-100']} */ ;
-let __VLS_10;
+let __VLS_5;
 /** @ts-ignore @type { | typeof __VLS_components.Icon} */
 Icon;
 // @ts-ignore
-const __VLS_11 = __VLS_asFunctionalComponent1(__VLS_10, new __VLS_10({
+const __VLS_6 = __VLS_asFunctionalComponent1(__VLS_5, new __VLS_5({
     name: "uil:apps",
     ...{ class: "w-5 h-5 text-gray-500" },
 }));
-const __VLS_12 = __VLS_11({
+const __VLS_7 = __VLS_6({
     name: "uil:apps",
     ...{ class: "w-5 h-5 text-gray-500" },
-}, ...__VLS_functionalComponentArgsRest(__VLS_11));
+}, ...__VLS_functionalComponentArgsRest(__VLS_6));
 /** @type {__VLS_StyleScopedClasses['w-5']} */ ;
 /** @type {__VLS_StyleScopedClasses['h-5']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-gray-500']} */ ;
@@ -220,18 +209,18 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.a, __VLS_intrinsics.a)({
 /** @type {__VLS_StyleScopedClasses['rounded-lg']} */ ;
 /** @type {__VLS_StyleScopedClasses['hover:bg-gray-100']} */ ;
 /** @type {__VLS_StyleScopedClasses['group']} */ ;
-let __VLS_15;
+let __VLS_10;
 /** @ts-ignore @type { | typeof __VLS_components.Icon} */
 Icon;
 // @ts-ignore
-const __VLS_16 = __VLS_asFunctionalComponent1(__VLS_15, new __VLS_15({
+const __VLS_11 = __VLS_asFunctionalComponent1(__VLS_10, new __VLS_10({
     name: "uil:file-alt",
     ...{ class: "w-5 h-5 text-gray-500" },
 }));
-const __VLS_17 = __VLS_16({
+const __VLS_12 = __VLS_11({
     name: "uil:file-alt",
     ...{ class: "w-5 h-5 text-gray-500" },
-}, ...__VLS_functionalComponentArgsRest(__VLS_16));
+}, ...__VLS_functionalComponentArgsRest(__VLS_11));
 /** @type {__VLS_StyleScopedClasses['w-5']} */ ;
 /** @type {__VLS_StyleScopedClasses['h-5']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-gray-500']} */ ;
@@ -258,7 +247,7 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.main, __VLS_intrinsics.main)({
 /** @type {__VLS_StyleScopedClasses['mx-auto']} */ ;
 /** @type {__VLS_StyleScopedClasses['w-full']} */ ;
 /** @type {__VLS_StyleScopedClasses['min-w-0']} */ ;
-var __VLS_20 = {};
+var __VLS_15 = {};
 __VLS_asFunctionalElement1(__VLS_intrinsics.footer, __VLS_intrinsics.footer)({
     ...{ class: "bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-500" },
 });
@@ -271,7 +260,7 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.footer, __VLS_intrinsics.footer)({
 /** @type {__VLS_StyleScopedClasses['text-gray-500']} */ ;
 __VLS_asFunctionalElement1(__VLS_intrinsics.p, __VLS_intrinsics.p)({});
 // @ts-ignore
-var __VLS_21 = __VLS_20;
+var __VLS_16 = __VLS_15;
 // @ts-ignore
 [isSidebarOpen,];
 const __VLS_base = (await import('vue')).defineComponent({});

@@ -2,6 +2,10 @@
 import apiClient from './api'
 
 export const CompanyService = {
+  async getStudentCompanyProfile(id: string | number) {
+    return apiClient.get(`/student/companies/${id}`)
+  },
+
   async getProfile() {
     return apiClient.get('/enterprise/profile')
   },

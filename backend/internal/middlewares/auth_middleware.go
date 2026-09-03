@@ -19,25 +19,20 @@ func AuthMiddleware(databases ...*gorm.DB) fiber.Handler {
 
 	return func(c *fiber.Ctx) error {
 
-		authHeader := c.Get("Authorization")
-
-		if authHeader == "" {
-
+		authHeader := strings.TrimSpace(c.Get("Authorization"))
+		token := ""
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+		}
+		if token == "" {
+			token = strings.TrimSpace(c.Cookies("qw_access_session"))
+		}
+		if token == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"success": false,
-				"message": "Missing Authorization Header",
+				"message": "Missing authentication session",
 			})
 		}
-
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"success": false,
-				"message": "Invalid Authorization Header",
-			})
-		}
-
-		token := strings.TrimPrefix(authHeader, "Bearer ")
 
 		if redispkg.Client != nil {
 			exists, err := redispkg.Client.Exists(

@@ -13,12 +13,14 @@ For a new developer or AI agent:
 3. `docs/ai-first-documentation.md`
 4. `docs/architecture.md`
 5. `docs/backend-runtime-flow.md`
-6. `docs/business-rules.md`
-7. `docs/user-flows.md`
-8. `docs/api.md`
-9. `docs/database.md`
-10. `docs/conventions.md`
-11. `PROJECT_CHANGELOG.md`
+6. `DEPLOYMENT.md` when packaging or operating production
+7. `docs/message-queue.md`
+8. `docs/business-rules.md`
+9. `docs/user-flows.md`
+10. `docs/api.md`
+11. `docs/database.md`
+12. `docs/conventions.md`
+13. `PROJECT_CHANGELOG.md`
 
 For a bugfix:
 
@@ -34,6 +36,8 @@ For a bugfix:
 | Project handoff overview, current feature inventory, full system summary | `docs/project-overview.md` |
 | System architecture, entry points, module boundaries | `docs/architecture.md` |
 | Backend startup order, runtime request lifecycle, active backend code path | `docs/backend-runtime-flow.md` |
+| RabbitMQ topology, transactional outbox, retry, DLQ, local operations | `docs/message-queue.md` |
+| VPS Docker Compose, Nginx HTTPS, environment and operations | `DEPLOYMENT.md` |
 | API routes, request/response shape, route caveats | `docs/api.md` |
 | Database models, tables, relations, enums, migrations | `docs/database.md` |
 | Business rules, roles, permissions, workflow states | `docs/business-rules.md` |

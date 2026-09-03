@@ -15,19 +15,24 @@ import (
 	"quickwork.local/backend/internal/dto/request"
 	"quickwork.local/backend/internal/models"
 	"quickwork.local/backend/internal/repositories"
+	"quickwork.local/backend/internal/services"
 )
 
 type EnterpriseJobHandler struct {
-	jobRepo  repositories.JobRepository
-	db       *gorm.DB
-	validate *validator.Validate
+	jobRepo             repositories.JobRepository
+	db                  *gorm.DB
+	validate            *validator.Validate
+	notificationService services.NotificationService
+	settingsService     *services.SystemSettingsService
 }
 
-func NewEnterpriseJobHandler(jobRepo repositories.JobRepository, db *gorm.DB) *EnterpriseJobHandler {
+func NewEnterpriseJobHandler(jobRepo repositories.JobRepository, db *gorm.DB, notificationService services.NotificationService, settingsService *services.SystemSettingsService) *EnterpriseJobHandler {
 	return &EnterpriseJobHandler{
-		jobRepo:  jobRepo,
-		db:       db,
-		validate: validator.New(),
+		jobRepo:             jobRepo,
+		db:                  db,
+		validate:            validator.New(),
+		notificationService: notificationService,
+		settingsService:     settingsService,
 	}
 }
 
@@ -55,11 +60,30 @@ type createSkillRequest struct {
 }
 
 type updateEnterpriseAccountProfileRequest struct {
-	CompanyName string `json:"company_name"`
-	Phone       string `json:"phone"`
+	CompanyName      string  `json:"company_name"`
+	Phone            string  `json:"phone"`
+	TaxCode          *string `json:"tax_code"`
+	GPKDURL          string  `json:"gpkd_url"`
+	LogoURL          *string `json:"logo_url"`
+	CoverImageURL    *string `json:"cover_image_url"`
+	Industry         *string `json:"industry"`
+	CompanySize      *string `json:"company_size"`
+	WorkModel        *string `json:"work_model"`
+	RecruitmentLevel *string `json:"recruitment_level"`
+	Description      *string `json:"description"`
+	Address          *string `json:"address"`
+	Country          *string `json:"country"`
+	City             *string `json:"city"`
+	District         *string `json:"district"`
+	Ward             *string `json:"ward"`
+	Latitude         *string `json:"latitude"`
+	Longitude        *string `json:"longitude"`
 }
 
-var errInvalidSkillIDs = errors.New("invalid skill ids")
+var (
+	errInvalidSkillIDs   = errors.New("invalid skill ids")
+	errDraftLimitReached = errors.New("draft limit reached")
+)
 
 func uniqueSkillIDs(rawIDs []uint) []uint {
 	seen := make(map[uint]struct{}, len(rawIDs))
@@ -161,6 +185,37 @@ func isValidOptionalContactPhone(value string) bool {
 	return true
 }
 
+func applyJobSubmissionTiming(job *models.Job, previousStatus models.JobStatus, submitted bool, pendingHours int, now time.Time) {
+	if job == nil || !submitted {
+		return
+	}
+	if pendingHours <= 0 {
+		pendingHours = 48
+	}
+
+	now = now.UTC()
+	if previousStatus != models.JobPending || job.SubmittedAt == nil {
+		submittedAt := now
+		job.SubmittedAt = &submittedAt
+	}
+
+	if job.Status == models.JobPending {
+		if previousStatus != models.JobPending || job.ReviewDueAt == nil {
+			reviewDueAt := now.Add(time.Duration(pendingHours) * time.Hour)
+			job.ReviewDueAt = &reviewDueAt
+		}
+		job.ReviewedAt = nil
+		job.RejectReason = ""
+		return
+	}
+
+	if job.Status == models.JobApproved {
+		reviewedAt := now
+		job.ReviewedAt = &reviewedAt
+		job.RejectReason = ""
+	}
+}
+
 func getInterviewResultLabel(result models.InterviewResult) string {
 	switch result {
 	case models.InterviewResultHired:
@@ -191,9 +246,22 @@ func (h *EnterpriseJobHandler) GetProfile(c *fiber.Ctx) error {
 		})
 	}
 
+	requireKYB := true
+	if h.settingsService != nil {
+		if snapshot, err := h.settingsService.Current(c.UserContext()); err == nil {
+			requireKYB = snapshot.Settings.Registration.RequireKYB
+		}
+	}
+
 	return c.JSON(fiber.Map{
 		"success": true,
-		"data":    user,
+		"data": struct {
+			models.User
+			EnterpriseRequireKYB bool `json:"enterprise_require_kyb"`
+		}{
+			User:                 user,
+			EnterpriseRequireKYB: requireKYB,
+		},
 	})
 }
 
@@ -216,6 +284,7 @@ func (h *EnterpriseJobHandler) UpdateProfile(c *fiber.Ctx) error {
 
 	companyName := strings.TrimSpace(req.CompanyName)
 	phone := strings.TrimSpace(req.Phone)
+	gpkdURL := strings.TrimSpace(req.GPKDURL)
 	if companyName == "" {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
@@ -245,6 +314,61 @@ func (h *EnterpriseJobHandler) UpdateProfile(c *fiber.Ctx) error {
 
 	user.EnterpriseProfile.CompanyName = companyName
 	user.EnterpriseProfile.Phone = phone
+	if req.TaxCode != nil {
+		user.EnterpriseProfile.TaxCode = strings.TrimSpace(*req.TaxCode)
+	}
+	if req.LogoURL != nil {
+		user.EnterpriseProfile.LogoURL = strings.TrimSpace(*req.LogoURL)
+	}
+	if req.CoverImageURL != nil {
+		user.EnterpriseProfile.CoverImageURL = strings.TrimSpace(*req.CoverImageURL)
+	}
+	if req.Industry != nil {
+		user.EnterpriseProfile.Industry = strings.TrimSpace(*req.Industry)
+	}
+	if req.CompanySize != nil {
+		user.EnterpriseProfile.CompanySize = strings.TrimSpace(*req.CompanySize)
+	}
+	if req.WorkModel != nil {
+		user.EnterpriseProfile.WorkModel = strings.TrimSpace(*req.WorkModel)
+	}
+	if req.RecruitmentLevel != nil {
+		user.EnterpriseProfile.RecruitmentLevel = strings.TrimSpace(*req.RecruitmentLevel)
+	}
+	if req.Description != nil {
+		user.EnterpriseProfile.Description = strings.TrimSpace(*req.Description)
+	}
+	if req.Address != nil {
+		user.EnterpriseProfile.Address = strings.TrimSpace(*req.Address)
+	}
+	if req.Country != nil {
+		user.EnterpriseProfile.Country = strings.TrimSpace(*req.Country)
+	}
+	if req.City != nil {
+		user.EnterpriseProfile.City = strings.TrimSpace(*req.City)
+	}
+	if req.District != nil {
+		user.EnterpriseProfile.District = strings.TrimSpace(*req.District)
+	}
+	if req.Ward != nil {
+		user.EnterpriseProfile.Ward = strings.TrimSpace(*req.Ward)
+	}
+	if req.Latitude != nil {
+		user.EnterpriseProfile.Latitude = strings.TrimSpace(*req.Latitude)
+	}
+	if req.Longitude != nil {
+		user.EnterpriseProfile.Longitude = strings.TrimSpace(*req.Longitude)
+	}
+	if gpkdURL != "" {
+		if gpkdURL != strings.TrimSpace(user.EnterpriseProfile.GPKDURL) {
+			user.EnterpriseProfile.GPKDURL = gpkdURL
+		}
+		if user.EnterpriseProfile.KYBStatus != models.KYBApproved {
+			user.EnterpriseProfile.KYBStatus = models.KYBPending
+			user.EnterpriseProfile.StatusKYB = models.KYBPending
+			user.EnterpriseProfile.KYBRejectReason = ""
+		}
+	}
 	if err := h.db.Save(user.EnterpriseProfile).Error; err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -420,6 +544,19 @@ func (h *EnterpriseJobHandler) CreateJob(c *fiber.Ctx) error {
 		})
 	}
 
+	snapshot, err := h.settingsService.Current(c.UserContext())
+	if err != nil {
+		return c.Status(http.StatusServiceUnavailable).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể tải chính sách kiểm duyệt.",
+		})
+	}
+	moderation := snapshot.Settings.Moderation
+	submitted := status == models.JobPending
+	if status == models.JobPending && moderation.Mode == "automatic" {
+		status = models.JobApproved
+	}
+
 	job := &models.Job{
 		EnterpriseID: enterpriseID,
 		Title:        req.Title,
@@ -430,9 +567,15 @@ func (h *EnterpriseJobHandler) CreateJob(c *fiber.Ctx) error {
 		Slots:        req.Slots,
 		Status:       status,
 	}
+	applyJobSubmissionTiming(job, "", submitted, moderation.PendingHours, time.Now())
 
 	var createdJob models.Job
 	if err := h.db.Transaction(func(tx *gorm.DB) error {
+		if job.Status == models.JobDraft {
+			if err := lockEnterpriseAndCheckDraftLimit(tx, enterpriseID, moderation.DraftLimit); err != nil {
+				return err
+			}
+		}
 		if err := tx.Create(job).Error; err != nil {
 			return err
 		}
@@ -447,12 +590,28 @@ func (h *EnterpriseJobHandler) CreateJob(c *fiber.Ctx) error {
 			}
 		}
 
-		return tx.
+		if err := tx.
 			Preload("EnterpriseProfile").
 			Preload("Skills").
 			Preload("Skills.Category").
-			First(&createdJob, job.ID).Error
+			First(&createdJob, job.ID).Error; err != nil {
+			return err
+		}
+
+		if createdJob.Status == models.JobPending && h.notificationService != nil {
+			if _, err := h.notificationService.NotifyAdminsJobSubmittedTx(tx, createdJob); err != nil {
+				return err
+			}
+		}
+
+		return nil
 	}); err != nil {
+		if errors.Is(err, errDraftLimitReached) {
+			return c.Status(http.StatusConflict).JSON(fiber.Map{
+				"success": false,
+				"message": fmt.Sprintf("Đã đạt giới hạn %d tin nháp.", moderation.DraftLimit),
+			})
+		}
 		if errors.Is(err, errInvalidSkillIDs) {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 				"success": false,
@@ -711,13 +870,7 @@ func (h *EnterpriseJobHandler) ScheduleInterview(c *fiber.Ctx) error {
 		})
 	}
 
-	notification := models.Notification{
-		UserID:  application.StudentID,
-		Type:    models.NotificationInfo,
-		Title:   "Lịch phỏng vấn mới",
-		Content: buildInterviewNotificationContent(application, interviewAt, method, location, note),
-	}
-	if err := tx.Create(&notification).Error; err != nil {
+	if _, err := h.notificationService.NotifyInterviewScheduledTx(tx, application, interviewAt, method, location, note); err != nil {
 		tx.Rollback()
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -905,8 +1058,7 @@ func (h *EnterpriseJobHandler) SubmitInterviewResult(c *fiber.Ctx) error {
 		})
 	}
 
-	notification := buildInterviewResultNotification(application, result, resultNote)
-	if err := tx.Create(&notification).Error; err != nil {
+	if _, err := h.notificationService.NotifyInterviewResultTx(tx, application, result, resultNote); err != nil {
 		tx.Rollback()
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -1035,6 +1187,17 @@ func (h *EnterpriseJobHandler) UpdateJob(c *fiber.Ctx) error {
 		})
 	}
 
+	previousStatus := job.Status
+
+	snapshot, err := h.settingsService.Current(c.UserContext())
+	if err != nil {
+		return c.Status(http.StatusServiceUnavailable).JSON(fiber.Map{
+			"success": false,
+			"message": "Không thể tải chính sách kiểm duyệt.",
+		})
+	}
+	moderation := snapshot.Settings.Moderation
+
 	if req.Title != "" {
 		job.Title = req.Title
 	}
@@ -1053,12 +1216,33 @@ func (h *EnterpriseJobHandler) UpdateJob(c *fiber.Ctx) error {
 	if req.Slots > 0 {
 		job.Slots = req.Slots
 	}
+	submitted := false
 	if req.Status != "" {
-		job.Status = models.JobStatus(req.Status)
+		requestedStatus := models.JobStatus(strings.ToUpper(strings.TrimSpace(req.Status)))
+		switch requestedStatus {
+		case models.JobDraft, models.JobPending, models.JobClosed:
+		default:
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Status must be DRAFT, PENDING or CLOSED",
+			})
+		}
+
+		submitted = requestedStatus == models.JobPending
+		if submitted && moderation.Mode == "automatic" {
+			requestedStatus = models.JobApproved
+		}
+		job.Status = requestedStatus
 	}
+	applyJobSubmissionTiming(job, previousStatus, submitted, moderation.PendingHours, time.Now())
 
 	var updatedJob models.Job
 	if err := h.db.Transaction(func(tx *gorm.DB) error {
+		if job.Status == models.JobDraft && previousStatus != models.JobDraft {
+			if err := lockEnterpriseAndCheckDraftLimit(tx, enterpriseID, moderation.DraftLimit); err != nil {
+				return err
+			}
+		}
 		if err := tx.Save(job).Error; err != nil {
 			return err
 		}
@@ -1078,12 +1262,28 @@ func (h *EnterpriseJobHandler) UpdateJob(c *fiber.Ctx) error {
 			}
 		}
 
-		return tx.
+		if err := tx.
 			Preload("EnterpriseProfile").
 			Preload("Skills").
 			Preload("Skills.Category").
-			First(&updatedJob, job.ID).Error
+			First(&updatedJob, job.ID).Error; err != nil {
+			return err
+		}
+
+		if previousStatus != models.JobPending && updatedJob.Status == models.JobPending && h.notificationService != nil {
+			if _, err := h.notificationService.NotifyAdminsJobSubmittedTx(tx, updatedJob); err != nil {
+				return err
+			}
+		}
+
+		return nil
 	}); err != nil {
+		if errors.Is(err, errDraftLimitReached) {
+			return c.Status(http.StatusConflict).JSON(fiber.Map{
+				"success": false,
+				"message": fmt.Sprintf("Đã đạt giới hạn %d tin nháp.", moderation.DraftLimit),
+			})
+		}
 		if errors.Is(err, errInvalidSkillIDs) {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 				"success": false,
@@ -1100,6 +1300,27 @@ func (h *EnterpriseJobHandler) UpdateJob(c *fiber.Ctx) error {
 		"success": true,
 		"data":    updatedJob,
 	})
+}
+
+func lockEnterpriseAndCheckDraftLimit(tx *gorm.DB, enterpriseID uint, limit int) error {
+	var profile models.EnterpriseProfile
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Select("user_id").
+		Where("user_id = ?", enterpriseID).
+		First(&profile).Error; err != nil {
+		return err
+	}
+
+	var draftCount int64
+	if err := tx.Model(&models.Job{}).
+		Where("enterprise_id = ? AND status = ?", enterpriseID, models.JobDraft).
+		Count(&draftCount).Error; err != nil {
+		return err
+	}
+	if draftCount >= int64(limit) {
+		return errDraftLimitReached
+	}
+	return nil
 }
 
 func (h *EnterpriseJobHandler) DeleteJob(c *fiber.Ctx) error {

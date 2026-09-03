@@ -5,6 +5,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"quickwork.local/backend/config"
@@ -16,12 +17,20 @@ import (
 // InitRedis connects to Redis, pings the server, and returns the client instance.
 func InitRedis(cfg *config.Config) (*redis.Client, error) {
 	addr := fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort)
-
-	rdb := redis.NewClient(&redis.Options{
+	options := &redis.Options{
 		Addr:     addr,
 		Password: cfg.RedisPassword,
 		DB:       0,
-	})
+	}
+	if strings.TrimSpace(cfg.RedisURL) != "" {
+		parsed, err := redis.ParseURL(cfg.RedisURL)
+		if err != nil {
+			return nil, fmt.Errorf("parse Redis URL: %w", err)
+		}
+		options = parsed
+	}
+
+	rdb := redis.NewClient(options)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

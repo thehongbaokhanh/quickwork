@@ -15,13 +15,45 @@ export type ApiJob = {
   salary?: string
   location?: string
   slots?: number
+  application_count?: number
+  favorite_count?: number
   status?: string
   created_at?: string
   updated_at?: string
   enterprise_profile?: {
     company_name?: string
+    logo_url?: string
   }
   skills?: ApiSkill[]
+}
+
+export type JobMatchBreakdown = {
+  location: number
+  category: number
+  salary: number
+  jobType: number
+  skills: number
+  experience: number
+  education: number
+}
+
+export type ApiJobRecommendationItem = {
+  job: ApiJob
+  match_score?: number
+  confidence?: number
+  breakdown?: {
+    location?: number
+    category?: number
+    salary?: number
+    job_type?: number
+    skills?: number
+    experience?: number
+    education?: number
+  }
+  explanation?: {
+    strengths?: string[]
+    gaps?: string[]
+  }
 }
 
 export type DisplayJob = {
@@ -29,6 +61,7 @@ export type DisplayJob = {
   title: string
   company: string
   logo: string
+  logoUrl: string
   logoClass: string
   badge: string
   description: string
@@ -39,9 +72,17 @@ export type DisplayJob = {
   level: string
   category: string
   slots: number
+  applicationCount: number
+  favoriteCount: number
   skills: string[]
   posted: string
   createdAt: number
+  matchScore?: number
+  matchConfidence?: number
+  matchStrengths?: string[]
+  matchGaps?: string[]
+  matchBreakdown?: JobMatchBreakdown
+  isPersonalized?: boolean
 }
 
 const logoClasses = [
@@ -69,6 +110,7 @@ export function mapJobForDisplay(job: ApiJob, index = 0): DisplayJob {
     title,
     company,
     logo: getCompanyLogo(company),
+    logoUrl: cleanText(job.enterprise_profile?.logo_url, ''),
     logoClass: logoClasses[(job.id || index) % logoClasses.length] || 'bg-sky-600',
     badge: getJobBadge(type, createdAt),
     description,
@@ -79,10 +121,54 @@ export function mapJobForDisplay(job: ApiJob, index = 0): DisplayJob {
     level,
     category,
     slots: Number(job.slots) > 0 ? Number(job.slots) : 1,
+    applicationCount: normalizeEngagementCount(job.application_count),
+    favoriteCount: normalizeEngagementCount(job.favorite_count),
     skills,
     posted: formatPosted(job.created_at),
     createdAt
   }
+}
+
+function normalizeEngagementCount(value: unknown) {
+  const count = Number(value)
+  return Number.isFinite(count) && count > 0 ? Math.floor(count) : 0
+}
+
+export function mapRecommendationForDisplay(item: ApiJobRecommendationItem, index = 0): DisplayJob {
+  const breakdown = item.breakdown || {}
+  return {
+    ...mapJobForDisplay(item.job, index),
+    matchScore: normalizeMatchNumber(item.match_score),
+    matchConfidence: normalizeMatchNumber(item.confidence),
+    matchStrengths: Array.isArray(item.explanation?.strengths) ? item.explanation.strengths : [],
+    matchGaps: Array.isArray(item.explanation?.gaps) ? item.explanation.gaps : [],
+    matchBreakdown: {
+      location: normalizeMatchNumber(breakdown.location),
+      category: normalizeMatchNumber(breakdown.category),
+      salary: normalizeMatchNumber(breakdown.salary),
+      jobType: normalizeMatchNumber(breakdown.job_type),
+      skills: normalizeMatchNumber(breakdown.skills),
+      experience: normalizeMatchNumber(breakdown.experience),
+      education: normalizeMatchNumber(breakdown.education)
+    },
+    isPersonalized: true
+  }
+}
+
+export function formatJobLocation(value?: string) {
+  const location = typeof value === 'string' ? value.trim() : ''
+  if (!location) return 'Chưa cập nhật'
+  if (/^remote$/i.test(location)) return 'Remote'
+
+  const administrativeMatch = location.match(/(?:^|[,;\-]\s*|\s)(thành phố|tp\.?|tỉnh)\s+([^,;]+)$/iu)
+  const segments = location.split(',').map((segment) => segment.trim()).filter(Boolean)
+  const candidate = administrativeMatch?.[2]?.trim() || segments.at(-1) || location
+
+  if (/^(?:tp\.?\s*)?hồ chí minh$/iu.test(candidate)) return 'TP. Hồ Chí Minh'
+  return candidate
+    .replace(/^(?:thành phố|tỉnh)\s+/iu, '')
+    .replace(/^tp\.?\s+/iu, 'TP. ')
+    .trim()
 }
 
 export function getDateTime(value?: string) {
@@ -123,6 +209,11 @@ function getSkillNames(job: ApiJob) {
 function cleanText(value: unknown, fallback: string) {
   const text = typeof value === 'string' ? value.trim() : ''
   return text || fallback
+}
+
+function normalizeMatchNumber(value: unknown) {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : 0
 }
 
 function getCompanyLogo(company: string) {

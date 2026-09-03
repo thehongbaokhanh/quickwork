@@ -21,43 +21,87 @@ interface _GlobalComponents {
   AppSidebar: typeof import("../../app/components/AppSidebar.vue")['default']
   AppSidebarVue: typeof import("../../app/components/AppSidebar.vue")['default']
   AuthBrandMark: typeof import("../../app/components/AuthBrandMark.vue")['default']
+  AuthBrandMarkVue: typeof import("../../app/components/AuthBrandMark.vue")['default']
   AuthField: typeof import("../../app/components/AuthField.vue")['default']
+  AuthFieldVue: typeof import("../../app/components/AuthField.vue")['default']
   AuthLoginExperience: typeof import("../../app/components/AuthLoginExperience.vue")['default']
+  AuthLoginExperienceVue: typeof import("../../app/components/AuthLoginExperience.vue")['default']
   AuthRegisterExperience: typeof import("../../app/components/AuthRegisterExperience.vue")['default']
+  AuthRegisterExperienceVue: typeof import("../../app/components/AuthRegisterExperience.vue")['default']
   AuthShell: typeof import("../../app/components/AuthShell.vue")['default']
+  AuthShellVue: typeof import("../../app/components/AuthShell.vue")['default']
   ConfirmDialog: typeof import("../../app/components/ConfirmDialog.vue")['default']
   ConfirmDialogVue: typeof import("../../app/components/ConfirmDialog.vue")['default']
   EmptyState: typeof import("../../app/components/EmptyState.vue")['default']
   EmptyStateVue: typeof import("../../app/components/EmptyState.vue")['default']
   FooterBrandMark: typeof import("../../app/components/FooterBrandMark.vue")['default']
+  FooterBrandMarkVue: typeof import("../../app/components/FooterBrandMark.vue")['default']
+  FormActions: typeof import("../../app/components/FormActions.vue")['default']
+  FormActionsVue: typeof import("../../app/components/FormActions.vue")['default']
   HomeCategoryCard: typeof import("../../app/components/HomeCategoryCard.vue")['default']
+  HomeCategoryCardVue: typeof import("../../app/components/HomeCategoryCard.vue")['default']
   HomeJobCard: typeof import("../../app/components/HomeJobCard.vue")['default']
+  HomeJobCardVue: typeof import("../../app/components/HomeJobCard.vue")['default']
   HomeLandingPage: typeof import("../../app/components/HomeLandingPage.vue")['default']
+  HomeLandingPageVue: typeof import("../../app/components/HomeLandingPage.vue")['default']
+  JobMatchScoreBadge: typeof import("../../app/components/JobMatchScoreBadge.vue")['default']
   LoadingSpinner: typeof import("../../app/components/LoadingSpinner.vue")['default']
   LoadingSpinnerVue: typeof import("../../app/components/LoadingSpinner.vue")['default']
   Pagination: typeof import("../../app/components/Pagination.vue")['default']
   PaginationVue: typeof import("../../app/components/Pagination.vue")['default']
+  PasswordField: typeof import("../../app/components/PasswordField.vue")['default']
+  PasswordFieldVue: typeof import("../../app/components/PasswordField.vue")['default']
   SearchBox: typeof import("../../app/components/SearchBox.vue")['default']
   SearchBoxVue: typeof import("../../app/components/SearchBox.vue")['default']
+  SectionHeading: typeof import("../../app/components/SectionHeading.vue")['default']
+  SectionHeadingVue: typeof import("../../app/components/SectionHeading.vue")['default']
+  StudentSettingsWorkspace: typeof import("../../app/components/StudentSettingsWorkspace.vue")['default']
+  StudentSettingsWorkspaceVue: typeof import("../../app/components/StudentSettingsWorkspace.vue")['default']
+  ToggleSetting: typeof import("../../app/components/ToggleSetting.vue")['default']
+  ToggleSettingVue: typeof import("../../app/components/ToggleSetting.vue")['default']
   AdminTablePagination: typeof import("../../app/components/admin/AdminTablePagination.vue")['default']
+  AdminTablePaginationVue: typeof import("../../app/components/admin/AdminTablePagination.vue")['default']
   EnterpriseCandidateCollectionView: typeof import("../../app/components/enterprise/CandidateCollectionView.vue")['default']
+  EnterpriseCandidateCollectionViewVue: typeof import("../../app/components/enterprise/CandidateCollectionView.vue")['default']
+  EnterpriseCompanyProfileSettings: typeof import("../../app/components/enterprise/EnterpriseCompanyProfileSettings.vue")['default']
+  EnterpriseFileUploadField: typeof import("../../app/components/enterprise/EnterpriseFileUploadField.vue")['default']
+  EnterpriseLocationMap: typeof import("../../app/components/enterprise/EnterpriseLocationMap.vue")['default']
+  EnterpriseMessageCenter: typeof import("../../app/components/enterprise/EnterpriseMessageCenter.vue")['default']
+  EnterpriseMessageCenterVue: typeof import("../../app/components/enterprise/EnterpriseMessageCenter.vue")['default']
+  HomeCareerToolsDropdown: typeof import("../../app/components/home/CareerToolsDropdown.vue")['default']
+  HomeCompanyLogo: typeof import("../../app/components/home/CompanyLogo.vue")['default']
+  HomeCareerAI: typeof import("../../app/components/home/HomeCareerAI.vue")['default']
   HomeCareerCta: typeof import("../../app/components/home/HomeCareerCta.vue")['default']
+  HomeCareerCtaVue: typeof import("../../app/components/home/HomeCareerCta.vue")['default']
   HomeCategories: typeof import("../../app/components/home/HomeCategories.vue")['default']
+  HomeCategoriesVue: typeof import("../../app/components/home/HomeCategories.vue")['default']
   HomeEmployerCta: typeof import("../../app/components/home/HomeEmployerCta.vue")['default']
+  HomeEmployerCtaVue: typeof import("../../app/components/home/HomeEmployerCta.vue")['default']
   HomeFeaturedJobs: typeof import("../../app/components/home/HomeFeaturedJobs.vue")['default']
+  HomeFeaturedJobsVue: typeof import("../../app/components/home/HomeFeaturedJobs.vue")['default']
   HomeFooter: typeof import("../../app/components/home/HomeFooter.vue")['default']
+  HomeFooterVue: typeof import("../../app/components/home/HomeFooter.vue")['default']
   HomeHeader: typeof import("../../app/components/home/HomeHeader.vue")['default']
+  HomeHeaderVue: typeof import("../../app/components/home/HomeHeader.vue")['default']
   HomeHero: typeof import("../../app/components/home/HomeHero.vue")['default']
+  HomeHeroVue: typeof import("../../app/components/home/HomeHero.vue")['default']
   HomeJobDetailPanel: typeof import("../../app/components/home/HomeJobDetailPanel.vue")['default']
+  HomeJobDetailPanelVue: typeof import("../../app/components/home/HomeJobDetailPanel.vue")['default']
   HomeQuickStats: typeof import("../../app/components/home/HomeQuickStats.vue")['default']
+  HomeQuickStatsVue: typeof import("../../app/components/home/HomeQuickStats.vue")['default']
   HomeSearchBar: typeof import("../../app/components/home/HomeSearchBar.vue")['default']
+  HomeSearchBarVue: typeof import("../../app/components/home/HomeSearchBar.vue")['default']
+  StudentProfileWorkspace: typeof import("../../app/components/student/StudentProfileWorkspace.vue")['default']
   UiButton: typeof import("../../app/components/ui/Button.vue")['default']
   UiButtonVue: typeof import("../../app/components/ui/Button.vue")['default']
   UiInput: typeof import("../../app/components/ui/Input.vue")['default']
   UiInputVue: typeof import("../../app/components/ui/Input.vue")['default']
   UiModal: typeof import("../../app/components/ui/Modal.vue")['default']
   UiModalVue: typeof import("../../app/components/ui/Modal.vue")['default']
+  UiNotificationDropdown: typeof import("../../app/components/ui/NotificationDropdown.vue")['default']
+  UiNotificationDropdownVue: typeof import("../../app/components/ui/NotificationDropdown.vue")['default']
   UiScrollSelect: typeof import("../../app/components/ui/ScrollSelect.vue")['default']
+  UiScrollSelectVue: typeof import("../../app/components/ui/ScrollSelect.vue")['default']
   UiSelect: typeof import("../../app/components/ui/Select.vue")['default']
   UiSelectVue: typeof import("../../app/components/ui/Select.vue")['default']
   UiSkeleton: typeof import("../../app/components/ui/Skeleton.vue")['default']
@@ -98,43 +142,87 @@ interface _GlobalComponents {
   LazyAppSidebar: LazyComponent<typeof import("../../app/components/AppSidebar.vue")['default']>
   LazyAppSidebarVue: LazyComponent<typeof import("../../app/components/AppSidebar.vue")['default']>
   LazyAuthBrandMark: LazyComponent<typeof import("../../app/components/AuthBrandMark.vue")['default']>
+  LazyAuthBrandMarkVue: LazyComponent<typeof import("../../app/components/AuthBrandMark.vue")['default']>
   LazyAuthField: LazyComponent<typeof import("../../app/components/AuthField.vue")['default']>
+  LazyAuthFieldVue: LazyComponent<typeof import("../../app/components/AuthField.vue")['default']>
   LazyAuthLoginExperience: LazyComponent<typeof import("../../app/components/AuthLoginExperience.vue")['default']>
+  LazyAuthLoginExperienceVue: LazyComponent<typeof import("../../app/components/AuthLoginExperience.vue")['default']>
   LazyAuthRegisterExperience: LazyComponent<typeof import("../../app/components/AuthRegisterExperience.vue")['default']>
+  LazyAuthRegisterExperienceVue: LazyComponent<typeof import("../../app/components/AuthRegisterExperience.vue")['default']>
   LazyAuthShell: LazyComponent<typeof import("../../app/components/AuthShell.vue")['default']>
+  LazyAuthShellVue: LazyComponent<typeof import("../../app/components/AuthShell.vue")['default']>
   LazyConfirmDialog: LazyComponent<typeof import("../../app/components/ConfirmDialog.vue")['default']>
   LazyConfirmDialogVue: LazyComponent<typeof import("../../app/components/ConfirmDialog.vue")['default']>
   LazyEmptyState: LazyComponent<typeof import("../../app/components/EmptyState.vue")['default']>
   LazyEmptyStateVue: LazyComponent<typeof import("../../app/components/EmptyState.vue")['default']>
   LazyFooterBrandMark: LazyComponent<typeof import("../../app/components/FooterBrandMark.vue")['default']>
+  LazyFooterBrandMarkVue: LazyComponent<typeof import("../../app/components/FooterBrandMark.vue")['default']>
+  LazyFormActions: LazyComponent<typeof import("../../app/components/FormActions.vue")['default']>
+  LazyFormActionsVue: LazyComponent<typeof import("../../app/components/FormActions.vue")['default']>
   LazyHomeCategoryCard: LazyComponent<typeof import("../../app/components/HomeCategoryCard.vue")['default']>
+  LazyHomeCategoryCardVue: LazyComponent<typeof import("../../app/components/HomeCategoryCard.vue")['default']>
   LazyHomeJobCard: LazyComponent<typeof import("../../app/components/HomeJobCard.vue")['default']>
+  LazyHomeJobCardVue: LazyComponent<typeof import("../../app/components/HomeJobCard.vue")['default']>
   LazyHomeLandingPage: LazyComponent<typeof import("../../app/components/HomeLandingPage.vue")['default']>
+  LazyHomeLandingPageVue: LazyComponent<typeof import("../../app/components/HomeLandingPage.vue")['default']>
+  LazyJobMatchScoreBadge: LazyComponent<typeof import("../../app/components/JobMatchScoreBadge.vue")['default']>
   LazyLoadingSpinner: LazyComponent<typeof import("../../app/components/LoadingSpinner.vue")['default']>
   LazyLoadingSpinnerVue: LazyComponent<typeof import("../../app/components/LoadingSpinner.vue")['default']>
   LazyPagination: LazyComponent<typeof import("../../app/components/Pagination.vue")['default']>
   LazyPaginationVue: LazyComponent<typeof import("../../app/components/Pagination.vue")['default']>
+  LazyPasswordField: LazyComponent<typeof import("../../app/components/PasswordField.vue")['default']>
+  LazyPasswordFieldVue: LazyComponent<typeof import("../../app/components/PasswordField.vue")['default']>
   LazySearchBox: LazyComponent<typeof import("../../app/components/SearchBox.vue")['default']>
   LazySearchBoxVue: LazyComponent<typeof import("../../app/components/SearchBox.vue")['default']>
+  LazySectionHeading: LazyComponent<typeof import("../../app/components/SectionHeading.vue")['default']>
+  LazySectionHeadingVue: LazyComponent<typeof import("../../app/components/SectionHeading.vue")['default']>
+  LazyStudentSettingsWorkspace: LazyComponent<typeof import("../../app/components/StudentSettingsWorkspace.vue")['default']>
+  LazyStudentSettingsWorkspaceVue: LazyComponent<typeof import("../../app/components/StudentSettingsWorkspace.vue")['default']>
+  LazyToggleSetting: LazyComponent<typeof import("../../app/components/ToggleSetting.vue")['default']>
+  LazyToggleSettingVue: LazyComponent<typeof import("../../app/components/ToggleSetting.vue")['default']>
   LazyAdminTablePagination: LazyComponent<typeof import("../../app/components/admin/AdminTablePagination.vue")['default']>
+  LazyAdminTablePaginationVue: LazyComponent<typeof import("../../app/components/admin/AdminTablePagination.vue")['default']>
   LazyEnterpriseCandidateCollectionView: LazyComponent<typeof import("../../app/components/enterprise/CandidateCollectionView.vue")['default']>
+  LazyEnterpriseCandidateCollectionViewVue: LazyComponent<typeof import("../../app/components/enterprise/CandidateCollectionView.vue")['default']>
+  LazyEnterpriseCompanyProfileSettings: LazyComponent<typeof import("../../app/components/enterprise/EnterpriseCompanyProfileSettings.vue")['default']>
+  LazyEnterpriseFileUploadField: LazyComponent<typeof import("../../app/components/enterprise/EnterpriseFileUploadField.vue")['default']>
+  LazyEnterpriseLocationMap: LazyComponent<typeof import("../../app/components/enterprise/EnterpriseLocationMap.vue")['default']>
+  LazyEnterpriseMessageCenter: LazyComponent<typeof import("../../app/components/enterprise/EnterpriseMessageCenter.vue")['default']>
+  LazyEnterpriseMessageCenterVue: LazyComponent<typeof import("../../app/components/enterprise/EnterpriseMessageCenter.vue")['default']>
+  LazyHomeCareerToolsDropdown: LazyComponent<typeof import("../../app/components/home/CareerToolsDropdown.vue")['default']>
+  LazyHomeCompanyLogo: LazyComponent<typeof import("../../app/components/home/CompanyLogo.vue")['default']>
+  LazyHomeCareerAI: LazyComponent<typeof import("../../app/components/home/HomeCareerAI.vue")['default']>
   LazyHomeCareerCta: LazyComponent<typeof import("../../app/components/home/HomeCareerCta.vue")['default']>
+  LazyHomeCareerCtaVue: LazyComponent<typeof import("../../app/components/home/HomeCareerCta.vue")['default']>
   LazyHomeCategories: LazyComponent<typeof import("../../app/components/home/HomeCategories.vue")['default']>
+  LazyHomeCategoriesVue: LazyComponent<typeof import("../../app/components/home/HomeCategories.vue")['default']>
   LazyHomeEmployerCta: LazyComponent<typeof import("../../app/components/home/HomeEmployerCta.vue")['default']>
+  LazyHomeEmployerCtaVue: LazyComponent<typeof import("../../app/components/home/HomeEmployerCta.vue")['default']>
   LazyHomeFeaturedJobs: LazyComponent<typeof import("../../app/components/home/HomeFeaturedJobs.vue")['default']>
+  LazyHomeFeaturedJobsVue: LazyComponent<typeof import("../../app/components/home/HomeFeaturedJobs.vue")['default']>
   LazyHomeFooter: LazyComponent<typeof import("../../app/components/home/HomeFooter.vue")['default']>
+  LazyHomeFooterVue: LazyComponent<typeof import("../../app/components/home/HomeFooter.vue")['default']>
   LazyHomeHeader: LazyComponent<typeof import("../../app/components/home/HomeHeader.vue")['default']>
+  LazyHomeHeaderVue: LazyComponent<typeof import("../../app/components/home/HomeHeader.vue")['default']>
   LazyHomeHero: LazyComponent<typeof import("../../app/components/home/HomeHero.vue")['default']>
+  LazyHomeHeroVue: LazyComponent<typeof import("../../app/components/home/HomeHero.vue")['default']>
   LazyHomeJobDetailPanel: LazyComponent<typeof import("../../app/components/home/HomeJobDetailPanel.vue")['default']>
+  LazyHomeJobDetailPanelVue: LazyComponent<typeof import("../../app/components/home/HomeJobDetailPanel.vue")['default']>
   LazyHomeQuickStats: LazyComponent<typeof import("../../app/components/home/HomeQuickStats.vue")['default']>
+  LazyHomeQuickStatsVue: LazyComponent<typeof import("../../app/components/home/HomeQuickStats.vue")['default']>
   LazyHomeSearchBar: LazyComponent<typeof import("../../app/components/home/HomeSearchBar.vue")['default']>
+  LazyHomeSearchBarVue: LazyComponent<typeof import("../../app/components/home/HomeSearchBar.vue")['default']>
+  LazyStudentProfileWorkspace: LazyComponent<typeof import("../../app/components/student/StudentProfileWorkspace.vue")['default']>
   LazyUiButton: LazyComponent<typeof import("../../app/components/ui/Button.vue")['default']>
   LazyUiButtonVue: LazyComponent<typeof import("../../app/components/ui/Button.vue")['default']>
   LazyUiInput: LazyComponent<typeof import("../../app/components/ui/Input.vue")['default']>
   LazyUiInputVue: LazyComponent<typeof import("../../app/components/ui/Input.vue")['default']>
   LazyUiModal: LazyComponent<typeof import("../../app/components/ui/Modal.vue")['default']>
   LazyUiModalVue: LazyComponent<typeof import("../../app/components/ui/Modal.vue")['default']>
+  LazyUiNotificationDropdown: LazyComponent<typeof import("../../app/components/ui/NotificationDropdown.vue")['default']>
+  LazyUiNotificationDropdownVue: LazyComponent<typeof import("../../app/components/ui/NotificationDropdown.vue")['default']>
   LazyUiScrollSelect: LazyComponent<typeof import("../../app/components/ui/ScrollSelect.vue")['default']>
+  LazyUiScrollSelectVue: LazyComponent<typeof import("../../app/components/ui/ScrollSelect.vue")['default']>
   LazyUiSelect: LazyComponent<typeof import("../../app/components/ui/Select.vue")['default']>
   LazyUiSelectVue: LazyComponent<typeof import("../../app/components/ui/Select.vue")['default']>
   LazyUiSkeleton: LazyComponent<typeof import("../../app/components/ui/Skeleton.vue")['default']>

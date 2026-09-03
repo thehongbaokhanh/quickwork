@@ -154,26 +154,30 @@
                     >
                       <Icon name="uil:file-upload-alt" class="h-4 w-4" />
                     </button>
-                    <select
-                      class="h-9 rounded-md border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-                      :disabled="updatingKYBId === enterprise.id"
-                      :value="getKYBStatus(enterprise)"
-                      @change="handleKYBChange(enterprise, $event)"
-                    >
-                      <option value="PENDING">Chờ KYB</option>
-                      <option value="APPROVED">Duyệt KYB</option>
-                      <option value="REJECTED">Từ chối KYB</option>
-                    </select>
-                    <select
-                      class="h-9 rounded-md border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-                      :disabled="updatingUserId === enterprise.id"
-                      :value="normalizeStatus(enterprise.status)"
-                      @change="handleStatusChange(enterprise, $event)"
-                    >
-                      <option value="ACTIVE">Kích hoạt</option>
-                      <option value="INACTIVE">Tạm khóa</option>
-                      <option value="BANNED">Cấm</option>
-                    </select>
+                    <div class="w-36">
+                      <ScrollSelect
+                        :model-value="getKYBStatus(enterprise)"
+                        :options="kybActionOptions"
+                        ariaLabel="Cập nhật trạng thái KYB doanh nghiệp"
+                        icon="uil:shield-check"
+                        size="sm"
+                        tone="amber"
+                        :disabled="updatingKYBId === enterprise.id"
+                        @update:model-value="handleKYBValueChange(enterprise, $event)"
+                      />
+                    </div>
+                    <div class="w-36">
+                      <ScrollSelect
+                        :model-value="normalizeStatus(enterprise.status)"
+                        :options="statusActionOptions"
+                        ariaLabel="Cập nhật trạng thái tài khoản doanh nghiệp"
+                        icon="uil:check-circle"
+                        size="sm"
+                        tone="sky"
+                        :disabled="updatingUserId === enterprise.id"
+                        @update:model-value="handleStatusValueChange(enterprise, $event)"
+                      />
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -188,6 +192,91 @@
         item-label="doanh nghiệp"
       />
     </section>
+
+    <UiModal
+      v-model="kybRejectionModalOpen"
+      title="Từ chối xác minh KYB"
+      :close-on-outside="!isRejectingKYB"
+      @close="resetKYBRejectionModal"
+    >
+      <div class="space-y-5">
+        <div class="flex items-start gap-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-4">
+          <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 shadow-sm shadow-rose-100">
+            <Icon name="uil:shield-exclamation" class="h-6 w-6" />
+          </span>
+          <div class="min-w-0">
+            <p class="text-sm font-black text-slate-950">Xác nhận từ chối hồ sơ doanh nghiệp</p>
+            <p class="mt-1 truncate text-sm font-bold text-rose-700">{{ getCompanyName(kybRejectionEnterprise) }}</p>
+            <p class="mt-1 truncate text-xs font-semibold text-slate-500">{{ kybRejectionEnterprise?.email }}</p>
+          </div>
+        </div>
+
+        <label class="block" for="kyb-rejection-reason">
+          <span class="flex items-center justify-between gap-3">
+            <span class="text-sm font-black text-slate-800">
+              Lý do từ chối <span class="text-rose-500">*</span>
+            </span>
+            <span class="text-xs font-bold text-slate-400">{{ kybRejectionReason.length }}/500</span>
+          </span>
+          <span class="mt-1 block text-xs font-semibold leading-5 text-slate-500">
+            Viết ngắn gọn và cụ thể để doanh nghiệp biết chính xác nội dung cần bổ sung hoặc chỉnh sửa.
+          </span>
+          <textarea
+            id="kyb-rejection-reason"
+            v-model="kybRejectionReason"
+            class="mt-3 min-h-32 w-full resize-y rounded-2xl border bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-4"
+            :class="kybRejectionReasonError
+              ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100'
+              : 'border-slate-200 focus:border-sky-400 focus:ring-sky-100'"
+            maxlength="500"
+            placeholder="Ví dụ: Giấy phép kinh doanh bị mờ, vui lòng tải lại bản scan đầy đủ và còn hiệu lực."
+            :aria-invalid="Boolean(kybRejectionReasonError)"
+            :aria-describedby="kybRejectionReasonError ? 'kyb-rejection-reason-error' : 'kyb-rejection-reason-help'"
+            @input="kybRejectionReasonError = ''"
+          />
+          <span
+            v-if="kybRejectionReasonError"
+            id="kyb-rejection-reason-error"
+            class="mt-2 flex items-center gap-2 text-xs font-bold text-rose-600"
+          >
+            <Icon name="uil:exclamation-circle" class="h-4 w-4" />
+            {{ kybRejectionReasonError }}
+          </span>
+          <span v-else id="kyb-rejection-reason-help" class="mt-2 block text-xs font-semibold text-slate-400">
+            Nội dung này sẽ được gửi tới doanh nghiệp cùng trạng thái KYB bị từ chối.
+          </span>
+        </label>
+
+        <div class="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50/70 p-3.5 text-amber-800">
+          <Icon name="uil:info-circle" class="mt-0.5 h-5 w-5 shrink-0" />
+          <p class="text-xs font-semibold leading-5">
+            Doanh nghiệp vẫn có thể đăng nhập, xem lý do này và gửi lại giấy phép kinh doanh sau khi đã khắc phục.
+          </p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            class="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="isRejectingKYB"
+            @click="closeKYBRejectionModal"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            type="button"
+            class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 text-sm font-black text-white shadow-lg shadow-rose-200 transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="isRejectingKYB"
+            @click="confirmKYBRejection"
+          >
+            <Icon :name="isRejectingKYB ? 'svg-spinners:180-ring' : 'uil:times-circle'" class="h-5 w-5" />
+            {{ isRejectingKYB ? 'Đang từ chối...' : 'Xác nhận từ chối' }}
+          </button>
+        </div>
+      </template>
+    </UiModal>
 
     <div v-if="selectedEnterprise" class="qw-detail-backdrop" @click.self="closeEnterpriseDetail">
       <section class="qw-detail-panel">
@@ -228,11 +317,14 @@
               </label>
               <label class="space-y-1.5">
                 <span class="text-xs font-black uppercase text-slate-500">Trạng thái tài khoản</span>
-                <select v-model="editEnterpriseForm.status" class="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
-                  <option value="ACTIVE">Đang hoạt động</option>
-                  <option value="INACTIVE">Tạm khóa</option>
-                  <option value="BANNED">Bị cấm</option>
-                </select>
+                <ScrollSelect
+                  v-model="editEnterpriseForm.status"
+                  :options="statusActionOptions"
+                  ariaLabel="Chọn trạng thái tài khoản doanh nghiệp"
+                  icon="uil:check-circle"
+                  size="md"
+                  tone="sky"
+                />
               </label>
               <label class="space-y-1.5">
                 <span class="text-xs font-black uppercase text-slate-500">Tên doanh nghiệp</span>
@@ -252,11 +344,22 @@
               </label>
               <label class="space-y-1.5">
                 <span class="text-xs font-black uppercase text-slate-500">KYB</span>
-                <select v-model="editEnterpriseForm.enterprise_profile.kyb_status" class="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
-                  <option value="PENDING">Chờ xác minh</option>
-                  <option value="APPROVED">Đã xác minh</option>
-                  <option value="REJECTED">Từ chối</option>
-                </select>
+                <ScrollSelect
+                  v-model="editEnterpriseForm.enterprise_profile.kyb_status"
+                  :options="kybActionOptions"
+                  ariaLabel="Chọn trạng thái KYB doanh nghiệp"
+                  icon="uil:shield-check"
+                  size="md"
+                  tone="amber"
+                />
+              </label>
+              <label v-if="editEnterpriseForm.enterprise_profile.kyb_status === 'REJECTED'" class="space-y-1.5 md:col-span-2">
+                <span class="text-xs font-black uppercase text-slate-500">Ly do tu choi KYB</span>
+                <textarea
+                  v-model.trim="editEnterpriseForm.enterprise_profile.kyb_reject_reason"
+                  class="min-h-24 w-full rounded-md border border-rose-200 bg-rose-50/50 px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                  placeholder="Nhap ly do de doanh nghiep biet can bo sung gi."
+                />
               </label>
             </div>
           </form>
@@ -301,6 +404,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import AdminTablePagination from '~/components/admin/AdminTablePagination.vue'
 import ScrollSelect from '~/components/ui/ScrollSelect.vue'
+import UiModal from '~/components/ui/Modal.vue'
 import { AdminService } from '~/services/admin.service'
 import { useToast } from '~/composables/useToast'
 import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
@@ -327,6 +431,10 @@ const selectedEnterprise = ref<any | null>(null)
 const updatingUserId = ref<number | null>(null)
 const updatingKYBId = ref<number | null>(null)
 const requestingGPKDId = ref<number | null>(null)
+const kybRejectionModalOpen = ref(false)
+const kybRejectionEnterprise = ref<any | null>(null)
+const kybRejectionReason = ref('')
+const kybRejectionReasonError = ref('')
 const isEditingEnterprise = ref(false)
 const savingEnterprise = ref(false)
 const editEnterpriseForm = reactive({
@@ -337,7 +445,8 @@ const editEnterpriseForm = reactive({
     phone: '',
     tax_code: '',
     gpkd_url: '',
-    kyb_status: 'PENDING' as KYBStatus
+    kyb_status: 'PENDING' as KYBStatus,
+    kyb_reject_reason: ''
   }
 })
 
@@ -353,6 +462,18 @@ const statusFilterOptions = [
   { value: 'ACTIVE', label: 'Đang hoạt động' },
   { value: 'INACTIVE', label: 'Tạm khóa' },
   { value: 'BANNED', label: 'Bị cấm' }
+]
+
+const kybActionOptions = [
+  { value: 'PENDING', label: 'Chờ KYB' },
+  { value: 'APPROVED', label: 'Duyệt KYB' },
+  { value: 'REJECTED', label: 'Từ chối KYB' }
+]
+
+const statusActionOptions = [
+  { value: 'ACTIVE', label: 'Kích hoạt' },
+  { value: 'INACTIVE', label: 'Tạm khóa' },
+  { value: 'BANNED', label: 'Cấm tài khoản' }
 ]
 
 const jobCountMap = computed(() => {
@@ -477,41 +598,84 @@ async function updateUserStatus(enterprise: any, status: UserStatus) {
   }
 }
 
-async function updateKYBStatus(enterprise: any, status: KYBStatus) {
+async function updateKYBStatus(enterprise: any, status: KYBStatus, rejectReason = '') {
   if (status === 'APPROVED' && !hasBusinessLicense(enterprise)) {
     toast.warning('Chưa có giấy phép kinh doanh', 'Không thể duyệt KYB khi doanh nghiệp chưa nộp giấy phép kinh doanh.')
-    return
+    return false
   }
-  if (getKYBStatus(enterprise) === status) return
+  if (getKYBStatus(enterprise) === status) return true
   try {
     updatingKYBId.value = enterprise.id
-    const response: any = await AdminService.updateEnterpriseKYB(enterprise.id, status)
+    const response: any = await AdminService.updateEnterpriseKYB(enterprise.id, status, rejectReason)
     if (!response?.success) {
       throw new Error(response?.message || 'Không thể cập nhật KYB.')
     }
     toast.success('Đã cập nhật KYB', `${getCompanyName(enterprise)} chuyển sang ${kybLabel(status)}.`)
     await fetchEnterprises()
+    return true
   } catch (error: any) {
     toast.error('Cập nhật KYB thất bại', error?.data?.message || error?.message || 'Vui lòng thử lại.')
     await fetchEnterprises()
+    return false
   } finally {
     updatingKYBId.value = null
   }
 }
 
-function handleStatusChange(enterprise: any, event: Event) {
-  const target = event.target as HTMLSelectElement
-  updateUserStatus(enterprise, target.value as UserStatus)
+function handleStatusValueChange(enterprise: any, value: string | number) {
+  updateUserStatus(enterprise, String(value) as UserStatus)
 }
 
-function handleKYBChange(enterprise: any, event: Event) {
-  const target = event.target as HTMLSelectElement
-  if (target.value === 'APPROVED' && !hasBusinessLicense(enterprise)) {
-    target.value = getKYBStatus(enterprise)
+function handleKYBValueChange(enterprise: any, value: string | number) {
+  const status = String(value) as KYBStatus
+  if (getKYBStatus(enterprise) === status) return
+  if (status === 'APPROVED' && !hasBusinessLicense(enterprise)) {
     toast.warning('Chưa có giấy phép kinh doanh', 'Hãy yêu cầu doanh nghiệp nộp giấy phép trước khi duyệt KYB.')
     return
   }
-  updateKYBStatus(enterprise, target.value as KYBStatus)
+  if (status === 'REJECTED') {
+    openKYBRejectionModal(enterprise)
+    return
+  }
+  updateKYBStatus(enterprise, status)
+}
+
+const isRejectingKYB = computed(() => (
+  Boolean(kybRejectionEnterprise.value)
+  && updatingKYBId.value === kybRejectionEnterprise.value?.id
+))
+
+function openKYBRejectionModal(enterprise: any) {
+  kybRejectionEnterprise.value = enterprise
+  kybRejectionReason.value = enterprise?.enterprise_profile?.kyb_reject_reason || ''
+  kybRejectionReasonError.value = ''
+  kybRejectionModalOpen.value = true
+}
+
+function resetKYBRejectionModal() {
+  if (isRejectingKYB.value) return
+  kybRejectionEnterprise.value = null
+  kybRejectionReason.value = ''
+  kybRejectionReasonError.value = ''
+}
+
+function closeKYBRejectionModal() {
+  if (isRejectingKYB.value) return
+  kybRejectionModalOpen.value = false
+  resetKYBRejectionModal()
+}
+
+async function confirmKYBRejection() {
+  if (!kybRejectionEnterprise.value || isRejectingKYB.value) return
+
+  const rejectReason = kybRejectionReason.value.trim()
+  if (!rejectReason) {
+    kybRejectionReasonError.value = 'Vui lòng nhập lý do từ chối KYB.'
+    return
+  }
+
+  const updated = await updateKYBStatus(kybRejectionEnterprise.value, 'REJECTED', rejectReason)
+  if (updated) closeKYBRejectionModal()
 }
 
 function clearFilters() {
@@ -538,6 +702,7 @@ function startEditEnterprise(enterprise: any) {
   editEnterpriseForm.enterprise_profile.tax_code = enterprise?.enterprise_profile?.tax_code || ''
   editEnterpriseForm.enterprise_profile.gpkd_url = enterprise?.enterprise_profile?.gpkd_url || ''
   editEnterpriseForm.enterprise_profile.kyb_status = getKYBStatus(enterprise)
+  editEnterpriseForm.enterprise_profile.kyb_reject_reason = enterprise?.enterprise_profile?.kyb_reject_reason || ''
   isEditingEnterprise.value = true
 }
 
@@ -555,6 +720,13 @@ function replaceEnterprise(updatedEnterprise: any) {
 
 async function saveSelectedEnterprise() {
   if (!selectedEnterprise.value) return
+  if (
+    editEnterpriseForm.enterprise_profile.kyb_status === 'REJECTED'
+    && !editEnterpriseForm.enterprise_profile.kyb_reject_reason.trim()
+  ) {
+    toast.warning('Cần lý do từ chối', 'Vui lòng nhập lý do KYB trước khi lưu trạng thái từ chối.')
+    return
+  }
   try {
     savingEnterprise.value = true
     const response: any = await AdminService.updateUser(selectedEnterprise.value.id, {
@@ -705,6 +877,7 @@ function detailItems(enterprise: any) {
     { label: 'Mã số thuế', value: enterprise?.enterprise_profile?.tax_code || 'Chưa cập nhật' },
     { label: 'Giấy phép kinh doanh', value: hasBusinessLicense(enterprise) ? 'Đã nộp' : 'Chưa có giấy phép kinh doanh' },
     { label: 'KYB', value: kybLabel(getKYBStatus(enterprise)) },
+    { label: 'Lý do từ chối KYB', value: enterprise?.enterprise_profile?.kyb_reject_reason || 'Không có' },
     { label: 'Trạng thái tài khoản', value: statusLabel(enterprise.status) },
     { label: 'Tổng tin tuyển dụng', value: `${counts.total}` },
     { label: 'Tin đã duyệt', value: `${counts.approved}` },

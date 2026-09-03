@@ -182,16 +182,16 @@
                       <button class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:bg-slate-50" type="button" title="Xem chi tiết" @click="openStudentDetail(student)">
                         <Icon name="uil:eye" class="h-4 w-4" />
                       </button>
-                      <select
-                        class="h-9 rounded-md border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                      <ScrollSelect
+                        class="w-28"
                         :disabled="updatingUserId === student.id"
-                        :value="normalizeStatus(student.status)"
-                        @change="handleStatusChange(student, $event)"
-                      >
-                        <option value="ACTIVE">Kích hoạt</option>
-                        <option value="INACTIVE">Tạm khóa</option>
-                        <option value="BANNED">Cấm</option>
-                      </select>
+                        :model-value="normalizeStatus(student.status)"
+                        :options="statusActionOptions"
+                        :ariaLabel="`Thay đổi trạng thái ${getStudentName(student)}`"
+                        size="action"
+                        tone="slate"
+                        @update:model-value="handleStatusChange(student, $event)"
+                      />
                     </div>
                   </td>
                 </tr>
@@ -339,6 +339,12 @@ const statusFilterOptions = [
   { value: 'BANNED', label: 'Bị cấm' }
 ]
 
+const statusActionOptions = [
+  { value: 'ACTIVE', label: 'Kích hoạt' },
+  { value: 'INACTIVE', label: 'Tạm khóa' },
+  { value: 'BANNED', label: 'Cấm' }
+]
+
 const summaryCards = computed(() => [
   {
     label: 'Tổng học viên',
@@ -463,9 +469,8 @@ async function updateUserStatus(student: any, status: UserStatus) {
   }
 }
 
-function handleStatusChange(student: any, event: Event) {
-  const target = event.target as HTMLSelectElement
-  updateUserStatus(student, target.value as UserStatus)
+function handleStatusChange(student: any, status: string | number) {
+  updateUserStatus(student, String(status) as UserStatus)
 }
 
 function clearFilters() {

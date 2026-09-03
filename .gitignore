@@ -1,5 +1,8 @@
 # Environment
 .env
+.env.production
+secrets/
+deploy/nginx/certs/
 
 # Build
 bin/
@@ -43,6 +46,7 @@ frontend/node_modules/.cache/
 # Go
 bin/
 tmp/
+/.cache/
 
 # IDE
 .vscode/
@@ -50,3 +54,6 @@ tmp/
 
 # Uploads
 storage/
+
+#  docs
+docs/*.md

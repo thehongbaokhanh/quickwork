@@ -552,7 +552,7 @@ type SkillOption = {
 
 definePageMeta({
   layout: 'enterprise',
-  middleware: ['company']
+  middleware: ['company', 'enterprise-approved']
 })
 
 const router = useRouter()

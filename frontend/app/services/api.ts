@@ -3,6 +3,7 @@ type ApiOptions = {
   query?: Record<string, any>
   headers?: HeadersInit
   credentials?: RequestCredentials
+  auth?: boolean
   [key: string]: any
 }
 
@@ -12,16 +13,17 @@ function isAbsoluteUrl(url: string) {
   return /^https?:\/\//i.test(url)
 }
 
-function buildHeaders(headers?: HeadersInit) {
+function normalizeServerApiBase(value: unknown) {
+  const raw = String(value || '').trim().replace(/\/+$/, '')
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`
+  return /\/api\/v1$/i.test(withScheme) ? withScheme : `${withScheme}/api/v1`
+}
+
+function buildHeaders(headers?: HeadersInit, _includeAuth = true, hasJSONBody = false) {
   const requestHeaders = new Headers(headers)
-  const accessToken = useCookie<string | null>('access_token')
 
-  if (!requestHeaders.has('Content-Type')) {
+  if (hasJSONBody && !requestHeaders.has('Content-Type')) {
     requestHeaders.set('Content-Type', 'application/json')
-  }
-
-  if (accessToken.value) {
-    requestHeaders.set('Authorization', `Bearer ${accessToken.value}`)
   }
 
   return requestHeaders
@@ -34,19 +36,23 @@ async function request<T = any>(
   options: ApiOptions = {},
 ) {
   const config = useRuntimeConfig()
-  const { params, query, headers, ...fetchOptions } = options
+  const { params, query, headers, auth = true, ...fetchOptions } = options
+  const baseURL = import.meta.server
+    ? normalizeServerApiBase(config.apiBaseInternal)
+    : config.public.apiBase
 
-  const reqHeaders = buildHeaders(headers)
+  const reqHeaders = buildHeaders(headers, auth, body !== undefined && !(body instanceof FormData))
   if (body instanceof FormData) {
     reqHeaders.delete('Content-Type')
   }
 
   return await $fetch<T>(url, {
-    baseURL: isAbsoluteUrl(url) ? undefined : config.public.apiBase,
+    baseURL: isAbsoluteUrl(url) ? undefined : baseURL,
     method,
     body,
     query: query || params,
     headers: reqHeaders,
+    credentials: 'include',
     ...fetchOptions,
   })
 }

@@ -7,6 +7,10 @@ export const AuthService = {
     return await apiClient.post("/auth/login", payload);
   },
 
+  async googleLogin(code: string) {
+    return await apiClient.post('/auth/google', { code })
+  },
+
   async logout() {
     return await apiClient.post("/auth/logout", undefined, {
       credentials: 'include',
@@ -27,9 +31,10 @@ export const AuthService = {
     return apiClient.post(`${config.public.apiBase}/auth/register-enterprise`, payload)
   },
 
-  async uploadGPKD(file: File) {
+  async uploadGPKD(file: File, kind: 'gpkd' | 'logo' | 'cover' = 'gpkd') {
     const formData = new FormData()
     formData.append('gpkd', file)
+    formData.append('kind', kind)
     const config = useRuntimeConfig()
     return apiClient.post(`${config.public.apiBase}/auth/upload`, formData)
   },

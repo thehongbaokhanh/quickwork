@@ -899,8 +899,11 @@ const _inlineRuntimeConfig = {
     }
   },
   "public": {
-    "apiBase": "http://localhost:8080/api/v1"
+    "apiBase": "http://localhost:8080/api/v1",
+    "geocodingBaseUrl": "https://nominatim.openstreetmap.org"
   },
+  "apiProxyTarget": "http://localhost:8080",
+  "apiBaseInternal": "http://localhost:8080/api/v1",
   "icon": {
     "serverKnownCssClasses": []
   }
@@ -2595,6 +2598,31 @@ function publicAssetsURL(...path) {
 	return path.length ? joinRelativeURL(publicBase, ...path) : publicBase;
 }
 
+function normalizeBackendOrigin(value) {
+  const raw = String(value || "").trim().replace(/\/+$/, "");
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`;
+  try {
+    const target = new URL(withScheme);
+    if (target.protocol !== "http:" && target.protocol !== "https:") return "";
+    return target.origin;
+  } catch {
+    return "";
+  }
+}
+function proxyBackendRequest(event) {
+  const config = useRuntimeConfig(event);
+  const backendOrigin = normalizeBackendOrigin(config.apiProxyTarget);
+  if (!backendOrigin) {
+    throw createError({
+      statusCode: 503,
+      statusMessage: "Backend proxy is not configured"
+    });
+  }
+  const requestURL = getRequestURL(event);
+  const targetURL = new URL(`${requestURL.pathname}${requestURL.search}`, backendOrigin);
+  return proxyRequest(event, targetURL.toString());
+}
+
 const warnOnceSet = /* @__PURE__ */ new Set();
 const DEFAULT_ENDPOINT = "https://api.iconify.design";
 function getInstallCommand(pkg) {
@@ -3087,10 +3115,14 @@ async function getIslandContext(event) {
 	};
 }
 
+const _lazy_LwjBIF = () => Promise.resolve().then(function () { return ____path_$3; });
+const _lazy_GW5nY5 = () => Promise.resolve().then(function () { return ____path_$1; });
 const _lazy_MkDvgk = () => Promise.resolve().then(function () { return renderer; });
 
 const handlers = [
   { route: '', handler: _LJVgei, lazy: false, middleware: true, method: undefined },
+  { route: '/api/**:path', handler: _lazy_LwjBIF, lazy: true, middleware: false, method: undefined },
+  { route: '/uploads/**:path', handler: _lazy_GW5nY5, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_error', handler: _lazy_MkDvgk, lazy: true, middleware: false, method: undefined },
   { route: '/api/_nuxt_icon/:collection', handler: _fdkI29, lazy: false, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: handler$1, lazy: false, middleware: false, method: undefined },
@@ -3369,6 +3401,20 @@ const styles = {};
 const styles$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: styles
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const ____path_$2 = defineEventHandler((event) => proxyBackendRequest(event));
+
+const ____path_$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: ____path_$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const ____path_ = defineEventHandler((event) => proxyBackendRequest(event));
+
+const ____path_$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: ____path_
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function renderPayloadResponse(ssrContext) {

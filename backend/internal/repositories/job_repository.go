@@ -5,6 +5,10 @@ import (
 	"quickwork.local/backend/internal/models"
 )
 
+const jobWithEngagementSelect = `jobs.*,
+	(SELECT COUNT(*) FROM job_applications WHERE job_applications.job_id = jobs.id) AS application_count,
+	(SELECT COUNT(*) FROM favorite_jobs WHERE favorite_jobs.job_id = jobs.id) AS favorite_count`
+
 type JobRepository interface {
 	Create(job *models.Job) error
 	Update(job *models.Job) error
@@ -29,7 +33,12 @@ func (r *jobRepository) Create(job *models.Job) error {
 
 func (r *jobRepository) FindByID(id uint) (*models.Job, error) {
 	var job models.Job
-	err := r.db.Preload("EnterpriseProfile").Preload("Skills").First(&job, id).Error
+	err := r.db.Model(&models.Job{}).
+		Select(jobWithEngagementSelect).
+		Preload("EnterpriseProfile").
+		Preload("Skills").
+		Preload("Skills.Category").
+		First(&job, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +65,9 @@ func (r *jobRepository) FindJobs(filters map[string]any) ([]models.Job, error) {
 	var jobs []models.Job
 	query := r.db.Model(&models.Job{})
 
-	// Optimize payload for list queries while keeping every field the frontend displays.
-	query = query.Select("id, enterprise_id, title, description, requirements, salary, location, slots, status, created_at, updated_at")
+	// Keep engagement aggregates in the same read so the public board does not
+	// need one request per card.
+	query = query.Select(jobWithEngagementSelect)
 
 	// Resolve N+1 issues using Preload
 	query = query.Preload("EnterpriseProfile").Preload("Skills").Preload("Skills.Category")

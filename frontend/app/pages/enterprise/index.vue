@@ -1,5 +1,10 @@
 <template>
-  <div class="space-y-5">
+  <EnterpriseMessageCenter
+    v-if="activeDashboardView === 'messages'"
+    :initial-conversation-id="selectedConversationFromQuery"
+    embedded
+  />
+  <div v-else class="space-y-5">
     <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div class="grid gap-5 bg-slate-950 px-5 py-6 text-white lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-6">
         <div class="min-w-0">
@@ -28,8 +33,9 @@
 
         <div class="flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
           <NuxtLink
-            to="/enterprise/jobs"
+            :to="isEnterpriseApproved ? '/enterprise/jobs' : '/enterprise'"
             class="inline-flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15"
+            @click="!isEnterpriseApproved && showApprovalRequiredToast()"
           >
             <Icon name="uil:list-ul" class="h-5 w-5" />
             Xem danh sách
@@ -47,7 +53,52 @@
 
     </section>
 
-    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+    <section
+      v-if="!isEnterpriseApproved"
+      class="grid gap-5 rounded-2xl border bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]"
+      :class="kybPanel.accentClass"
+    >
+      <div class="flex gap-4">
+        <span :class="['flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl', kybPanel.iconClass]">
+          <Icon :name="kybPanel.icon" class="h-7 w-7" />
+        </span>
+        <div class="min-w-0">
+          <span class="inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-black uppercase tracking-wide">
+            {{ kybPanel.badge }}
+          </span>
+          <h2 class="mt-3 text-xl font-black text-slate-950">{{ kybPanel.title }}</h2>
+          <p class="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-600">{{ kybPanel.description }}</p>
+
+          <div v-if="isKYBRejected" class="mt-4 rounded-2xl border border-rose-100 bg-white px-4 py-3">
+            <p class="text-xs font-black uppercase tracking-wide text-rose-500">Lý do từ chối</p>
+            <p class="mt-1 text-sm font-bold leading-6 text-slate-800">{{ kybRejectReason }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-2xl border border-white/70 bg-white/75 p-4">
+        <p class="text-sm font-black text-slate-950">Trạng thái sử dụng chức năng</p>
+        <div class="mt-4 space-y-3 text-sm font-semibold text-slate-600">
+          <div class="flex items-center justify-between gap-3">
+            <span>Vào dashboard</span>
+            <span class="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-black text-sky-700">Được phép</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span>Đăng việc và quản lý ứng viên</span>
+            <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-black text-amber-700">Chờ duyệt</span>
+          </div>
+        </div>
+        <div class="mt-5 flex flex-col gap-2 sm:flex-row lg:flex-col">
+          <NuxtLink to="/enterprise/notifications" class="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 transition hover:bg-slate-50">
+            Xem thông báo
+          </NuxtLink>
+          <NuxtLink to="/enterprise/settings" class="inline-flex h-11 items-center justify-center rounded-xl bg-sky-600 px-4 text-sm font-black text-white transition hover:bg-sky-700">
+            {{ kybPanel.actionLabel }}
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <section v-if="isEnterpriseApproved" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
       <button
         v-for="stat in statusCards"
         :key="stat.key"
@@ -70,14 +121,14 @@
     </section>
 
     <div
-      v-if="errorMessage"
+      v-if="isEnterpriseApproved && errorMessage"
       class="flex items-start gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
     >
       <Icon name="uil:exclamation-triangle" class="mt-0.5 h-5 w-5 shrink-0" />
       <span>{{ errorMessage }}</span>
     </div>
 
-    <section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <section v-if="isEnterpriseApproved" class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div class="space-y-4 border-b border-slate-100 px-5 py-4 lg:px-6">
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -329,7 +380,7 @@
       leave-from-class="scale-100 opacity-100"
       leave-to-class="scale-95 opacity-0"
     >
-      <div v-if="createModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-md" @click.self="createModalOpen = false">
+      <div v-if="isEnterpriseApproved && createModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-md" @click.self="createModalOpen = false">
         <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-2xl">
           <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
             <div>
@@ -447,6 +498,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { CompanyService } from '~/services/company.service'
 import { JobService } from '~/services/job.service'
 import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
@@ -460,6 +512,13 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const toast = useToast()
+const route = useRoute()
+
+const activeDashboardView = computed(() => route.query.view === 'messages' ? 'messages' : 'dashboard')
+const selectedConversationFromQuery = computed(() => {
+  const value = Array.isArray(route.query.conversation) ? route.query.conversation[0] : route.query.conversation
+  return value || ''
+})
 
 const isLoading = ref(true)
 const submitting = ref(false)
@@ -469,8 +528,51 @@ const activeStatus = ref('ALL')
 const createModalOpen = ref(false)
 const errorMessage = ref('')
 const jobs = ref<any[]>([])
+const enterpriseProfile = ref<any | null>(null)
 
 const userName = computed(() => authStore.user?.name?.trim() || authStore.user?.email?.split('@')[0] || 'Doanh nghiệp')
+const kybStatus = computed<'PENDING' | 'APPROVED' | 'REJECTED'>(() => {
+  const value = String(
+    enterpriseProfile.value?.kyb_status
+      || enterpriseProfile.value?.status_kyb
+      || authStore.enterpriseKybStatus
+      || 'PENDING'
+  ).toUpperCase()
+  if (value === 'APPROVED' || value === 'REJECTED') return value
+  return 'PENDING'
+})
+const isEnterpriseApproved = computed(() => kybStatus.value === 'APPROVED')
+const isKYBRejected = computed(() => kybStatus.value === 'REJECTED')
+const kybRejectReason = computed(() => {
+  return String(
+    enterpriseProfile.value?.kyb_reject_reason
+      || authStore.user?.enterpriseKybRejectReason
+      || 'Hồ sơ xác minh doanh nghiệp chưa đạt yêu cầu. Vui lòng bổ sung lại GPKD hoặc thông tin pháp lý.'
+  ).trim()
+})
+const kybPanel = computed(() => {
+  if (isKYBRejected.value) {
+    return {
+      icon: 'uil:times-circle',
+      badge: 'KYB bị từ chối',
+      title: 'Hồ sơ doanh nghiệp cần bổ sung',
+      description: 'Bạn vẫn có thể vào dashboard để xem trạng thái, nhưng cần gửi lại hồ sơ trước khi đăng việc hoặc xử lý ứng viên.',
+      accentClass: 'border-rose-200 bg-rose-50 text-rose-700',
+      iconClass: 'bg-rose-100 text-rose-700',
+      actionLabel: 'Gửi lại hồ sơ'
+    }
+  }
+
+  return {
+    icon: 'uil:clock',
+    badge: 'Đang chờ duyệt',
+    title: 'Hồ sơ doanh nghiệp đang chờ admin duyệt',
+    description: 'Dashboard vẫn mở để bạn theo dõi trạng thái. Các chức năng đăng việc, ứng viên và lịch phỏng vấn sẽ được mở sau khi KYB được duyệt.',
+    accentClass: 'border-amber-200 bg-amber-50 text-amber-700',
+    iconClass: 'bg-amber-100 text-amber-700',
+    actionLabel: 'Cập nhật GPKD'
+  }
+})
 
 const newJobForm = ref({
   title: '',
@@ -661,7 +763,47 @@ function resetCreateForm() {
   }
 }
 
+function syncEnterpriseSessionFromProfile(profile: any) {
+  if (!authStore.user || !profile) return
+  const status = String(profile.kyb_status || profile.status_kyb || authStore.enterpriseKybStatus || 'PENDING').toUpperCase()
+  const enterpriseKybStatus = status === 'APPROVED' || status === 'REJECTED' ? status : 'PENDING'
+  authStore.setCurrentUser({
+    ...authStore.user,
+    name: profile.company_name || authStore.user.name,
+    enterpriseKybStatus,
+    enterpriseApproved: enterpriseKybStatus === 'APPROVED',
+    businessLicenseUrl: profile.gpkd_url || authStore.user.businessLicenseUrl || '',
+    enterpriseKybRejectReason: profile.kyb_reject_reason || ''
+  })
+}
+
+async function fetchEnterpriseProfileStatus() {
+  try {
+    const response: any = await CompanyService.getProfile()
+    const profile = response?.data?.enterprise_profile
+    enterpriseProfile.value = profile || null
+    syncEnterpriseSessionFromProfile(profile)
+  } catch {
+    enterpriseProfile.value = null
+  }
+}
+
+function showApprovalRequiredToast() {
+  toast.warning(
+    isKYBRejected.value ? 'Hồ sơ doanh nghiệp bị từ chối' : 'Doanh nghiệp đang chờ duyệt',
+    isKYBRejected.value
+      ? 'Vui lòng xem lý do từ chối và gửi lại hồ sơ trước khi dùng chức năng tuyển dụng.'
+      : 'Bạn có thể vào dashboard, nhưng chức năng đăng việc sẽ mở sau khi admin duyệt KYB.'
+  )
+}
+
 async function fetchJobs() {
+  if (!isEnterpriseApproved.value) {
+    jobs.value = []
+    isLoading.value = false
+    return
+  }
+
   try {
     isLoading.value = true
     errorMessage.value = ''
@@ -676,12 +818,21 @@ async function fetchJobs() {
 }
 
 function openCreateJobModal() {
+  if (!isEnterpriseApproved.value) {
+    showApprovalRequiredToast()
+    return
+  }
   resetCreateForm()
   errorMessage.value = ''
   createModalOpen.value = true
 }
 
 async function submitCreateJob(status: 'DRAFT' | 'PENDING' = 'PENDING') {
+  if (!isEnterpriseApproved.value) {
+    showApprovalRequiredToast()
+    return
+  }
+
   if (!newJobForm.value.title || !newJobForm.value.salary || !newJobForm.value.description || !newJobForm.value.slots) {
     toast.warning('Thiếu thông tin bắt buộc', 'Vui lòng điền tiêu đề, mức lương, mô tả và số lượng tuyển dụng trước khi lưu.')
     return
@@ -739,7 +890,15 @@ async function closeJob(id: number) {
   }
 }
 
-onMounted(() => {
-  fetchJobs()
+onMounted(async () => {
+  await fetchEnterpriseProfileStatus()
+  if (isEnterpriseApproved.value) {
+    await fetchJobs()
+  } else {
+    isLoading.value = false
+    if (route.query.kyb) {
+      showApprovalRequiredToast()
+    }
+  }
 })
 </script>

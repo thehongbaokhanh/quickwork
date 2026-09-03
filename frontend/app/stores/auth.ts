@@ -11,19 +11,18 @@ interface UserProfile {
   role: 'STUDENT' | 'ENTERPRISE' | 'ADMIN'
   enterpriseKybStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | null
   enterpriseApproved?: boolean
+  enterpriseRequireKyb?: boolean
   businessLicenseUrl?: string
+  enterpriseKybRejectReason?: string
+  avatar?: string
+  student_profile?: Record<string, any>
+  studentProfile?: Record<string, any>
+  enterprise_profile?: Record<string, any>
+  enterpriseProfile?: Record<string, any>
 }
 
 export const useAuthStore = defineStore('auth', () => {
   // --- STATE ---
-  const accessTokenCookie = useCookie<string | undefined | null>('access_token', {
-    path: '/',
-    sameSite: 'lax',
-  })
-  const refreshTokenCookie = useCookie<string | undefined | null>('refresh_token', {
-    path: '/',
-    sameSite: 'lax',
-  })
   const userProfileCookie = useCookie<UserProfile | undefined | null>('user_profile', {
     path: '/',
     sameSite: 'lax',
@@ -39,26 +38,15 @@ export const useAuthStore = defineStore('auth', () => {
     return val as T
   }
 
-  const cleanAccessToken = cleanCookieValue(accessTokenCookie)
-  const cleanRefreshToken = cleanCookieValue(refreshTokenCookie)
   const cleanUserProfile = cleanCookieValue(userProfileCookie)
 
   const user = ref<UserProfile | null>(cleanUserProfile || null)
-  const token = ref<string | null>(cleanAccessToken || null)
+  const token = ref<string | null>(null)
 
   // Khởi tạo trạng thái từ localStorage nếu đang chạy ở phía Trình duyệt (Client)
   if (import.meta.client) {
-    const legacyAccessToken = localStorage.getItem('qw_access_token')
-    const legacyRefreshToken = localStorage.getItem('qw_refresh_token')
-
-    if (!cleanAccessToken && legacyAccessToken && legacyAccessToken !== 'null' && legacyAccessToken !== 'undefined') {
-      accessTokenCookie.value = legacyAccessToken
-      token.value = legacyAccessToken
-    }
-
-    if (!cleanRefreshToken && legacyRefreshToken && legacyRefreshToken !== 'null' && legacyRefreshToken !== 'undefined') {
-      refreshTokenCookie.value = legacyRefreshToken
-    }
+    localStorage.removeItem('qw_access_token')
+    localStorage.removeItem('qw_refresh_token')
 
     if (!cleanUserProfile) {
       const savedUser = localStorage.getItem('qw_user_profile')
@@ -74,18 +62,23 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // --- GETTERS (COMPUTED) ---
-  const isAuthenticated = computed(() => !!token.value)
+  const isAuthenticated = computed(() => !!user.value)
   const userRole = computed(() => user.value?.role || null)
   const enterpriseKybStatus = computed(() => user.value?.enterpriseKybStatus || null)
   const enterpriseApproved = computed(() => user.value?.role === 'ENTERPRISE' && user.value?.enterpriseApproved === true)
-  const canAccessEnterprise = computed(() => user.value?.role === 'ENTERPRISE' && enterpriseApproved.value)
+  const enterpriseKybRequired = computed(() => user.value?.role === 'ENTERPRISE' && user.value?.enterpriseRequireKyb !== false)
+  const canAccessEnterpriseFeatures = computed(() => (
+    user.value?.role === 'ENTERPRISE'
+    && (!enterpriseKybRequired.value || enterpriseApproved.value)
+  ))
+  const canAccessEnterprise = computed(() => user.value?.role === 'ENTERPRISE')
   const canAccessStudentArea = computed(() => user.value?.role === 'STUDENT')
 
   // --- ACTIONS ---
   /**
    * Xử lý hành động Đăng nhập từ UI Form
    */
-  async function login(credentials:any){
+  async function login(credentials: any) {
 
     clearAuth()
 
@@ -93,28 +86,27 @@ export const useAuthStore = defineStore('auth', () => {
 
     const data = response.data
 
-    token.value = data.access_token
-    accessTokenCookie.value = data.access_token
-    refreshTokenCookie.value = data.refresh_token
-
     user.value = {
-        id: String(data.user_id),
-        email: data.email,
-        name: "",
-        role: data.role,
-        enterpriseKybStatus: data.enterprise_kyb_status || null,
-        enterpriseApproved: data.enterprise_approved === true,
-        businessLicenseUrl: data.business_license_url || ''
+      id: String(data.user_id),
+      email: data.email,
+      name: data.name || "",
+      avatar: data.avatar || "",
+      role: data.role,
+      enterpriseKybStatus: data.enterprise_kyb_status || null,
+      enterpriseApproved: data.enterprise_approved === true,
+      enterpriseRequireKyb: data.enterprise_require_kyb !== false,
+      businessLicenseUrl: data.business_license_url || '',
+      enterpriseKybRejectReason: data.enterprise_kyb_reject_reason || ''
     }
     userProfileCookie.value = user.value
 
-    if(process.client){
-        localStorage.setItem(
-            "qw_user_profile",
-            JSON.stringify(user.value)
-        )
+    if (process.client) {
+      localStorage.setItem(
+        "qw_user_profile",
+        JSON.stringify(user.value)
+      )
     }
-}
+  }
 
   function setCurrentUser(userData: UserProfile) {
     user.value = userData
@@ -124,11 +116,30 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function syncEnterprisePolicy(payload: {
+    requireKyb: boolean
+    kybStatus?: string
+    businessLicenseUrl?: string
+    rejectReason?: string
+  }) {
+    if (user.value?.role !== 'ENTERPRISE') return
+    const status = String(payload.kybStatus || user.value.enterpriseKybStatus || 'PENDING').toUpperCase()
+    const normalizedStatus: 'PENDING' | 'APPROVED' | 'REJECTED' =
+      status === 'APPROVED' || status === 'REJECTED' ? status : 'PENDING'
+    const businessLicenseUrl = String(payload.businessLicenseUrl ?? user.value.businessLicenseUrl ?? '').trim()
+    setCurrentUser({
+      ...user.value,
+      enterpriseRequireKyb: payload.requireKyb,
+      enterpriseKybStatus: normalizedStatus,
+      enterpriseApproved: normalizedStatus === 'APPROVED' && Boolean(businessLicenseUrl),
+      businessLicenseUrl,
+      enterpriseKybRejectReason: String(payload.rejectReason ?? user.value.enterpriseKybRejectReason ?? '').trim()
+    })
+  }
+
   function clearAuth() {
     token.value = null
     user.value = null
-    accessTokenCookie.value = undefined
-    refreshTokenCookie.value = undefined
     userProfileCookie.value = undefined
     if (process.client) {
       localStorage.removeItem("qw_access_token")
@@ -155,11 +166,14 @@ export const useAuthStore = defineStore('auth', () => {
     userRole,
     enterpriseKybStatus,
     enterpriseApproved,
+    enterpriseKybRequired,
+    canAccessEnterpriseFeatures,
     canAccessEnterprise,
     canAccessStudentArea,
     login,
     logout,
     setCurrentUser,
+    syncEnterprisePolicy,
     clearAuth
   }
 })

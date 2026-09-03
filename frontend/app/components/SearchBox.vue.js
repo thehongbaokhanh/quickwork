@@ -70,7 +70,7 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.input)({
     type: "text",
     value: (__VLS_ctx.searchQuery),
     placeholder: (__VLS_ctx.placeholder),
-    ...{ class: "w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" },
+    ...{ class: "w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none" },
 });
 /** @type {__VLS_StyleScopedClasses['w-full']} */ ;
 /** @type {__VLS_StyleScopedClasses['pl-10']} */ ;
@@ -82,8 +82,8 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.input)({
 /** @type {__VLS_StyleScopedClasses['border-gray-300']} */ ;
 /** @type {__VLS_StyleScopedClasses['rounded-xl']} */ ;
 /** @type {__VLS_StyleScopedClasses['focus:ring-2']} */ ;
-/** @type {__VLS_StyleScopedClasses['focus:ring-blue-500/20']} */ ;
-/** @type {__VLS_StyleScopedClasses['focus:border-blue-500']} */ ;
+/** @type {__VLS_StyleScopedClasses['focus:ring-sky-500/20']} */ ;
+/** @type {__VLS_StyleScopedClasses['focus:border-sky-500']} */ ;
 /** @type {__VLS_StyleScopedClasses['transition-all']} */ ;
 /** @type {__VLS_StyleScopedClasses['outline-none']} */ ;
 if (__VLS_ctx.searchQuery) {

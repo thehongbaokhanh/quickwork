@@ -514,6 +514,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { AdminService } from '~/services/admin.service'
+import { NotificationService } from '~/services/notification.service'
 
 definePageMeta({
   layout: 'admin',
@@ -528,9 +529,11 @@ const stats = ref({
 })
 const recentUsers = ref<any[]>([])
 const pendingJobs = ref<any[]>([])
+const adminEvents = ref<any[]>([])
 const dashboardError = ref('')
 const isLoading = ref(true)
 const activeUserRole = ref('ALL')
+const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000
 
 const totalUsers = computed(() => stats.value.total_students + stats.value.total_enterprises)
 const totalTrackedJobs = computed(() => stats.value.active_jobs + stats.value.pending_jobs)
@@ -707,34 +710,61 @@ const formatDate = (value?: string) => {
   return date.toLocaleDateString('vi-VN')
 }
 
+const isWithinLastDay = (value?: string) => {
+  if (!value) return false
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return false
+  return Date.now() - date.getTime() <= ONE_DAY_IN_MS
+}
+
+const getActivityIcon = (type?: string) => {
+  if (type === 'JOB') return 'uil:briefcase'
+  if (type === 'APPLICATION') return 'uil:user-plus'
+  return 'uil:bell'
+}
+
 const notifications = computed(() => {
-  const jobItems = pendingJobs.value.slice(0, 3).map((job) => ({
+  const eventItems = adminEvents.value.filter((item) => isWithinLastDay(item.created_at)).slice(0, 5).map((item) => ({
+    id: `notification-${item.id}`,
+    user: item.title || 'Thông báo hệ thống',
+    action: item.content || '',
+    time: formatDate(item.created_at),
+    createdAt: item.created_at,
+    icon: getActivityIcon(item.type)
+  }))
+
+  const jobItems = pendingJobs.value.filter((job) => isWithinLastDay(job.created_at)).slice(0, 3).map((job) => ({
     id: `job-${job.id}`,
     user: getJobCompany(job),
     action: `đang chờ duyệt tin "${job.title || 'Chưa có tiêu đề'}".`,
     time: formatDate(job.created_at),
+    createdAt: job.created_at,
     icon: 'uil:briefcase'
   }))
 
-  const userItems = recentUsers.value.slice(0, 3).map((user) => ({
+  const userItems = recentUsers.value.filter((user) => isWithinLastDay(user.created_at)).slice(0, 3).map((user) => ({
     id: `user-${user.id}`,
     user: getUserDisplayName(user),
     action: `vừa tạo tài khoản ${getRoleLabel(user.role)}.`,
     time: formatDate(user.created_at),
+    createdAt: user.created_at,
     icon: 'uil:user-plus'
   }))
 
-  return [...jobItems, ...userItems].slice(0, 5)
+  return [...eventItems, ...jobItems, ...userItems]
+    .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime())
+    .slice(0, 5)
 })
 
 onMounted(async () => {
   try {
     isLoading.value = true
     dashboardError.value = ''
-    const [statsRes, usersRes, jobsRes] = await Promise.all([
+    const [statsRes, usersRes, jobsRes, notificationsRes] = await Promise.all([
       AdminService.getDashboardStats(),
       AdminService.getRecentUsers(10),
-      AdminService.getPendingJobs({ status: 'PENDING' })
+      AdminService.getPendingJobs({ status: 'PENDING' }),
+      NotificationService.list({ page: 1, page_size: 50 })
     ])
 
     if (statsRes?.success) {
@@ -745,6 +775,9 @@ onMounted(async () => {
     }
     if (jobsRes?.success) {
       pendingJobs.value = Array.isArray(jobsRes.data) ? jobsRes.data : []
+    }
+    if (notificationsRes?.success) {
+      adminEvents.value = Array.isArray(notificationsRes.data?.items) ? notificationsRes.data.items : []
     }
   } catch (error: any) {
     dashboardError.value = error?.data?.message || error?.message || 'Không thể tải dữ liệu dashboard.'

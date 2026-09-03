@@ -1,6 +1,6 @@
 # Project Conventions
 
-Last updated: 2026-07-09
+Last updated: 2026-07-28
 
 ## Documentation Conventions
 
@@ -28,8 +28,11 @@ Rules:
 - Use transactions for multi-table writes.
 - Keep secret values in env, not docs.
 - Add focused tests for risky business logic or shared helpers.
+- Do not create `models.Notification` or `models.Message` directly in business handlers for notification/chat flows. Use `NotificationService` and `ConversationService` so ownership, transaction, source metadata, and unread counters stay consistent.
 
 ## Frontend Conventions
+
+- Persisted Enterprise navigation state must go through `useEnterpriseUiState` and the single `quickwork:enterprise-ui` localStorage record. Restore it only on the client to avoid SSR hydration mismatches; do not create a separate storage key per sidebar or accordion.
 
 Rules:
 
@@ -67,8 +70,41 @@ Frontend:
 
 ```bash
 cd frontend
+npm run typecheck
 npm run build
 ```
+
+Production container configuration:
+
+```bash
+docker compose --env-file .env.production.example -f compose.yaml -f compose.production.yaml config --quiet
+```
+
+Use the example file only for static validation. A real deployment must use an ignored `.env.production` with rotated secrets and existing TLS file paths.
+
+Production must fail closed: `APP_ENV=production` requires non-placeholder JWT/admin/database/Redis secrets, explicit HTTPS CORS origins, a real `CLOUDINARY_URL`, `AUTH_COOKIE_SECURE=true`, `AUTH_EXPOSE_TOKENS=false`, a bootstrap admin IP allowlist, disabled seed data and required ClamAV scanning. Do not weaken validation to make an incomplete deployment start.
+
+Off-site backups use Docker secret files under `secrets/` (Git-ignored). Never place restic passwords or cloud credential contents in `.env.production`; it may contain only the paths to those secret files.
+
+Full-stack local container verification:
+
+```powershell
+Copy-Item .env.local.example .env
+docker compose config --quiet
+docker compose build
+docker compose up -d
+docker compose ps
+```
+
+Plain local commands intentionally load `compose.override.yaml`; production validation must keep the explicit `-f compose.yaml -f compose.production.yaml` pair so the local HTTP and RabbitMQ Management bindings are not applied.
+
+`npm run typecheck` and `npm run typecheck:watch` run `vue-tsc` with `--incremental false` so Windows watcher sessions do not compete for `.nuxt/*.tsbuildinfo` cache files.
+
+Nuxt's in-process TypeScript checker remains disabled in `nuxt.config.ts`. Run the dedicated typecheck command separately; enabling both the Nuxt dev checker and generated-type writers can intermittently fail on Windows while writing `.nuxt/eslint.config.mjs` or `.nuxt/tsconfig.server.json`.
+
+The frontend `dev` script runs `nuxt dev --no-fork`. On Windows this keeps one Nuxt runtime responsible for generated `.nuxt` type/config files and avoids forked workers racing on `tsconfig.app.json`. If a previous forked dev session failed during startup, stop that session and run `npm run postinstall` once before restarting `npm run dev`.
+
+Legacy emitted `.js` copies that still sit beside maintained `.ts` composables or utilities are excluded explicitly through `nuxt.config.ts` `ignore`. Add new application behavior to the TypeScript source; do not re-enable a same-name JavaScript copy in Nuxt's auto-import scan.
 
 Run the smallest useful verification first, then broader checks if the change touches shared behavior.
 
@@ -81,4 +117,3 @@ When finishing a change, report:
 - docs updated,
 - verification run,
 - known limitations or follow-up risks.
-

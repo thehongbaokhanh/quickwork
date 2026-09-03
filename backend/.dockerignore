@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+
+*.exe
+*.out
+*.test
+coverage*
+
+uploads/
+storage/
+.tmp/
+.tmp-go-cache/
+
+README.md

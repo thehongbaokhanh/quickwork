@@ -34,14 +34,14 @@ if (__VLS_ctx.show) {
     /** @type {__VLS_StyleScopedClasses['space-y-2']} */ ;
     __VLS_asFunctionalElement1(__VLS_intrinsics.div, __VLS_intrinsics.div)({
         ...{ class: ([
-                'animate-spin rounded-full border-t-transparent border-blue-600',
+                'animate-spin rounded-full border-t-transparent border-sky-600',
                 __VLS_ctx.sizeClasses[__VLS_ctx.size]
             ]) },
     });
     /** @type {__VLS_StyleScopedClasses['animate-spin']} */ ;
     /** @type {__VLS_StyleScopedClasses['rounded-full']} */ ;
     /** @type {__VLS_StyleScopedClasses['border-t-transparent']} */ ;
-    /** @type {__VLS_StyleScopedClasses['border-blue-600']} */ ;
+    /** @type {__VLS_StyleScopedClasses['border-sky-600']} */ ;
     if (__VLS_ctx.description) {
         __VLS_asFunctionalElement1(__VLS_intrinsics.span, __VLS_intrinsics.span)({
             ...{ class: "text-sm text-gray-500 font-medium animate-pulse" },

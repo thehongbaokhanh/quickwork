@@ -20,6 +20,9 @@
         :categories="jobCategories"
         :category-filter-request="categoryFilterRequest"
         :loading="isJobsLoading"
+        :personalized="isPersonalizedRecommendations"
+        :ai-used="recommendationAIUsed"
+        :profile-completeness="recommendationProfileCompleteness"
         :selected-job="selectedJob"
         :is-applied-job="isAppliedJob"
         :is-applying-job="isApplyingJob"
@@ -31,6 +34,8 @@
         @save="handleSaveJob"
         @detail="handleJobDetail"
       />
+
+      <HomeCareerAI v-if="authStore.isAuthenticated && authStore.userRole === 'STUDENT'" />
 
       <HomeCategories
         :categories="categoryStats"
@@ -54,6 +59,7 @@
 import { ref, watch } from 'vue'
 import type { DisplayJob } from '~/utils/jobDisplay'
 import HomeCareerCta from '~/components/home/HomeCareerCta.vue'
+import HomeCareerAI from '~/components/home/HomeCareerAI.vue'
 import HomeCategories from '~/components/home/HomeCategories.vue'
 import HomeEmployerCta from '~/components/home/HomeEmployerCta.vue'
 import HomeFeaturedJobs from '~/components/home/HomeFeaturedJobs.vue'
@@ -75,10 +81,13 @@ const {
   isFavoriteJob,
   isFavoriteLoading,
   isJobsLoading,
+  isPersonalizedRecommendations,
   jobCategories,
   jobTypeOptions,
   jobs,
   quickStats,
+  recommendationAIUsed,
+  recommendationProfileCompleteness,
   resetSearch,
   setHeroKeyword,
   applyToJob,

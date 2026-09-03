@@ -13,12 +13,4 @@ export default defineNuxtRouteMiddleware((to) => {
   if (authStore.userRole !== 'ENTERPRISE') {
     return navigateTo('/403')
   }
-
-  if (!authStore.enterpriseApproved) {
-    authStore.clearAuth()
-    return navigateTo({
-      path: '/auth/login',
-      query: { error: 'enterprise_pending' }
-    })
-  }
 })

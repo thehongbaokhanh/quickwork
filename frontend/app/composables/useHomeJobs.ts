@@ -3,7 +3,7 @@ import { useToast } from '~/composables/useToast'
 import { JobService } from '~/services/job.service'
 import { StudentService } from '~/services/student.service'
 import { useAuthStore } from '~/stores/auth'
-import { type ApiJob, type DisplayJob, mapJobForDisplay, salaryRank } from '~/utils/jobDisplay'
+import { type ApiJob, type ApiJobRecommendationItem, type DisplayJob, formatJobLocation, mapJobForDisplay, mapRecommendationForDisplay, salaryRank } from '~/utils/jobDisplay'
 import { buildSearchText, normalizeSearchText } from '~/utils/searchText'
 
 export type HomeSearchState = {
@@ -42,13 +42,16 @@ const ALL_JOB_TYPES = 'Tất cả loại hình'
 export function useHomeJobs() {
   const toast = useToast()
   const authStore = useAuthStore()
-  const route = useRoute()
+  const { notifyStudentLoginRequired } = useStudentLoginPrompt()
   const jobs = ref<DisplayJob[]>([])
   const isJobsLoading = ref(true)
   const appliedJobIds = ref<Set<number>>(new Set())
   const favoriteJobIds = ref<Set<number>>(new Set())
   const applyingJobIds = ref<Set<number>>(new Set())
   const favoriteLoadingJobIds = ref<Set<number>>(new Set())
+  const isPersonalizedRecommendations = ref(false)
+  const recommendationAIUsed = ref(false)
+  const recommendationProfileCompleteness = ref(0)
   const activeCategory = ref(ALL_CATEGORY)
   const homeSearch = ref<HomeSearchState>({
     keyword: '',
@@ -58,7 +61,7 @@ export function useHomeJobs() {
 
   const companyCount = computed(() => uniqueValues(jobs.value.map((job) => job.company)).length)
   const totalSlots = computed(() => jobs.value.reduce((total, job) => total + job.slots, 0))
-  const locationCount = computed(() => uniqueValues(jobs.value.map((job) => job.location)).length)
+  const locationCount = computed(() => uniqueValues(jobs.value.map((job) => formatJobLocation(job.location))).length)
 
   const jobTypeOptions = computed(() => [
     ALL_JOB_TYPES,
@@ -99,8 +102,12 @@ export function useHomeJobs() {
     })
   })
 
-  const bestJobs = computed(() => [...filteredJobs.value]
-    .sort((a, b) => getJobScore(b) - getJobScore(a)))
+  const bestJobs = computed(() => {
+    if (isPersonalizedRecommendations.value) {
+      return filteredJobs.value
+    }
+    return [...filteredJobs.value].sort((a, b) => getJobScore(b) - getJobScore(a))
+  })
 
   const categoryStats = computed<HomeCategorySummary[]>(() => {
     const groups = new Map<string, DisplayJob[]>()
@@ -229,8 +236,7 @@ export function useHomeJobs() {
 
   function requireStudentAction() {
     if (!authStore.isAuthenticated) {
-      toast.warning('Bạn cần đăng nhập', 'Đăng nhập bằng tài khoản sinh viên để ứng tuyển hoặc lưu việc.')
-      navigateTo({ path: '/auth/login', query: { redirect: route.fullPath } })
+      notifyStudentLoginRequired('Đăng nhập bằng tài khoản sinh viên để ứng tuyển hoặc lưu việc.')
       return false
     }
 
@@ -244,13 +250,36 @@ export function useHomeJobs() {
 
   async function loadPublicJobs() {
     try {
-      isJobsLoading.value = true
       const response: any = await JobService.getAllJobs()
       const rawJobs: ApiJob[] = response?.success && Array.isArray(response.data) ? response.data : []
       jobs.value = rawJobs.map(mapJobForDisplay)
+      isPersonalizedRecommendations.value = false
+      recommendationAIUsed.value = false
+      recommendationProfileCompleteness.value = 0
     } catch (error: any) {
       jobs.value = []
       toast.error('Không thể tải việc làm', error?.data?.message || error?.message || 'Vui lòng thử lại sau.')
+    }
+  }
+
+  async function loadJobs() {
+    isJobsLoading.value = true
+    try {
+      if (authStore.isAuthenticated && authStore.canAccessStudentArea) {
+        try {
+          const response: any = await StudentService.getJobRecommendations(20)
+          const data = response?.data || {}
+          const items = Array.isArray(data.items) ? data.items : []
+          jobs.value = items.map((item: ApiJobRecommendationItem, index: number) => mapRecommendationForDisplay(item, index))
+          isPersonalizedRecommendations.value = true
+          recommendationAIUsed.value = Boolean(data.ai_used)
+          recommendationProfileCompleteness.value = Number(data.profile_completeness) || 0
+          return
+        } catch {
+          // API cá nhân hóa có đường lui về danh sách công khai để trang chủ luôn dùng được.
+        }
+      }
+      await loadPublicJobs()
     } finally {
       isJobsLoading.value = false
     }
@@ -319,8 +348,7 @@ export function useHomeJobs() {
   }
 
   async function loadPageData() {
-    await loadPublicJobs()
-    await loadStudentJobActions()
+    await Promise.all([loadJobs(), loadStudentJobActions()])
   }
 
   onMounted(loadPageData)
@@ -338,11 +366,14 @@ export function useHomeJobs() {
     isFavoriteJob,
     isFavoriteLoading,
     isJobsLoading,
+    isPersonalizedRecommendations,
     jobCategories,
     jobTypeOptions,
     jobs,
     locationCount,
     quickStats,
+    recommendationAIUsed,
+    recommendationProfileCompleteness,
     resetSearch,
     setCategory,
     setHeroKeyword,

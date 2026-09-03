@@ -553,7 +553,7 @@ type ConfirmAction = () => Promise<void> | void
 
 definePageMeta({
   layout: 'enterprise',
-  middleware: ['company']
+  middleware: ['company', 'enterprise-approved']
 })
 
 const toast = useToast()

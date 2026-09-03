@@ -10,6 +10,10 @@ import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRu
       cdnURL: string,
    },
 
+   apiProxyTarget: string,
+
+   apiBaseInternal: string,
+
    nitro: {
       envPrefix: string,
    },
@@ -20,6 +24,8 @@ import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRu
   }
   interface SharedPublicRuntimeConfig {
    apiBase: string,
+
+   geocodingBaseUrl: string,
   }
 declare module '@nuxt/schema' {
   interface RuntimeConfig extends UserRuntimeConfig {}

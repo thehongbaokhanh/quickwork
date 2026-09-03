@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -11,17 +12,24 @@ import (
 	"quickwork.local/backend/config"
 	"quickwork.local/backend/internal/dto/request"
 	service "quickwork.local/backend/internal/services"
+	uploadsecurity "quickwork.local/backend/pkg/upload"
 )
 
 type AuthHandler struct {
 	authService service.AuthService
 	validate    *validator.Validate
+	config      *config.Config
 }
 
-func NewAuthHandler(authService service.AuthService) *AuthHandler {
+func NewAuthHandler(authService service.AuthService, configs ...*config.Config) *AuthHandler {
+	cfg := &config.Config{}
+	if len(configs) > 0 && configs[0] != nil {
+		cfg = configs[0]
+	}
 	return &AuthHandler{
 		authService: authService,
 		validate:    validator.New(),
+		config:      cfg,
 	}
 }
 
@@ -65,6 +73,18 @@ func (h *AuthHandler) RegisterStudent(c *fiber.Ctx) error {
 			return c.Status(http.StatusConflict).JSON(fiber.Map{
 				"success": false,
 				"message": "Email đã tồn tại.",
+			})
+
+		case service.ErrStudentRegistrationDisabled:
+			return c.Status(http.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"message": "Hệ thống đang tạm dừng đăng ký tài khoản học viên.",
+			})
+
+		case service.ErrPasswordPolicyInvalid:
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Mật khẩu cần có ít nhất 8 ký tự, chữ hoa, chữ thường, số hoặc ký tự đặc biệt và không chứa khoảng trắng.",
 			})
 
 		default:
@@ -136,6 +156,18 @@ func (h *AuthHandler) RegisterEnterprise(c *fiber.Ctx) error {
 				"message": "Doanh nghiệp bắt buộc phải tải lên giấy phép kinh doanh.",
 			})
 
+		case service.ErrEnterpriseRegistrationDisabled:
+			return c.Status(http.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"message": "Hệ thống đang tạm dừng đăng ký tài khoản doanh nghiệp.",
+			})
+
+		case service.ErrPasswordPolicyInvalid:
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Mật khẩu cần có ít nhất 8 ký tự, chữ hoa, chữ thường, số hoặc ký tự đặc biệt và không chứa khoảng trắng.",
+			})
+
 		default:
 			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 				"success": false,
@@ -193,6 +225,12 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 				"message": "Email hoặc mật khẩu không đúng.",
 			})
 
+		case service.ErrTooManyLoginAttempts:
+			return c.Status(http.StatusTooManyRequests).JSON(fiber.Map{
+				"success": false,
+				"message": "Đã vượt quá số lần đăng nhập cho phép. Vui lòng thử lại sau 15 phút.",
+			})
+
 		case service.ErrAccountBanned:
 			return c.Status(http.StatusForbidden).JSON(fiber.Map{
 				"success": false,
@@ -223,6 +261,11 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 				"message": err.Error(),
 			})
 		}
+	}
+	h.setAuthCookies(c, res.AccessToken, res.RefreshToken)
+	if !h.config.AuthExposeTokens {
+		res.AccessToken = ""
+		res.RefreshToken = ""
 	}
 
 	return c.JSON(fiber.Map{
@@ -292,13 +335,20 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 
 	accessToken, ok := parseBearerToken(c.Get("Authorization"))
 	if !ok {
+		accessToken = strings.TrimSpace(c.Cookies("qw_access_session"))
+		ok = accessToken != ""
+	}
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"success": false,
 			"message": "Invalid Authorization Header",
 		})
 	}
 
-	refreshToken := strings.TrimSpace(c.Cookies("refresh_token"))
+	refreshToken := strings.TrimSpace(c.Cookies("qw_refresh_session"))
+	if refreshToken == "" {
+		refreshToken = strings.TrimSpace(c.Cookies("refresh_token"))
+	}
 	if refreshToken == "" {
 		refreshToken = strings.TrimSpace(c.Cookies("qw_refresh_token"))
 	}
@@ -317,11 +367,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 		})
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:   "refresh_token",
-		Value:  "",
-		MaxAge: -1,
-	})
+	h.clearAuthCookies(c)
 
 	return c.JSON(fiber.Map{
 		"success": true,
@@ -350,6 +396,17 @@ func parseBearerToken(authHeader string) (string, bool) {
 
 func isInvalidTokenValue(token string) bool {
 	return strings.EqualFold(token, "null") || strings.EqualFold(token, "undefined")
+}
+
+func (h *AuthHandler) setAuthCookies(c *fiber.Ctx, accessToken string, refreshToken string) {
+	c.Cookie(&fiber.Cookie{Name: "qw_access_session", Value: accessToken, Path: "/", MaxAge: h.config.JWTExpiryHours * 3600, HTTPOnly: true, Secure: h.config.AuthCookieSecure, SameSite: fiber.CookieSameSiteStrictMode})
+	c.Cookie(&fiber.Cookie{Name: "qw_refresh_session", Value: refreshToken, Path: "/", MaxAge: h.config.JWTRefreshExpiryHours * 3600, HTTPOnly: true, Secure: h.config.AuthCookieSecure, SameSite: fiber.CookieSameSiteStrictMode})
+}
+
+func (h *AuthHandler) clearAuthCookies(c *fiber.Ctx) {
+	for _, name := range []string{"qw_access_session", "qw_refresh_session", "access_token", "refresh_token", "qw_refresh_token"} {
+		c.Cookie(&fiber.Cookie{Name: name, Value: "", Path: "/", MaxAge: -1, HTTPOnly: true, Secure: h.config.AuthCookieSecure, SameSite: fiber.CookieSameSiteStrictMode})
+	}
 }
 
 func (h *AuthHandler) RegisterFirstAdmin(c *fiber.Ctx) error {
@@ -413,15 +470,6 @@ func (h *AuthHandler) UploadGPKD(c *fiber.Ctx) error {
 		})
 	}
 
-	fileReader, err := fileHeader.Open()
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"message": "Không thể mở file",
-		})
-	}
-	defer fileReader.Close()
-
 	if config.CLD == nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -429,13 +477,36 @@ func (h *AuthHandler) UploadGPKD(c *fiber.Ctx) error {
 		})
 	}
 
-	resp, err := config.CLD.Upload.Upload(c.UserContext(), fileReader, uploader.UploadParams{
-		Folder: "gpkd",
+	kind := strings.ToLower(strings.TrimSpace(c.FormValue("kind")))
+	folder := "gpkd"
+	maxSize := int64(10 * 1024 * 1024)
+	allowedExtensions := map[string]bool{".pdf": true, ".jpg": true, ".jpeg": true, ".png": true}
+	if kind == "logo" {
+		folder = "enterprise/logo"
+		maxSize = 5 * 1024 * 1024
+		allowedExtensions = map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	}
+	if kind == "cover" {
+		folder = "enterprise/cover"
+		maxSize = 5 * 1024 * 1024
+		allowedExtensions = map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	}
+	if kind != "" && kind != "gpkd" && kind != "logo" && kind != "cover" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"success": false, "message": "Loại tệp tải lên không hợp lệ."})
+	}
+	fileReader, err := uploadsecurity.OpenValidated(c.UserContext(), fileHeader, uploadsecurity.SecurityPolicy{
+		MaxBytes: maxSize, AllowedExtensions: allowedExtensions,
+		MalwareScanRequired: h.config.UploadMalwareScanRequired, ClamAVAddress: h.config.ClamAVAddress,
 	})
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"success": false, "message": "Tệp không hợp lệ hoặc không vượt qua kiểm tra an toàn."})
+	}
+	defer fileReader.Close()
+	resp, err := config.CLD.Upload.Upload(c.UserContext(), fileReader, uploader.UploadParams{Folder: folder, ResourceType: "auto"})
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
-			"message": "Không thể tải file lên Cloudinary: " + err.Error(),
+			"message": "Không thể tải file lên hệ thống lưu trữ.",
 		})
 	}
 
@@ -476,10 +547,21 @@ func (h *AuthHandler) GoogleLogin(c *fiber.Ctx) error {
 
 	res, err := h.authService.LoginOrRegisterGoogle(c.UserContext(), req.Code)
 	if err != nil {
+		if errors.Is(err, service.ErrStudentRegistrationDisabled) {
+			return c.Status(http.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"message": "Hệ thống đang tạm dừng đăng ký tài khoản học viên.",
+			})
+		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
 			"message": err.Error(),
 		})
+	}
+	h.setAuthCookies(c, res.AccessToken, res.RefreshToken)
+	if !h.config.AuthExposeTokens {
+		res.AccessToken = ""
+		res.RefreshToken = ""
 	}
 
 	return c.JSON(fiber.Map{

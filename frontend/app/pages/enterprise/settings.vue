@@ -308,6 +308,23 @@
             <span>{{ profileSaveMessage }}</span>
           </div>
 
+          <div
+            v-if="needsKYBAction"
+            class="mx-5 mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3"
+          >
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-amber-600 shadow-sm">
+                <Icon name="uil:shield-exclamation" class="h-5 w-5" />
+              </span>
+              <div class="min-w-0">
+                <p class="text-sm font-extrabold text-amber-900">{{ kybStatusLabel }}</p>
+                <p class="mt-1 text-sm font-semibold leading-6 text-amber-800">
+                  Vui lòng bổ sung hoặc kiểm tra lại giấy phép kinh doanh, sau đó lưu thay đổi để admin xét duyệt.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div class="grid gap-4 p-5 lg:grid-cols-2">
             <label class="space-y-1.5">
               <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Tên hiển thị</span>
@@ -367,6 +384,26 @@
                 class="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-50"
                 placeholder="Chưa cập nhật"
               >
+            </label>
+
+            <label class="space-y-1.5 lg:col-span-2">
+              <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Giấy phép kinh doanh</span>
+              <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <input
+                  v-model="accountForm.gpkdUrl"
+                  type="text"
+                  class="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-50"
+                  placeholder="/uploads/gpkd-file.pdf hoặc đường dẫn file"
+                >
+                <label class="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-sky-100 bg-sky-50 px-4 text-sm font-bold text-sky-700 transition hover:bg-sky-100">
+                  <Icon :name="uploadingGPKD ? 'svg-spinners:180-ring' : 'uil:upload'" :class="['h-5 w-5', uploadingGPKD ? 'animate-spin' : '']" />
+                  {{ uploadingGPKD ? 'Đang tải' : 'Tải GPKD' }}
+                  <input class="sr-only" type="file" accept=".pdf,.jpg,.jpeg,.png" :disabled="uploadingGPKD" @change="handleBusinessLicenseUpload">
+                </label>
+              </div>
+              <p class="text-xs font-semibold leading-5 text-slate-500">
+                File sau khi lưu sẽ được admin kiểm tra ở mục doanh nghiệp.
+              </p>
             </label>
 
             <div
@@ -802,10 +839,8 @@
       </aside>
     </section>
 
-    <section
-      v-else
-      class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]"
-    >
+    <EnterpriseCompanyProfileSettings v-else />
+    <section v-if="false" class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       <article class="rounded-[24px] border border-dashed border-sky-200 bg-white p-10 text-center shadow-sm shadow-slate-100/80">
         <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-50 text-sky-600">
           <Icon :name="activeTabMeta.icon" class="h-8 w-8" />
@@ -863,7 +898,7 @@ definePageMeta({
 
 type SettingsTabKey = 'account' | 'company'
 type SettingsView = 'settings' | 'password'
-type DisplayOptionKey = 'showCompanyName' | 'showCompanyLogo' | 'showContactInfo' | 'allowCvDownload'
+type DisplayOptionKey = 'showCompanyName' | 'showCompanyLogo' | 'showContactInfo'
 type RecentActivityType = 'job' | 'application'
 type PasswordFieldKey = 'current_password' | 'new_password' | 'confirm_password'
 type PasswordVisibilityKey = 'current' | 'next' | 'confirm'
@@ -921,7 +956,6 @@ const isTimezoneOpen = ref(false)
 const isLanguageOpen = ref(false)
 const openSettingsSections = reactive<Record<string, boolean>>({
   displayOptions: true,
-  notifications: true,
   recruitmentDefaults: false,
   interviews: false
 })
@@ -931,6 +965,7 @@ const recentActivityLoading = ref(false)
 const recentActivityError = ref('')
 const profileLoading = ref(false)
 const savingProfile = ref(false)
+const uploadingGPKD = ref(false)
 const profileSaveMessage = ref('')
 const passwordSubmitting = ref(false)
 const lastPasswordChangedAt = ref('Chưa có dữ liệu')
@@ -1006,6 +1041,8 @@ const accountForm = reactive({
   displayName: '',
   email: '',
   phone: '',
+  gpkdUrl: '',
+  kybStatus: 'PENDING',
   role: 'Chủ tài khoản',
   timezone: 'Asia/Ho_Chi_Minh',
   language: 'vi'
@@ -1032,8 +1069,7 @@ const passwordVisibility = reactive<Record<PasswordVisibilityKey, boolean>>({
 const displayOptions = reactive<Record<DisplayOptionKey, boolean>>({
   showCompanyName: true,
   showCompanyLogo: true,
-  showContactInfo: false,
-  allowCvDownload: false
+  showContactInfo: false
 })
 
 const displayOptionItems: Array<{
@@ -1055,55 +1091,10 @@ const displayOptionItems: Array<{
     key: 'showContactInfo',
     title: 'Hiển thị thông tin liên hệ',
     description: 'Cho phép ứng viên xem email hoặc số điện thoại liên hệ trên tin tuyển dụng.'
-  },
-  {
-    key: 'allowCvDownload',
-    title: 'Cho phép ứng viên tải CV khi chưa ứng tuyển',
-    description: 'Ứng viên có thể tải CV của bạn trước khi gửi hồ sơ.'
   }
 ]
 
 const advancedSettingSections: SettingsAccordionSection[] = [
-  {
-    key: 'notifications',
-    title: 'Thông báo',
-    description: 'Thiết lập luồng nhắc việc cho ứng viên, tin tuyển dụng, phỏng vấn và hệ thống.',
-    icon: 'uil:bell',
-    accentClass: 'bg-sky-50 text-sky-700',
-    items: [
-      {
-        label: 'Ứng viên',
-        description: 'Nhận tin khi có ứng viên mới hoặc hồ sơ được cập nhật.',
-        icon: 'uil:user-plus'
-      },
-      {
-        label: 'Tuyển dụng',
-        description: 'Theo dõi trạng thái tin tuyển dụng và hạn xử lý.',
-        icon: 'uil:briefcase-alt'
-      },
-      {
-        label: 'Phỏng vấn',
-        description: 'Nhắc lịch, đổi lịch và kết quả phỏng vấn.',
-        icon: 'uil:calendar-alt'
-      },
-      {
-        label: 'Hệ thống',
-        description: 'Cảnh báo tài khoản, phiên đăng nhập và dữ liệu hệ thống.',
-        icon: 'uil:server'
-      },
-      {
-        label: 'Marketing',
-        description: 'Thông tin chiến dịch, gợi ý nâng cấp và tin tức sản phẩm.',
-        icon: 'uil:megaphone'
-      },
-      {
-        label: 'Kênh nhận thông báo',
-        description: 'Chọn email, trong ứng dụng hoặc các kênh khác.',
-        icon: 'uil:envelope'
-      }
-    ]
-  },
-
   {
     key: 'interviews',
     title: 'Lịch phỏng vấn',
@@ -1321,6 +1312,14 @@ const jobUsageWidth = computed(() => {
   return Math.min(100, Math.max(12, enterpriseJobCount.value * 10))
 })
 
+const needsKYBAction = computed(() => accountForm.kybStatus !== 'APPROVED')
+
+const kybStatusLabel = computed(() => {
+  if (accountForm.kybStatus === 'APPROVED') return 'Hồ sơ doanh nghiệp đã được xác minh'
+  if (accountForm.kybStatus === 'REJECTED') return 'Hồ sơ KYB bị từ chối'
+  return 'Hồ sơ KYB đang chờ duyệt'
+})
+
 watch([companyName, userEmail], ([name, email]) => {
   if (!accountForm.displayName || accountForm.displayName === 'Doanh nghiệp') {
     accountForm.displayName = name
@@ -1474,11 +1473,17 @@ function applyEnterpriseProfile(profileUser: any) {
   accountForm.displayName = profile.company_name || companyName.value
   accountForm.email = profileUser?.email || userEmail.value
   accountForm.phone = profile.phone || ''
+  accountForm.gpkdUrl = profile.gpkd_url || ''
+  accountForm.kybStatus = String(profile.kyb_status || profile.status_kyb || authStore.enterpriseKybStatus || 'PENDING').toUpperCase()
 
   if (authStore.user) {
     authStore.setCurrentUser({
       ...authStore.user,
-      name: accountForm.displayName
+      name: accountForm.displayName,
+      enterpriseKybStatus: accountForm.kybStatus as any,
+      enterpriseApproved: accountForm.kybStatus === 'APPROVED',
+      businessLicenseUrl: accountForm.gpkdUrl,
+      enterprise_profile: profile
     })
   }
 }
@@ -1528,7 +1533,8 @@ async function handleSave() {
   try {
     const response: any = await CompanyService.updateProfile({
       company_name: accountForm.displayName,
-      phone: accountForm.phone
+      phone: accountForm.phone,
+      gpkd_url: accountForm.gpkdUrl
     })
 
     if (!response?.success) {
@@ -1536,12 +1542,37 @@ async function handleSave() {
     }
 
     applyEnterpriseProfile(response.data)
-    showProfileSaveMessage('Thay đổi đã được lưu. Tên hiển thị và số điện thoại liên hệ đã được cập nhật.')
+    showProfileSaveMessage('Thay đổi đã được lưu. Thông tin tài khoản và giấy phép kinh doanh đã được cập nhật.')
     toast.success('Đã lưu thay đổi', 'Thông tin tài khoản nhà tuyển dụng đã được cập nhật.')
   } catch (error: any) {
     toast.error('Không thể lưu hồ sơ', error?.data?.message || error?.message || 'Vui lòng thử lại.')
   } finally {
     savingProfile.value = false
+  }
+}
+
+async function handleBusinessLicenseUpload(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  uploadingGPKD.value = true
+
+  try {
+    const response: any = await AuthService.uploadGPKD(file)
+    const uploadedURL = response?.data?.url || response?.data?.file_url || response?.url || ''
+    if (!uploadedURL) {
+      throw new Error('Không nhận được đường dẫn file từ máy chủ.')
+    }
+
+    accountForm.gpkdUrl = uploadedURL
+    accountForm.kybStatus = accountForm.kybStatus === 'APPROVED' ? 'APPROVED' : 'PENDING'
+    toast.success('Đã tải GPKD', 'Hãy bấm lưu thay đổi để gửi giấy phép kinh doanh vào hồ sơ.')
+  } catch (error: any) {
+    toast.error('Không thể tải GPKD', error?.data?.message || error?.message || 'Vui lòng thử lại với file khác.')
+  } finally {
+    uploadingGPKD.value = false
+    input.value = ''
   }
 }
 

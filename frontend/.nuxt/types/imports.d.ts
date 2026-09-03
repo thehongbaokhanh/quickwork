@@ -4,6 +4,7 @@ declare global {
   const abortNavigation: typeof import('../../node_modules/nuxt/dist/app/composables/router').abortNavigation
   const acceptHMRUpdate: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables').acceptHMRUpdate
   const addRouteMiddleware: typeof import('../../node_modules/nuxt/dist/app/composables/router').addRouteMiddleware
+  const buildJobSignalThresholds: typeof import('../../app/utils/jobSignals').buildJobSignalThresholds
   const buildSearchText: typeof import('../../app/utils/searchText').buildSearchText
   const callOnce: typeof import('../../node_modules/nuxt/dist/app/composables/once').callOnce
   const cancelIdleCallback: typeof import('../../node_modules/nuxt/dist/app/compat/idle-callback').cancelIdleCallback
@@ -11,6 +12,7 @@ declare global {
   const clearNuxtData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').clearNuxtData
   const clearNuxtState: typeof import('../../node_modules/nuxt/dist/app/composables/state').clearNuxtState
   const computed: typeof import('vue').computed
+  const conversationTimestamp: typeof import('../../app/utils/conversation').conversationTimestamp
   const createError: typeof import('../../node_modules/nuxt/dist/app/composables/error').createError
   const createUseAsyncData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').createUseAsyncData
   const createUseFetch: typeof import('../../node_modules/nuxt/dist/app/composables/fetch').createUseFetch
@@ -30,20 +32,29 @@ declare global {
   const defineStore: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables').defineStore
   const effect: typeof import('vue').effect
   const effectScope: typeof import('vue').effectScope
+  const formatConversationTime: typeof import('../../app/utils/conversation').formatConversationTime
+  const formatJobLocation: typeof import('../../app/utils/jobDisplay').formatJobLocation
+  const formatMessageTime: typeof import('../../app/utils/conversation').formatMessageTime
   const getAppManifest: typeof import('../../node_modules/nuxt/dist/app/composables/manifest').getAppManifest
+  const getConversationError: typeof import('../../app/utils/conversation').getConversationError
   const getCurrentInstance: typeof import('vue').getCurrentInstance
   const getCurrentScope: typeof import('vue').getCurrentScope
   const getDateTime: typeof import('../../app/utils/jobDisplay').getDateTime
   const getDefaultRouteForRole: typeof import('../../app/utils/authRedirect').getDefaultRouteForRole
+  const getJobSignals: typeof import('../../app/utils/jobSignals').getJobSignals
   const getJobTypeMeta: typeof import('../../app/utils/jobTypeMeta').getJobTypeMeta
   const getLoginRedirectForRole: typeof import('../../app/utils/authRedirect').getLoginRedirectForRole
   const getRouteRules: typeof import('../../node_modules/nuxt/dist/app/composables/manifest').getRouteRules
   const getSalaryRange: typeof import('../../app/utils/jobDisplay').getSalaryRange
+  const getStudentProfileCompletion: typeof import('../../app/utils/studentProfileCompletion').getStudentProfileCompletion
+  const getStudentProfileCompletionChecks: typeof import('../../app/utils/studentProfileCompletion').getStudentProfileCompletionChecks
   const h: typeof import('vue').h
   const hasInjectionContext: typeof import('vue').hasInjectionContext
   const inject: typeof import('vue').inject
   const injectHead: typeof import('../../node_modules/nuxt/dist/app/composables/head').injectHead
+  const isNewlyPostedJob: typeof import('../../app/utils/jobSignals').isNewlyPostedJob
   const isNuxtError: typeof import('../../node_modules/nuxt/dist/app/composables/error').isNuxtError
+  const isOwnConversationMessage: typeof import('../../app/utils/conversation').isOwnConversationMessage
   const isPrerendered: typeof import('../../node_modules/nuxt/dist/app/composables/payload').isPrerendered
   const isProxy: typeof import('vue').isProxy
   const isReactive: typeof import('vue').isReactive
@@ -54,7 +65,9 @@ declare global {
   const isVue3: typeof import('../../node_modules/nuxt/dist/app/compat/vue-demi').isVue3
   const loadPayload: typeof import('../../node_modules/nuxt/dist/app/composables/payload').loadPayload
   const mapJobForDisplay: typeof import('../../app/utils/jobDisplay').mapJobForDisplay
+  const mapRecommendationForDisplay: typeof import('../../app/utils/jobDisplay').mapRecommendationForDisplay
   const markRaw: typeof import('vue').markRaw
+  const mergeConversationMessages: typeof import('../../app/utils/conversation').mergeConversationMessages
   const navigateTo: typeof import('../../node_modules/nuxt/dist/app/composables/router').navigateTo
   const nextTick: typeof import('vue').nextTick
   const normalizeSearchText: typeof import('../../app/utils/searchText').normalizeSearchText
@@ -99,6 +112,7 @@ declare global {
   const shallowReadonly: typeof import('vue').shallowReadonly
   const shallowRef: typeof import('vue').shallowRef
   const showError: typeof import('../../node_modules/nuxt/dist/app/composables/error').showError
+  const sortConversations: typeof import('../../app/utils/conversation').sortConversations
   const storeToRefs: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables').storeToRefs
   const toRaw: typeof import('vue').toRaw
   const toRef: typeof import('vue').toRef
@@ -112,9 +126,11 @@ declare global {
   const useAppConfig: typeof import('../../node_modules/nuxt/dist/app/config').useAppConfig
   const useAsyncData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useAsyncData
   const useAttrs: typeof import('vue').useAttrs
+  const useConversationChat: typeof import('../../app/composables/useConversationChat').useConversationChat
   const useCookie: typeof import('../../node_modules/nuxt/dist/app/composables/cookie').useCookie
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
+  const useEnterpriseUiState: typeof import('../../app/composables/useEnterpriseUiState').useEnterpriseUiState
   const useError: typeof import('../../node_modules/nuxt/dist/app/composables/error').useError
   const useFetch: typeof import('../../node_modules/nuxt/dist/app/composables/fetch').useFetch
   const useHead: typeof import('../../node_modules/nuxt/dist/app/composables/head').useHead
@@ -131,6 +147,7 @@ declare global {
   const useNuxtData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useNuxtData
   const useNuxtDevTools: typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools').useNuxtDevTools
   const usePinia: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables').usePinia
+  const usePlatformSettings: typeof import('../../app/composables/usePlatformSettings').usePlatformSettings
   const usePreviewMode: typeof import('../../node_modules/nuxt/dist/app/composables/preview').usePreviewMode
   const useRequestEvent: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestEvent
   const useRequestFetch: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestFetch
@@ -193,6 +210,7 @@ declare global {
   const useShadowRoot: typeof import('vue').useShadowRoot
   const useSlots: typeof import('vue').useSlots
   const useState: typeof import('../../node_modules/nuxt/dist/app/composables/state').useState
+  const useStudentLoginPrompt: typeof import('../../app/composables/useStudentLoginPrompt').useStudentLoginPrompt
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useToast: typeof import('../../app/composables/useToast').useToast
   const useTransitionState: typeof import('vue').useTransitionState
@@ -219,14 +237,23 @@ declare global {
   export type { HomeSearchState, HomeQuickStat, HomeCategorySummary, HomeCompanySummary } from '../../app/composables/useHomeJobs'
   import('../../app/composables/useHomeJobs')
   // @ts-ignore
-  export type { ToastMessage } from '../../app/composables/useToast'
+  export type { RuntimePlatformSettings } from '../../app/composables/usePlatformSettings'
+  import('../../app/composables/usePlatformSettings')
+  // @ts-ignore
+  export type { ToastMessage, ToastOptions } from '../../app/composables/useToast'
   import('../../app/composables/useToast')
   // @ts-ignore
-  export type { ApiSkill, ApiJob, DisplayJob } from '../../app/utils/jobDisplay'
+  export type { ApiSkill, ApiJob, JobMatchBreakdown, ApiJobRecommendationItem, DisplayJob } from '../../app/utils/jobDisplay'
   import('../../app/utils/jobDisplay')
+  // @ts-ignore
+  export type { JobSignalKey, JobSignalThresholds, JobVisualSignal } from '../../app/utils/jobSignals'
+  import('../../app/utils/jobSignals')
   // @ts-ignore
   export type { JobTypeMeta } from '../../app/utils/jobTypeMeta'
   import('../../app/utils/jobTypeMeta')
+  // @ts-ignore
+  export type { StudentProfileCompletionCheck } from '../../app/utils/studentProfileCompletion'
+  import('../../app/utils/studentProfileCompletion')
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
@@ -235,6 +262,7 @@ declare module 'vue' {
     readonly abortNavigation: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['abortNavigation']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['acceptHMRUpdate']>
     readonly addRouteMiddleware: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['addRouteMiddleware']>
+    readonly buildJobSignalThresholds: UnwrapRef<typeof import('../../app/utils/jobSignals')['buildJobSignalThresholds']>
     readonly buildSearchText: UnwrapRef<typeof import('../../app/utils/searchText')['buildSearchText']>
     readonly callOnce: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/once')['callOnce']>
     readonly cancelIdleCallback: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/idle-callback')['cancelIdleCallback']>
@@ -242,6 +270,7 @@ declare module 'vue' {
     readonly clearNuxtData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['clearNuxtData']>
     readonly clearNuxtState: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/state')['clearNuxtState']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
+    readonly conversationTimestamp: UnwrapRef<typeof import('../../app/utils/conversation')['conversationTimestamp']>
     readonly createError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['createError']>
     readonly createUseAsyncData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['createUseAsyncData']>
     readonly createUseFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/fetch')['createUseFetch']>
@@ -261,20 +290,29 @@ declare module 'vue' {
     readonly defineStore: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['defineStore']>
     readonly effect: UnwrapRef<typeof import('vue')['effect']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
+    readonly formatConversationTime: UnwrapRef<typeof import('../../app/utils/conversation')['formatConversationTime']>
+    readonly formatJobLocation: UnwrapRef<typeof import('../../app/utils/jobDisplay')['formatJobLocation']>
+    readonly formatMessageTime: UnwrapRef<typeof import('../../app/utils/conversation')['formatMessageTime']>
     readonly getAppManifest: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/manifest')['getAppManifest']>
+    readonly getConversationError: UnwrapRef<typeof import('../../app/utils/conversation')['getConversationError']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getDateTime: UnwrapRef<typeof import('../../app/utils/jobDisplay')['getDateTime']>
     readonly getDefaultRouteForRole: UnwrapRef<typeof import('../../app/utils/authRedirect')['getDefaultRouteForRole']>
+    readonly getJobSignals: UnwrapRef<typeof import('../../app/utils/jobSignals')['getJobSignals']>
     readonly getJobTypeMeta: UnwrapRef<typeof import('../../app/utils/jobTypeMeta')['getJobTypeMeta']>
     readonly getLoginRedirectForRole: UnwrapRef<typeof import('../../app/utils/authRedirect')['getLoginRedirectForRole']>
     readonly getRouteRules: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/manifest')['getRouteRules']>
     readonly getSalaryRange: UnwrapRef<typeof import('../../app/utils/jobDisplay')['getSalaryRange']>
+    readonly getStudentProfileCompletion: UnwrapRef<typeof import('../../app/utils/studentProfileCompletion')['getStudentProfileCompletion']>
+    readonly getStudentProfileCompletionChecks: UnwrapRef<typeof import('../../app/utils/studentProfileCompletion')['getStudentProfileCompletionChecks']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly hasInjectionContext: UnwrapRef<typeof import('vue')['hasInjectionContext']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['injectHead']>
+    readonly isNewlyPostedJob: UnwrapRef<typeof import('../../app/utils/jobSignals')['isNewlyPostedJob']>
     readonly isNuxtError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['isNuxtError']>
+    readonly isOwnConversationMessage: UnwrapRef<typeof import('../../app/utils/conversation')['isOwnConversationMessage']>
     readonly isPrerendered: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/payload')['isPrerendered']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -285,7 +323,9 @@ declare module 'vue' {
     readonly isVue3: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/vue-demi')['isVue3']>
     readonly loadPayload: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/payload')['loadPayload']>
     readonly mapJobForDisplay: UnwrapRef<typeof import('../../app/utils/jobDisplay')['mapJobForDisplay']>
+    readonly mapRecommendationForDisplay: UnwrapRef<typeof import('../../app/utils/jobDisplay')['mapRecommendationForDisplay']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly mergeConversationMessages: UnwrapRef<typeof import('../../app/utils/conversation')['mergeConversationMessages']>
     readonly navigateTo: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['navigateTo']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly normalizeSearchText: UnwrapRef<typeof import('../../app/utils/searchText')['normalizeSearchText']>
@@ -330,6 +370,7 @@ declare module 'vue' {
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly showError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['showError']>
+    readonly sortConversations: UnwrapRef<typeof import('../../app/utils/conversation')['sortConversations']>
     readonly storeToRefs: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['storeToRefs']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
@@ -343,9 +384,11 @@ declare module 'vue' {
     readonly useAppConfig: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/config')['useAppConfig']>
     readonly useAsyncData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useAsyncData']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
+    readonly useConversationChat: UnwrapRef<typeof import('../../app/composables/useConversationChat')['useConversationChat']>
     readonly useCookie: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/cookie')['useCookie']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
+    readonly useEnterpriseUiState: UnwrapRef<typeof import('../../app/composables/useEnterpriseUiState')['useEnterpriseUiState']>
     readonly useError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['useError']>
     readonly useFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/fetch')['useFetch']>
     readonly useHead: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['useHead']>
@@ -362,6 +405,7 @@ declare module 'vue' {
     readonly useNuxtData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useNuxtData']>
     readonly useNuxtDevTools: UnwrapRef<typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools')['useNuxtDevTools']>
     readonly usePinia: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['usePinia']>
+    readonly usePlatformSettings: UnwrapRef<typeof import('../../app/composables/usePlatformSettings')['usePlatformSettings']>
     readonly usePreviewMode: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/preview')['usePreviewMode']>
     readonly useRequestEvent: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestEvent']>
     readonly useRequestFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestFetch']>
@@ -424,6 +468,7 @@ declare module 'vue' {
     readonly useShadowRoot: UnwrapRef<typeof import('vue')['useShadowRoot']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
     readonly useState: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/state')['useState']>
+    readonly useStudentLoginPrompt: UnwrapRef<typeof import('../../app/composables/useStudentLoginPrompt')['useStudentLoginPrompt']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useToast: UnwrapRef<typeof import('../../app/composables/useToast')['useToast']>
     readonly useTransitionState: UnwrapRef<typeof import('vue')['useTransitionState']>

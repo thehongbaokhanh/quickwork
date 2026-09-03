@@ -71,7 +71,7 @@ if (__VLS_ctx.isOpen) {
     __VLS_asFunctionalElement1(__VLS_intrinsics.div, __VLS_intrinsics.div)({
         ...{ class: ([
                 'mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10',
-                __VLS_ctx.isDanger ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                __VLS_ctx.isDanger ? 'bg-red-50 text-red-600' : 'bg-sky-50 text-sky-600'
             ]) },
     });
     /** @type {__VLS_StyleScopedClasses['mx-auto']} */ ;
@@ -144,7 +144,7 @@ if (__VLS_ctx.isOpen) {
         type: "button",
         ...{ class: ([
                 'inline-flex w-full justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm sm:w-auto transition-colors',
-                __VLS_ctx.isDanger ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'
+                __VLS_ctx.isDanger ? 'bg-red-600 hover:bg-red-500' : 'bg-sky-600 hover:bg-sky-500'
             ]) },
     });
     /** @type {__VLS_StyleScopedClasses['inline-flex']} */ ;

@@ -1,0 +1,200 @@
+# QuickWork Render Blueprint.
+# This production topology creates paid private services and persistent disks.
+# Render shows the estimated cost before applying the Blueprint.
+services:
+  - type: web
+    name: quickwork-web
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    rootDir: frontend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: NUXT_PUBLIC_API_BASE
+        value: /api/v1
+      - key: NUXT_PUBLIC_GEOCODING_BASE_URL
+        value: https://nominatim.openstreetmap.org
+      - key: NUXT_API_BASE_INTERNAL
+        fromService:
+          type: pserv
+          name: quickwork-api
+          property: hostport
+      - key: NUXT_API_PROXY_TARGET
+        fromService:
+          type: pserv
+          name: quickwork-api
+          property: hostport
+
+  - type: pserv
+    name: quickwork-api
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    maxShutdownDelaySeconds: 60
+    envVars:
+      - key: APP_NAME
+        value: QuickWork
+      - key: APP_ENV
+        value: production
+      - key: ADMIN_SECRET
+        generateValue: true
+      - key: ADMIN_IP_ALLOWLIST
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY_HOURS
+        value: "24"
+      - key: JWT_REFRESH_EXPIRY_HOURS
+        value: "720"
+      - key: DB_SEED_ENABLED
+        value: "false"
+      - key: AUTH_COOKIE_SECURE
+        value: "true"
+      - key: AUTH_EXPOSE_TOKENS
+        value: "false"
+      - key: CORS_ALLOWED_ORIGINS
+        fromService:
+          type: web
+          name: quickwork-web
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: quickwork-mysql
+          property: host
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_NAME
+        fromService:
+          type: pserv
+          name: quickwork-mysql
+          envVarKey: MYSQL_DATABASE
+      - key: DB_USER
+        fromService:
+          type: pserv
+          name: quickwork-mysql
+          envVarKey: MYSQL_USER
+      - key: DB_PASSWORD
+        fromService:
+          type: pserv
+          name: quickwork-mysql
+          envVarKey: MYSQL_PASSWORD
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: quickwork-redis
+          property: connectionString
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: UPLOAD_MALWARE_SCAN_REQUIRED
+        value: "true"
+      - key: CLAMAV_ADDRESS
+        fromService:
+          type: pserv
+          name: quickwork-clamav
+          property: hostport
+      - key: MQ_ENABLED
+        value: "true"
+      - key: RABBITMQ_HOST
+        fromService:
+          type: pserv
+          name: quickwork-rabbitmq
+          property: host
+      - key: RABBITMQ_PORT
+        value: "5672"
+      - key: RABBITMQ_USERNAME
+        fromService:
+          type: pserv
+          name: quickwork-rabbitmq
+          envVarKey: RABBITMQ_DEFAULT_USER
+      - key: RABBITMQ_PASSWORD
+        fromService:
+          type: pserv
+          name: quickwork-rabbitmq
+          envVarKey: RABBITMQ_DEFAULT_PASS
+      - key: RABBITMQ_EXCHANGE
+        value: quickwork.events
+      - key: RABBITMQ_QUEUE
+        value: quickwork.notifications
+      - key: RABBITMQ_ROUTING_KEY
+        value: notification.create
+      - key: RABBITMQ_PREFETCH
+        value: "20"
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: JOB_MATCH_CANDIDATE_LIMIT
+        value: "20"
+      - key: JOB_MATCH_CACHE_TTL_MINUTES
+        value: "45"
+      - key: JOB_MATCH_AI_TIMEOUT_SECONDS
+        value: "12"
+
+  - type: pserv
+    name: quickwork-mysql
+    runtime: image
+    region: singapore
+    plan: 1c-2g
+    image:
+      url: docker.io/library/mysql:8.4.11
+    disk:
+      name: quickwork-mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: MYSQL_DATABASE
+        value: quickwork
+      - key: MYSQL_USER
+        value: quickwork
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+
+  - type: keyvalue
+    name: quickwork-redis
+    region: singapore
+    plan: 256mb
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
+    persistenceMode: journal-snapshot
+
+  - type: pserv
+    name: quickwork-rabbitmq
+    runtime: image
+    region: singapore
+    plan: 0.5c-512mb
+    image:
+      url: docker.io/library/rabbitmq:4.3.5-management-alpine
+    disk:
+      name: quickwork-rabbitmq-data
+      mountPath: /var/lib/rabbitmq
+      sizeGB: 5
+    envVars:
+      - key: RABBITMQ_DEFAULT_USER
+        value: quickwork
+      - key: RABBITMQ_DEFAULT_PASS
+        generateValue: true
+      - key: RABBITMQ_NODENAME
+        value: rabbit@localhost
+
+  - type: pserv
+    name: quickwork-clamav
+    runtime: image
+    region: singapore
+    plan: 1c-2g
+    image:
+      url: docker.io/clamav/clamav:1.5.4
+    disk:
+      name: quickwork-clamav-data
+      mountPath: /var/lib/clamav
+      sizeGB: 1

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -50,6 +51,9 @@ type authService struct {
 	studentRepo    repositories.StudentRepository
 	enterpriseRepo repositories.EnterpriseRepository
 	authRedisRepo  repositories.AuthRedisRepository
+	settings       *SystemSettingsService
+	notifications  NotificationService
+	loginLimiter   *loginAttemptLimiter
 }
 
 func NewAuthService(
@@ -60,6 +64,8 @@ func NewAuthService(
 	studentRepo repositories.StudentRepository,
 	enterpriseRepo repositories.EnterpriseRepository,
 	authRedisRepo repositories.AuthRedisRepository,
+	settings *SystemSettingsService,
+	notifications NotificationService,
 ) AuthService {
 	return &authService{
 		db:             db,
@@ -68,10 +74,21 @@ func NewAuthService(
 		studentRepo:    studentRepo,
 		enterpriseRepo: enterpriseRepo,
 		authRedisRepo:  authRedisRepo,
+		settings:       settings,
+		notifications:  notifications,
+		loginLimiter:   newLoginAttemptLimiter(),
 	}
 }
 
 func (s *authService) RegisterStudent(req *request.RegisterStudentRequest) (*response.RegisterResponse, error) {
+	settings := s.currentSettings(context.Background())
+	if !settings.Registration.Student {
+		return nil, ErrStudentRegistrationDisabled
+	}
+	if settings.Security.StrongPassword && !isPasswordPolicyValid(req.Password) {
+		return nil, ErrPasswordPolicyInvalid
+	}
+
 	// 1. Kiểm tra email trùng lặp sử dụng DB kết nối chuẩn
 	_, err := s.userRepo.FindByEmail(s.db, req.Email)
 	if err == nil {
@@ -105,9 +122,11 @@ func (s *authService) RegisterStudent(req *request.RegisterStudentRequest) (*res
 	}
 
 	studentProfile := &models.StudentProfile{
-		UserID: user.ID,
-		Name:   req.Name,
-		Phone:  req.Phone,
+		UserID:                 user.ID,
+		Name:                   req.Name,
+		Phone:                  req.Phone,
+		ProfileVisible:         true,
+		AllowEnterpriseContact: true,
 	}
 
 	if err := s.studentRepo.Create(tx, studentProfile); err != nil {
@@ -130,6 +149,14 @@ func (s *authService) RegisterStudent(req *request.RegisterStudentRequest) (*res
 }
 
 func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest) (*response.RegisterResponse, error) {
+	settings := s.currentSettings(context.Background())
+	if !settings.Registration.Enterprise {
+		return nil, ErrEnterpriseRegistrationDisabled
+	}
+	if settings.Security.StrongPassword && !isPasswordPolicyValid(req.Password) {
+		return nil, ErrPasswordPolicyInvalid
+	}
+
 	req.GPKDURL = strings.TrimSpace(req.GPKDURL)
 	req.Phone = strings.TrimSpace(req.Phone)
 	if req.GPKDURL == "" {
@@ -189,6 +216,13 @@ func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest)
 		return nil, err
 	}
 
+	if s.notifications != nil {
+		if _, err := s.notifications.NotifyAdminsEnterprisePendingTx(tx, *enterpriseProfile); err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+
 	if err := tx.Commit().Error; err != nil {
 		return nil, err
 	}
@@ -203,17 +237,31 @@ func (s *authService) RegisterEnterprise(req *request.RegisterEnterpriseRequest)
 }
 
 func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse, error) {
+	ctx := context.Background()
+	settings := s.currentSettings(ctx)
+	maximumAttempts := settings.Security.LoginAttempts
+	blocked, remoteTracked := s.loginAttemptBlocked(ctx, req.Email, maximumAttempts)
+	if blocked {
+		return nil, ErrTooManyLoginAttempts
+	}
 
 	// 1. Tìm User theo Email
 	user, err := s.userRepo.FindByEmail(s.db, req.Email)
 	if err != nil {
+		if s.recordLoginFailure(ctx, req.Email, maximumAttempts) {
+			return nil, ErrTooManyLoginAttempts
+		}
 		return nil, ErrInvalidCredential
 	}
 
 	// 2. So sánh Password
 	if err := password.Compare(user.Password, req.Password); err != nil {
+		if s.recordLoginFailure(ctx, req.Email, maximumAttempts) {
+			return nil, ErrTooManyLoginAttempts
+		}
 		return nil, ErrInvalidCredential
 	}
+	s.clearLoginFailures(ctx, req.Email, remoteTracked)
 
 	// 3. Kiểm tra Status
 	if err := s.ensureCanLogin(user); err != nil {
@@ -221,7 +269,11 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 	}
 
 	// 4. Sinh JWT
-	accessToken, err := jwt.GenerateAccessToken(user.ID, string(user.Role))
+	accessToken, err := jwt.GenerateAccessTokenWithDuration(
+		user.ID,
+		string(user.Role),
+		time.Duration(settings.Security.SessionMinutes)*time.Minute,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +290,7 @@ func (s *authService) Login(req *request.LoginRequest) (*response.LoginResponse,
 		UserID:       user.ID,
 		Email:        user.Email,
 		Role:         string(user.Role),
-	}, user), nil
+	}, user, settings.Registration.RequireKYB), nil
 }
 
 func (s *authService) ChangePassword(userID uint, req *request.ChangePasswordRequest) error {
@@ -255,7 +307,7 @@ func (s *authService) ChangePassword(userID uint, req *request.ChangePasswordReq
 		return ErrNewPasswordSame
 	}
 
-	if !isPasswordPolicyValid(req.NewPassword) {
+	if s.currentSettings(context.Background()).Security.StrongPassword && !isPasswordPolicyValid(req.NewPassword) {
 		return ErrPasswordPolicyInvalid
 	}
 
@@ -503,6 +555,9 @@ func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*
 	// Look up user in Database
 	user, err := s.userRepo.FindByEmail(s.db, email)
 	if err != nil {
+		if !s.currentSettings(ctx).Registration.Student {
+			return nil, ErrStudentRegistrationDisabled
+		}
 		// User does not exist, auto-register as STUDENT
 		hashedPassword, err := password.Hash(uuid.New().String())
 		if err != nil {
@@ -565,7 +620,12 @@ func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*
 	}
 
 	// Generate Access and Refresh Tokens
-	accessToken, err := jwt.GenerateAccessToken(user.ID, string(user.Role))
+	settings := s.currentSettings(ctx)
+	accessToken, err := jwt.GenerateAccessTokenWithDuration(
+		user.ID,
+		string(user.Role),
+		time.Duration(settings.Security.SessionMinutes)*time.Minute,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -581,7 +641,7 @@ func (s *authService) LoginOrRegisterGoogle(ctx context.Context, code string) (*
 		UserID:       user.ID,
 		Email:        user.Email,
 		Role:         string(user.Role),
-	}, user), nil
+	}, user, settings.Registration.RequireKYB), nil
 }
 
 func (s *authService) GetGoogleConfig() map[string]string {
@@ -591,11 +651,79 @@ func (s *authService) GetGoogleConfig() map[string]string {
 	}
 }
 
-func (s *authService) buildLoginResponse(res *response.LoginResponse, user *models.User) *response.LoginResponse {
+func (s *authService) currentSettings(ctx context.Context) SystemSettings {
+	if s.settings == nil {
+		return failClosedAuthSettings()
+	}
+	snapshot, err := s.settings.Current(ctx)
+	if err != nil {
+		log.Printf("auth settings unavailable; using fail-closed registration policy: %v", err)
+		return failClosedAuthSettings()
+	}
+	return snapshot.Settings
+}
+
+func failClosedAuthSettings() SystemSettings {
+	settings := DefaultSystemSettings()
+	settings.Registration.Student = false
+	settings.Registration.Enterprise = false
+	settings.Security.StrongPassword = true
+	return settings
+}
+
+func (s *authService) loginAttemptBlocked(ctx context.Context, email string, maximum int) (bool, bool) {
+	if maximum < 1 {
+		return false, false
+	}
+	if s.authRedisRepo != nil {
+		count, err := s.authRedisRepo.LoginAttemptCount(ctx, email)
+		if err == nil {
+			return count >= int64(maximum), count > 0
+		}
+		log.Printf("Redis login-attempt read failed; using bounded local fallback: %v", err)
+	}
+	return s.loginLimiter.blocked(email, maximum), false
+}
+
+func (s *authService) recordLoginFailure(ctx context.Context, email string, maximum int) bool {
+	if maximum < 1 {
+		return false
+	}
+	if s.authRedisRepo != nil {
+		count, err := s.authRedisRepo.IncrementLoginAttempt(ctx, email, loginAttemptLockDuration)
+		if err == nil {
+			return count >= int64(maximum)
+		}
+		log.Printf("Redis login-attempt increment failed; using bounded local fallback: %v", err)
+	}
+	return s.loginLimiter.fail(email, maximum)
+}
+
+func (s *authService) clearLoginFailures(ctx context.Context, email string, remoteTracked bool) {
+	s.loginLimiter.reset(email)
+	if !remoteTracked || s.authRedisRepo == nil {
+		return
+	}
+	if err := s.authRedisRepo.ClearLoginAttempts(ctx, email); err != nil {
+		log.Printf("Redis login-attempt reset failed; counter will expire automatically: %v", err)
+	}
+}
+
+func (s *authService) buildLoginResponse(res *response.LoginResponse, user *models.User, requireKYB bool) *response.LoginResponse {
+	if user.Role == models.RoleStudent {
+		var profile models.StudentProfile
+		if err := s.db.Where("user_id = ?", user.ID).First(&profile).Error; err == nil {
+			res.Name = profile.Name
+			res.Avatar = profile.Avatar
+		}
+		return res
+	}
+
 	if user.Role != models.RoleEnterprise {
 		return res
 	}
 
+	res.EnterpriseRequireKYB = requireKYB
 	res.EnterpriseKYBStatus = string(models.KYBPending)
 
 	var profile models.EnterpriseProfile
@@ -612,8 +740,10 @@ func (s *authService) buildLoginResponse(res *response.LoginResponse, user *mode
 	}
 
 	res.EnterpriseKYBStatus = string(kybStatus)
-	res.EnterpriseApproved = kybStatus == models.KYBApproved
+	res.Name = profile.CompanyName
+	res.EnterpriseApproved = kybStatus == models.KYBApproved && strings.TrimSpace(profile.GPKDURL) != ""
 	res.BusinessLicenseURL = profile.GPKDURL
+	res.EnterpriseKYBRejectReason = profile.KYBRejectReason
 	return res
 }
 
@@ -628,28 +758,5 @@ func (s *authService) ensureCanLogin(user *models.User) error {
 		return ErrAccountInactive
 	}
 
-	if user.Role != models.RoleEnterprise {
-		return nil
-	}
-
-	var profile models.EnterpriseProfile
-	if err := s.db.Where("user_id = ?", user.ID).First(&profile).Error; err != nil {
-		return ErrEnterpriseNotVerify
-	}
-
-	kybStatus := profile.KYBStatus
-	if kybStatus == "" {
-		kybStatus = profile.StatusKYB
-	}
-	if kybStatus == "" {
-		kybStatus = models.KYBPending
-	}
-
-	if kybStatus == models.KYBApproved {
-		return nil
-	}
-	if kybStatus == models.KYBRejected {
-		return ErrEnterpriseRejected
-	}
-	return ErrEnterpriseNotVerify
+	return nil
 }

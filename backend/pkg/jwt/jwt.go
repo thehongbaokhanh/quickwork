@@ -20,6 +20,7 @@ type Claims struct {
 	UserID    uint   `json:"user_id"`
 	Role      string `json:"role"`
 	TokenUUID string `json:"token_uuid"`
+	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
 }
 
@@ -31,6 +32,7 @@ func GenerateRefreshToken(userID uint, role string) (string, error) {
 		UserID:    userID,
 		Role:      role,
 		TokenUUID: uuid.NewString(),
+		TokenType: "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
 
 			ExpiresAt: jwt.NewNumericDate(
@@ -53,6 +55,7 @@ func GenerateAccessToken(userID uint, role string) (string, error) {
 		UserID:    userID,
 		Role:      role,
 		TokenUUID: uuid.NewString(),
+		TokenType: "access",
 		RegisteredClaims: jwt.RegisteredClaims{
 
 			ExpiresAt: jwt.NewNumericDate(
@@ -75,7 +78,7 @@ func VerifyToken(tokenString string) (*Claims, error) {
 		&Claims{},
 		func(t *jwt.Token) (interface{}, error) {
 
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			if t.Method != jwt.SigningMethodHS256 {
 				return nil, errors.New("unexpected signing method")
 			}
 
@@ -89,7 +92,7 @@ func VerifyToken(tokenString string) (*Claims, error) {
 
 	claims, ok := token.Claims.(*Claims)
 
-	if !ok || !token.Valid {
+	if !ok || !token.Valid || claims.TokenType != "access" {
 		return nil, errors.New("invalid token")
 	}
 
@@ -98,12 +101,12 @@ func VerifyToken(tokenString string) (*Claims, error) {
 
 func DecodeToken(tokenString string) (*Claims, error) {
 
-	token, err := jwt.NewParser(jwt.WithoutClaimsValidation()).ParseWithClaims(
+	token, err := jwt.NewParser(jwt.WithoutClaimsValidation(), jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()})).ParseWithClaims(
 		tokenString,
 		&Claims{},
 		func(t *jwt.Token) (interface{}, error) {
 
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			if t.Method != jwt.SigningMethodHS256 {
 				return nil, errors.New("unexpected signing method")
 			}
 

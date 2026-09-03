@@ -114,7 +114,7 @@ __VLS_asFunctionalElement1(__VLS_intrinsics.input)({
             'py-2.5',
             __VLS_ctx.error
                 ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500'
-                : 'border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500 focus:border-blue-500 border',
+                : 'border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500 border',
             __VLS_ctx.disabled ? 'bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-white shadow-sm'
         ]) },
 });

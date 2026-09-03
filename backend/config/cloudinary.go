@@ -1,8 +1,8 @@
 package config
 
 import (
-	"log"
-	"os"
+	"fmt"
+	"strings"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 )
@@ -10,17 +10,18 @@ import (
 // CLD is the global Cloudinary client instance.
 var CLD *cloudinary.Cloudinary
 
-// InitCloudinary initializes the Cloudinary connection using CLOUDINARY_URL from the environment.
-func InitCloudinary() {
-	cldURL := os.Getenv("CLOUDINARY_URL")
-	if cldURL == "" {
-		log.Println("⚠️  CLOUDINARY_URL environment variable is not set")
-		return
+// InitCloudinary initializes the Cloudinary client from runtime configuration.
+func InitCloudinary(cldURL string) error {
+	if strings.TrimSpace(cldURL) == "" {
+		CLD = nil
+		return nil
 	}
 
 	var err error
 	CLD, err = cloudinary.NewFromURL(cldURL)
 	if err != nil {
-		log.Fatalf("❌ Failed to initialize Cloudinary: %v", err)
+		CLD = nil
+		return fmt.Errorf("initialize Cloudinary: %w", err)
 	}
+	return nil
 }

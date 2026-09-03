@@ -5,16 +5,26 @@
         <div>
           <div class="flex flex-wrap items-center gap-4">
             <h2 class="text-3xl font-extrabold leading-tight text-sky-600 sm:text-4xl">
-              Việc làm tốt nhất
+              {{ personalized ? 'Việc làm phù hợp với bạn' : 'Việc làm tốt nhất' }}
             </h2>
-            <span class="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm">
-              <Icon name="uil:bolt-alt" class="h-4 w-4 text-sky-600" aria-hidden="true" />
-              Đề xuất bởi QuickWork
+            <span class="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-white py-1 pl-1 pr-3 text-sm font-bold text-slate-700 shadow-sm">
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-sky-100 text-sky-700"><Icon name="uil:robot" class="h-4 w-4" aria-hidden="true" /></span>
+              {{ personalized ? (aiUsed ? 'AI + quy tắc QuickWork' : 'Theo hồ sơ của bạn') : 'Đề xuất bởi QuickWork' }}
             </span>
           </div>
           <p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-            Danh sách được sắp xếp theo độ phù hợp, mức lương, số vị trí và thời gian đăng từ dữ liệu tuyển dụng hiện có.
+            {{ personalized
+              ? 'Danh sách được xếp theo địa điểm, ngành nghề, mức lương, loại hình, kỹ năng, kinh nghiệm và học vấn trong hồ sơ của bạn.'
+              : 'Danh sách được sắp xếp theo mức lương, số vị trí và thời gian đăng từ dữ liệu tuyển dụng hiện có.' }}
           </p>
+          <NuxtLink
+            v-if="personalized && profileCompleteness < 1"
+            to="/profile"
+            class="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-sky-700 hover:text-sky-800"
+          >
+            Hoàn thiện hồ sơ ({{ Math.round(profileCompleteness * 100) }}%) để nhận gợi ý chính xác hơn
+            <Icon name="uil:arrow-right" class="h-4 w-4" aria-hidden="true" />
+          </NuxtLink>
         </div>
 
         <div class="flex items-center gap-3">
@@ -150,12 +160,14 @@
           >
             <HomeJobCard
               :job="job"
+              :signals="jobSignals(job)"
               :active="selectedJob?.id === job.id"
               :is-favorite="isFavoriteJob?.(job) || false"
               :is-favorite-loading="isFavoriteLoading?.(job) || false"
               @save="emit('save', job)"
               @preview="handleTitlePreview"
               @preview-close="handleTitlePreviewClose"
+              @match-tooltip-change="handleMatchTooltipChange"
             />
           </div>
         </div>
@@ -237,7 +249,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { DisplayJob } from '~/utils/jobDisplay'
+import { type DisplayJob, formatJobLocation } from '~/utils/jobDisplay'
+import { buildJobSignalThresholds, getJobSignals } from '~/utils/jobSignals'
 import HomeJobCard from '~/components/HomeJobCard.vue'
 import HomeJobDetailPanel from '~/components/home/HomeJobDetailPanel.vue'
 
@@ -284,6 +297,9 @@ const props = defineProps<{
   isFavoriteLoading?: (job: DisplayJob) => boolean
   loading: boolean
   selectedJob?: DisplayJob | null
+  personalized?: boolean
+  aiUsed?: boolean
+  profileCompleteness?: number
 }>()
 
 const emit = defineEmits<{
@@ -305,6 +321,7 @@ const detailPanelRef = ref<HTMLElement | null>(null)
 const previewAnchor = ref<PreviewAnchor | null>(null)
 const isTitleHovered = ref(false)
 const isPreviewHovered = ref(false)
+const openMatchTooltipJobIds = ref<Set<number>>(new Set())
 let autoPageTimer: ReturnType<typeof setInterval> | null = null
 let previewCloseTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -312,8 +329,14 @@ const activeFilterOption = computed(() => {
   return filterOptions.find((option) => option.key === activeFilterKey.value) || defaultFilterOption
 })
 
+const jobSignalThresholds = computed(() => buildJobSignalThresholds(props.jobs))
+
+function jobSignals(job: DisplayJob) {
+  return getJobSignals(job, jobSignalThresholds.value)
+}
+
 const filterValueMap = computed<Record<FilterKey, string[]>>(() => ({
-  location: uniqueValues(props.jobs.map((job) => job.location)).filter((value) => value !== 'Chưa cập nhật'),
+  location: uniqueValues(props.jobs.map((job) => formatJobLocation(job.location))).filter((value) => value !== 'Chưa cập nhật'),
   salary: uniqueValues(props.jobs.map((job) => job.salaryRange)),
   level: uniqueValues(props.jobs.map((job) => job.level)),
   category: uniqueValues([
@@ -351,7 +374,12 @@ const pagedJobs = computed(() => {
   return filteredJobs.value.slice(start, start + pageSize)
 })
 
-const isPreviewActive = computed(() => Boolean(props.selectedJob) || isTitleHovered.value || isPreviewHovered.value)
+const isPreviewActive = computed(() => (
+  Boolean(props.selectedJob)
+  || isTitleHovered.value
+  || isPreviewHovered.value
+  || openMatchTooltipJobIds.value.size > 0
+))
 
 const previewPopupStyle = computed(() => {
   if (!process.client || !previewAnchor.value) {
@@ -397,7 +425,7 @@ function normalizeFilterValue(value: string) {
 }
 
 function getJobFilterValue(job: DisplayJob, key: FilterKey) {
-  if (key === 'location') return job.location
+  if (key === 'location') return formatJobLocation(job.location)
   if (key === 'salary') return job.salaryRange
   if (key === 'level') return job.level
   if (key === 'category') return job.category
@@ -483,6 +511,17 @@ function handleTitlePreview(job: DisplayJob, anchor: PreviewAnchor) {
 function handleTitlePreviewClose() {
   isTitleHovered.value = false
   schedulePreviewClose()
+}
+
+function handleMatchTooltipChange(jobId: number, open: boolean) {
+  const nextOpenJobIds = new Set(openMatchTooltipJobIds.value)
+  if (open) {
+    nextOpenJobIds.add(jobId)
+  } else {
+    nextOpenJobIds.delete(jobId)
+  }
+  openMatchTooltipJobIds.value = nextOpenJobIds
+  markInteraction()
 }
 
 function handlePreviewEnter() {
@@ -572,6 +611,7 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleDocumentClick)
   clearPreviewCloseTimer()
+  openMatchTooltipJobIds.value = new Set()
 
   if (autoPageTimer) {
     clearInterval(autoPageTimer)

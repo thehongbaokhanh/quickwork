@@ -2,7 +2,9 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -12,17 +14,24 @@ import (
 
 var (
 	Client *redis.Client
-	Ctx = context.Background()
+	Ctx    = context.Background()
 )
 
-
 func Init(cfg *config.Config) error {
-
-	Client = redis.NewClient(&redis.Options{
+	options := &redis.Options{
 		Addr:     cfg.RedisHost + ":" + cfg.RedisPort,
 		Password: cfg.RedisPassword,
 		DB:       0,
-	})
+	}
+	if strings.TrimSpace(cfg.RedisURL) != "" {
+		parsed, err := redis.ParseURL(cfg.RedisURL)
+		if err != nil {
+			return fmt.Errorf("parse Redis URL: %w", err)
+		}
+		options = parsed
+	}
+
+	Client = redis.NewClient(options)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

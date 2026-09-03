@@ -1,46 +1,84 @@
 <template>
-  <div class="min-h-screen bg-slate-100 flex flex-col text-slate-900 font-sans">
-    <div class="flex flex-1 h-screen overflow-hidden">
+  <div class="flex h-screen overflow-hidden bg-slate-100 font-sans text-slate-900">
+    <div class="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+      <div
+        v-if="isSidebarOpen"
+        class="fixed inset-0 z-30 bg-slate-950/50 md:hidden"
+        @click="isSidebarOpen = false"
+      />
       <!-- Sidebar Desktop -->
-      <aside class="w-64 bg-slate-950 border-r border-slate-900 hidden md:flex flex-col relative z-20 text-white">
+      <aside
+        :class="[
+          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-900 bg-slate-950 text-white transition-[transform,width] duration-200 md:relative md:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+          isSidebarCollapsed ? 'md:w-[72px] sidebar-collapsed' : 'md:w-64'
+        ]"
+      >
         <!-- Admin workspace identity -->
-        <div class="h-16 flex items-center px-5 border-b border-white/10">
-          <div class="flex min-w-0 items-center gap-3">
+        <div :class="['relative h-16 flex items-center border-b border-white/10', isSidebarCollapsed ? 'justify-center px-3' : 'justify-between px-5']">
+          <div :class="['flex min-w-0 items-center', isSidebarCollapsed ? 'justify-center' : 'gap-3']">
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-400/20 bg-sky-400/10 text-sky-300 shadow-sm shadow-sky-950/30">
               <Icon name="uil:shield-check" class="h-6 w-6" aria-hidden="true" />
             </span>
-            <span class="min-w-0">
-              <span class="block truncate text-sm font-black uppercase text-white">Admin Center</span>
-              <span class="mt-0.5 block truncate text-[11px] font-semibold text-slate-400">QuickWork Control</span>
+            <span v-if="!isSidebarCollapsed" class="min-w-0">
+              <span class="block truncate text-sm font-black uppercase text-white">{{ adminDisplayName }}</span>
+              <span class="mt-0.5 block truncate text-[11px] font-semibold text-slate-400">{{ systemName }} Control</span>
             </span>
           </div>
+          <button
+            type="button"
+            class="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-white text-slate-800 shadow-md shadow-slate-950/20 ring-2 ring-slate-100 transition hover:border-sky-500 hover:bg-sky-600 hover:text-white hover:ring-sky-100 md:absolute md:-right-3 md:top-1/2 md:inline-flex md:-translate-y-1/2"
+            :aria-label="isSidebarCollapsed ? 'Mo rong sidebar' : 'Thu gon sidebar'"
+            @click="isSidebarCollapsed = !isSidebarCollapsed"
+          >
+            <Icon :name="isSidebarCollapsed ? 'uil:angle-right-b' : 'uil:angle-left-b'" class="h-4 w-4" />
+          </button>
         </div>
 
         <!-- Menu -->
-        <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
-          <NuxtLink v-for="item in menuItems" :key="item.path" :to="item.path" active-class="bg-sky-500 text-slate-950 font-black shadow-sm shadow-sky-950/20" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
-            <Icon :name="item.icon" class="w-5 h-5" />
-            <span class="text-sm">{{ item.name }}</span>
+        <div :class="['flex-1 overflow-y-auto py-4 space-y-1 custom-scrollbar', isSidebarCollapsed ? 'px-2' : 'px-3']">
+          <NuxtLink
+            v-for="item in menuItems"
+            :key="item.path"
+            :to="item.path"
+            active-class="bg-sky-500 text-slate-950 font-black shadow-sm shadow-sky-950/20"
+            :class="[
+              'flex items-center text-slate-300 transition-colors hover:bg-white/10 hover:text-white',
+              isSidebarCollapsed ? 'mx-auto h-11 w-11 justify-center rounded-xl p-0' : 'gap-3 rounded-lg px-3 py-2'
+            ]"
+            :title="isSidebarCollapsed ? item.name : undefined"
+            @click="isSidebarOpen = false"
+          >
+            <Icon :name="item.icon" class="w-5 h-5 shrink-0" />
+            <span v-if="!isSidebarCollapsed" class="text-sm">{{ item.name }}</span>
           </NuxtLink>
         </div>
 
         <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-white/10">
-          <button @click="handleLogout" class="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors text-sm font-bold">
-            <Icon name="uil:sign-out-alt" class="w-5 h-5" />
+        <div :class="['sidebar-footer border-t border-white/10', isSidebarCollapsed ? 'p-2.5' : 'p-4']">
+          <button
+            :class="[
+              'flex items-center text-sm font-bold text-slate-300 transition-colors hover:bg-white/10 hover:text-white',
+              isSidebarCollapsed ? 'mx-auto h-11 w-11 justify-center rounded-xl p-0' : 'w-full gap-3 rounded-lg px-3 py-2'
+            ]"
+            :title="isSidebarCollapsed ? 'Dang xuat' : undefined"
+            @click="handleLogout"
+          >
+            <Icon name="uil:sign-out-alt" class="w-5 h-5 shrink-0" />
             <span>Đăng xuất</span>
           </button>
         </div>
       </aside>
 
       <!-- Main Content -->
-      <div class="flex-1 flex flex-col min-w-0 bg-slate-100 relative z-10">
+      <div class="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col bg-slate-100">
         <!-- Top Navbar -->
         <header class="sticky top-0 z-30 h-16 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div class="flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">
             <div class="flex min-w-0 items-center gap-4">
               <button
                 class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 md:hidden"
+                @click="isSidebarOpen = true"
                 aria-label="Mở menu"
               >
                 <Icon name="uil:bars" class="h-5 w-5" />
@@ -74,22 +112,32 @@
                   @click.stop="toggleNotifications"
                 >
                   <Icon name="uil:bell" class="h-5 w-5" />
-                  <span class="absolute right-2 top-2 h-2 w-2 rounded-full border border-white bg-sky-500"></span>
+                  <span
+                    v-if="adminUnreadCount > 0"
+                    class="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-black text-white"
+                  >
+                    {{ adminUnreadCount > 9 ? '9+' : adminUnreadCount }}
+                  </span>
                 </button>
 
                 <div
                   v-if="showNotifications"
-                  class="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-xl"
+                  class="absolute right-0 z-50 mt-2"
                   @click.stop
                 >
-                  <div class="border-b border-slate-100 px-4 py-3">
-                    <p class="font-bold text-slate-950">Thông báo quản trị</p>
-                    <p class="mt-0.5 text-xs text-slate-500">Các cảnh báo hệ thống sẽ hiển thị tại đây.</p>
-                  </div>
-                  <div class="px-4 py-5 text-sm text-slate-500">
-                    Tính năng thông báo chi tiết đang phát triển.
-                  </div>
-                </div>
+                  <UiNotificationDropdown
+                    title="Thông báo quản trị"
+                    :unread-count="adminUnreadCount"
+                    :loading="adminNotificationLoading"
+                    :items="adminNotifications"
+                    empty-text="Chưa có thông báo quản trị nào."
+                    storage-key="admin-header"
+                    :get-icon="getAdminNotificationIcon"
+                    :get-icon-class="getAdminNotificationIconClass"
+                    @mark-all-read="markAdminNotificationsRead"
+                    @open="openAdminNotification"
+                  />
+                                  </div>
               </div>
 
               <div class="relative">
@@ -157,7 +205,7 @@
         </header>
 
         <!-- Page Content -->
-        <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main class="min-h-0 flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <slot />
         </main>
       </div>
@@ -170,19 +218,26 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { useToast } from '~/composables/useToast'
+import { NotificationService } from '~/services/notification.service'
 
 const authStore = useAuthStore()
+const { adminDisplayName, systemName } = usePlatformSettings()
 const route = useRoute()
 const toast = useToast()
+const isSidebarOpen = ref(false)
+const isSidebarCollapsed = ref(false)
 const showUserMenu = ref(false)
 const showNotifications = ref(false)
+const adminNotifications = ref<any[]>([])
+const adminUnreadCount = ref(0)
+const adminNotificationLoading = ref(false)
 
 const handleLogout = async () => {
   await authStore.logout()
   toast.info('Đăng xuất thành công', 'Hẹn gặp lại!')
 }
 
-const adminName = computed(() => authStore.user?.name || authStore.user?.email?.split('@')[0] || 'Admin')
+const adminName = computed(() => authStore.user?.name || authStore.user?.email?.split('@')[0] || adminDisplayName.value)
 const userEmail = computed(() => authStore.user?.email || '')
 const adminInitials = computed(() => {
   const source = adminName.value.trim() || 'AD'
@@ -197,6 +252,9 @@ const adminInitials = computed(() => {
 const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value
   showUserMenu.value = false
+  if (showNotifications.value) {
+    loadAdminNotifications()
+  }
 }
 
 const toggleUserMenu = () => {
@@ -220,6 +278,7 @@ onMounted(() => {
     window.addEventListener('click', closeDropdowns)
     window.addEventListener('keydown', handleKeyDown)
   }
+  loadAdminNotifications()
 })
 
 onUnmounted(() => {
@@ -235,7 +294,6 @@ const menuItems = [
   { name: 'Học viên', path: '/admin/students', icon: 'uil:graduation-cap' },
   { name: 'Doanh nghiệp', path: '/admin/enterprises', icon: 'uil:building' },
   { name: 'Việc làm', path: '/admin/jobs', icon: 'uil:briefcase-alt' },
-  { name: 'Ứng tuyển', path: '/admin/applications', icon: 'uil:file-alt' },
   { name: 'Danh mục', path: '/admin/categories', icon: 'uil:tag-alt' },
   { name: 'Báo cáo', path: '/admin/reports', icon: 'uil:chart-line' },
   { name: 'Cài đặt', path: '/admin/settings', icon: 'uil:setting' }
@@ -250,6 +308,78 @@ const currentRouteIcon = computed(() => {
   const item = menuItems.find(m => route.path.startsWith(m.path))
   return item?.icon || 'uil:shield-check'
 })
+
+async function loadAdminNotifications() {
+  adminNotificationLoading.value = true
+  try {
+    const [listResponse, unreadResponse]: any[] = await Promise.all([
+      NotificationService.list({ page: 1, page_size: 100 }),
+      NotificationService.unreadCount()
+    ])
+    adminNotifications.value = listResponse?.data?.items || []
+    adminUnreadCount.value = Number(unreadResponse?.data?.unread_count || 0)
+  } catch {
+    adminNotifications.value = []
+    adminUnreadCount.value = 0
+  } finally {
+    adminNotificationLoading.value = false
+  }
+}
+
+async function markAdminNotificationsRead() {
+  try {
+    await NotificationService.markAllAsRead()
+    await loadAdminNotifications()
+  } catch (error: any) {
+    toast.error('Không thể cập nhật thông báo', error?.data?.message || error?.message || 'Vui lòng thử lại.')
+  }
+}
+
+async function openAdminNotification(item: any) {
+  try {
+    const unreadIDs = Array.isArray(item.unread_ids)
+      ? item.unread_ids
+      : (item.is_read ? [] : [item.id])
+    if (unreadIDs.length > 0) {
+      await Promise.all(unreadIDs.map((id: string | number) => NotificationService.markAsRead(id)))
+      const readIDSet = new Set(unreadIDs.map(String))
+      adminNotifications.value.forEach((notification) => {
+        if (readIDSet.has(String(notification.id))) notification.is_read = true
+      })
+      adminUnreadCount.value = Math.max(0, adminUnreadCount.value - unreadIDs.length)
+    }
+  } catch {
+    // Keep the dropdown responsive even if the read-state update fails.
+  }
+
+  const target = normalizeAdminActionURL(item.action_url)
+  if (target) {
+    closeDropdowns()
+    await navigateTo(target)
+  }
+}
+
+function normalizeAdminActionURL(value?: string) {
+  if (!value) return ''
+  if (value.startsWith('/admin/') || value.startsWith('/enterprise/') || value.startsWith('/student/')) return value
+  return ''
+}
+
+function getAdminNotificationIcon(type?: string) {
+  if (type === 'KYB') return 'uil:shield-check'
+  if (type === 'MESSAGE') return 'uil:comment-alt-message'
+  if (type === 'JOB') return 'uil:briefcase-alt'
+  if (type === 'APPLICATION') return 'uil:user-plus'
+  return 'uil:bell'
+}
+
+function getAdminNotificationIconClass(type?: string) {
+  if (type === 'KYB') return 'bg-cyan-50 text-cyan-700'
+  if (type === 'MESSAGE') return 'bg-violet-50 text-violet-700'
+  if (type === 'JOB') return 'bg-sky-50 text-sky-700'
+  if (type === 'APPLICATION') return 'bg-emerald-50 text-emerald-700'
+  return 'bg-slate-50 text-slate-600'
+}
 </script>
 
 <style scoped>
@@ -262,5 +392,9 @@ const currentRouteIcon = computed(() => {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
+}
+
+.sidebar-collapsed .sidebar-footer span {
+  display: none;
 }
 </style>

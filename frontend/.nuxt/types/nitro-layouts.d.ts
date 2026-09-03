@@ -1,4 +1,4 @@
-export type LayoutKey = "admin" | "admin-vue" | "auth" | "auth-vue" | "default" | "default-vue" | "enterprise" | "student"
+export type LayoutKey = "admin" | "admin-vue" | "auth" | "auth-vue" | "default" | "default-vue" | "enterprise" | "enterprise-vue" | "student" | "student-vue"
 declare module 'nitropack' {
   interface NitroRouteConfig {
     appLayout?: LayoutKey | false
