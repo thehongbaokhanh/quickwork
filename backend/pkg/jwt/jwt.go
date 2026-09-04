@@ -6,50 +6,122 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
+
+var SecretKey []byte
+
+func SetSecret(secret string) {
+	SecretKey = []byte(secret)
+}
 
 // Claims maps identity parameters into the JWT payload structure.
 type Claims struct {
-	UserID uint   `json:"user_id"`
-	Email  string `json:"email"`
-	Role   string `json:"role"`
+	UserID    uint   `json:"user_id"`
+	Role      string `json:"role"`
+	TokenUUID string `json:"token_uuid"`
+	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken issues a new JWT string signed using HS256 containing identity claims.
-func GenerateToken(userID uint, email string, role string, secret string, expiryHours int) (string, error) {
+func GenerateRefreshToken(userID uint, role string) (string, error) {
+
 	claims := Claims{
-		UserID: userID,
-		Email:  email,
-		Role:   role,
+
+		UserID:    userID,
+		Role:      role,
+		TokenUUID: uuid.NewString(),
+		TokenType: "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expiryHours))),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
+
+			ExpiresAt: jwt.NewNumericDate(
+				time.Now().Add(30 * 24 * time.Hour),
+			),
+
+			IssuedAt: jwt.NewNumericDate(time.Now()),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
+
+	return token.SignedString(SecretKey)
+
 }
 
-// VerifyToken decodes a token string, validates its signature, and returns its claims.
-func VerifyToken(tokenString string, secret string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		// Ensure standard Signing Method
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
-		}
-		return []byte(secret), nil
-	})
+func GenerateAccessToken(userID uint, role string) (string, error) {
+
+	claims := Claims{
+		UserID:    userID,
+		Role:      role,
+		TokenUUID: uuid.NewString(),
+		TokenType: "access",
+		RegisteredClaims: jwt.RegisteredClaims{
+
+			ExpiresAt: jwt.NewNumericDate(
+				time.Now().Add(24 * time.Hour),
+			),
+
+			IssuedAt: jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString(SecretKey)
+}
+
+func VerifyToken(tokenString string) (*Claims, error) {
+
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&Claims{},
+		func(t *jwt.Token) (interface{}, error) {
+
+			if t.Method != jwt.SigningMethodHS256 {
+				return nil, errors.New("unexpected signing method")
+			}
+
+			return SecretKey, nil
+		},
+	)
 
 	if err != nil {
 		return nil, err
 	}
 
 	claims, ok := token.Claims.(*Claims)
+
+	if !ok || !token.Valid || claims.TokenType != "access" {
+		return nil, errors.New("invalid token")
+	}
+
+	return claims, nil
+}
+
+func DecodeToken(tokenString string) (*Claims, error) {
+
+	token, err := jwt.NewParser(jwt.WithoutClaimsValidation(), jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()})).ParseWithClaims(
+		tokenString,
+		&Claims{},
+		func(t *jwt.Token) (interface{}, error) {
+
+			if t.Method != jwt.SigningMethodHS256 {
+				return nil, errors.New("unexpected signing method")
+			}
+
+			return SecretKey, nil
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*Claims)
+
 	if !ok || !token.Valid {
-		return nil, errors.New("invalid jwt token")
+		return nil, errors.New("invalid token")
 	}
 
 	return claims, nil

@@ -4,6 +4,8 @@ package database
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
 	"time"
 
 	"quickwork.local/backend/config"
@@ -15,13 +17,7 @@ import (
 
 // InitMySQL initializes a GORM database connection pool and pings it.
 func InitMySQL(cfg *config.Config) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		cfg.DBUser,
-		cfg.DBPassword,
-		cfg.DBHost,
-		cfg.DBPort,
-		cfg.DBName,
-	)
+	dsn := buildMySQLDSN(cfg)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -45,4 +41,24 @@ func InitMySQL(cfg *config.Config) (*gorm.DB, error) {
 
 	logger.Info("✅ MySQL Connected")
 	return db, nil
+}
+
+func buildMySQLDSN(cfg *config.Config) string {
+	query := url.Values{
+		"charset":   []string{"utf8mb4"},
+		"parseTime": []string{"True"},
+		"loc":       []string{"Local"},
+	}
+	if tlsMode := strings.TrimSpace(cfg.DBTLS); tlsMode != "" && !strings.EqualFold(tlsMode, "false") {
+		query.Set("tls", tlsMode)
+	}
+
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?%s",
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBHost,
+		cfg.DBPort,
+		cfg.DBName,
+		query.Encode(),
+	)
 }

@@ -19,7 +19,7 @@
     <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
       <div>
         <p class="text-sm text-gray-700">
-          Hiển thị trang <span class="font-semibold text-blue-600">{{ currentPage }}</span> / <span class="font-semibold text-gray-900">{{ totalPages }}</span>
+          Hiển thị trang <span class="font-semibold text-sky-600">{{ currentPage }}</span> / <span class="font-semibold text-gray-900">{{ totalPages }}</span>
         </p>
       </div>
       <div>
@@ -39,7 +39,7 @@
             :class="[
               'relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20',
               page === currentPage 
-                ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600' 
+                ? 'z-10 bg-sky-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600'
                 : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
             ]"
           >

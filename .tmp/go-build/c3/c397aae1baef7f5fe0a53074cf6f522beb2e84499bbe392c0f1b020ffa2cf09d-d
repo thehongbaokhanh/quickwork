@@ -1,0 +1,12 @@
+./category.go
+./conversation.go
+./enterprise_profile.go
+./favorite_job.go
+./job.go
+./job_application.go
+./message.go
+./notification.go
+./skill.go
+./student_profile.go
+./transaction.go
+./user.go

@@ -1,0 +1,8 @@
+./auth_service.go
+./conversation_service.go
+./errors.go
+./job_service.go
+./jwt_service.go
+./notification_service.go
+./session_service.go
+./conversation_service_test.go

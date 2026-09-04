@@ -1,0 +1,213 @@
+:root {
+  font-family: "Segoe UI", "Inter", "Be Vietnam Pro", "Noto Sans", Arial, sans-serif;
+  color-scheme: light;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  letter-spacing: 0;
+}
+
+body {
+  min-width: 320px;
+}
+
+.qw-chip {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 1.625rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.65rem;
+  white-space: nowrap;
+  word-break: keep-all;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.qw-chip--compact {
+  min-height: 1.5rem;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+}
+
+.qw-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(15 23 42 / 0.55);
+  padding: 1rem;
+}
+
+.qw-detail-panel {
+  width: 100%;
+  max-width: 48rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  box-shadow: 0 24px 60px rgb(15 23 42 / 0.22);
+}
+
+.qw-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #0f172a;
+  padding: 1.25rem;
+  color: white;
+}
+
+.qw-detail-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.qw-detail-avatar {
+  display: flex;
+  height: 3.25rem;
+  width: 3.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.625rem;
+  background: rgb(255 255 255 / 0.12);
+  color: white;
+  font-size: 1.125rem;
+  font-weight: 900;
+}
+
+.qw-detail-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgb(203 213 225);
+}
+
+.qw-detail-title {
+  margin-top: 0.35rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.25rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.qw-detail-subtitle {
+  margin-top: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(203 213 225);
+}
+
+.qw-detail-badges {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.qw-detail-close {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  color: rgb(203 213 225);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.qw-detail-close:hover {
+  background: rgb(255 255 255 / 0.1);
+  color: white;
+}
+
+.qw-detail-body {
+  padding: 1.25rem;
+}
+
+.qw-detail-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .qw-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.qw-detail-item {
+  border-radius: 0.625rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  padding: 0.875rem 1rem;
+}
+
+.qw-detail-label {
+  font-size: 0.6875rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+}
+
+.qw-detail-value {
+  margin-top: 0.5rem;
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: rgb(30 41 59);
+}
+
+.qw-detail-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  border-top: 1px solid rgb(226 232 240);
+  padding: 1rem 1.25rem;
+}
+
+.qw-detail-footer > button {
+  min-height: 2.75rem;
+  justify-content: center;
+  border-radius: 0.5rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .qw-detail-footer > button {
+    width: 100%;
+  }
+}

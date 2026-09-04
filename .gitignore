@@ -1,0 +1,59 @@
+# Environment
+.env
+.env.production
+secrets/
+deploy/nginx/certs/
+
+# Build
+bin/
+dist/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local uploads
+storage/
+
+# Temporary files
+tmp/
+
+# Environment
+.env
+backend/.env
+frontend/.env
+
+# Node
+frontend/node_modules/
+
+# Nuxt
+frontend/.nuxt/
+frontend/.output/
+
+# Vite cache
+frontend/node_modules/.cache/
+
+# Logs
+*.log
+
+# Go
+bin/
+tmp/
+/.cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Uploads
+storage/
+
+#  docs
+docs/*.md

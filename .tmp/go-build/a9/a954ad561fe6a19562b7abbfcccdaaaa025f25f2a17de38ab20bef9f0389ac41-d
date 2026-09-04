@@ -1,0 +1,9 @@
+./change_password_request.go
+./google_login_request.go
+./job_request.go
+./login_request.go
+./register_admin_request.go
+./register_enterprise_request.go
+./register_student_request.go
+./send_message_request.go
+./update_job_request.go

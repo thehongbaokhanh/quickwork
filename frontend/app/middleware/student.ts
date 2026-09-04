@@ -1,13 +1,16 @@
 import { useAuthStore } from '~/stores/auth'
 
-export default defineNuxtRouteMiddleware(() => {
+export default defineNuxtRouteMiddleware((to) => {
   const authStore = useAuthStore()
 
   if (!authStore.isAuthenticated) {
-    return navigateTo('/login')
+    return navigateTo({
+      path: '/auth/login',
+      query: { redirect: to.fullPath }
+    })
   }
 
-  if (authStore.userRole !== 'STUDENT') {
+  if (!authStore.canAccessStudentArea) {
     return navigateTo('/403')
   }
 })

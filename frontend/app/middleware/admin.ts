@@ -5,7 +5,7 @@ export default defineNuxtRouteMiddleware(() => {
 
   // Yêu cầu phải đăng nhập và phải có quyền ADMIN
   if (!authStore.isAuthenticated) {
-    return navigateTo('/login')
+    return navigateTo('/auth/login')
   }
 
   if (authStore.userRole !== 'ADMIN') {

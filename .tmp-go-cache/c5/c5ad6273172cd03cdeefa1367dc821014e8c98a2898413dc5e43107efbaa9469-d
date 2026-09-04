@@ -1,0 +1,16 @@
+./category.go
+./conversation.go
+./enterprise_profile.go
+./favorite_job.go
+./job.go
+./job_application.go
+./message.go
+./notification.go
+./skill.go
+./student_education.go
+./student_portfolio.go
+./student_profile.go
+./student_work_experience.go
+./system_setting.go
+./transaction.go
+./user.go

@@ -9,14 +9,13 @@
         >
           <Icon name="uil:bars" class="w-6 h-6" />
         </button>
-        <div class="flex items-center gap-2 font-bold text-xl text-blue-600">
-          <Icon name="uil:briefcase" class="w-6 h-6" />
-          <span>QuickWork</span>
+        <div class="flex items-center">
+          <img src="/images/brand/quickwork-wordmark-transparent.png" alt="QuickWork" class="h-10 w-auto object-contain">
         </div>
       </div>
       <div class="flex items-center gap-4">
         <span class="text-sm text-gray-500 hidden sm:inline">Chào mừng quay trở lại</span>
-        <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold text-sm">
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center font-semibold text-sm">
           U
         </div>
       </div>

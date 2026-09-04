@@ -1,57 +1,79 @@
-import axios from 'axios'
+type ApiOptions = {
+  params?: Record<string, any>
+  query?: Record<string, any>
+  headers?: HeadersInit
+  credentials?: RequestCredentials
+  auth?: boolean
+  [key: string]: any
+}
 
-// Khởi tạo một cấu hình Axios Instance chuyên biệt cho hệ thống QuickWork
-const apiClient = axios.create({
-  timeout: 10000, // 10 giây nếu backend GoFiber không phản hồi sẽ tự hủy request
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+type ApiMethod = NonNullable<NonNullable<Parameters<typeof $fetch>[1]>['method']>
+
+function isAbsoluteUrl(url: string) {
+  return /^https?:\/\//i.test(url)
+}
+
+function normalizeServerApiBase(value: unknown) {
+  const raw = String(value || '').trim().replace(/\/+$/, '')
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`
+  return /\/api\/v1$/i.test(withScheme) ? withScheme : `${withScheme}/api/v1`
+}
+
+function buildHeaders(headers?: HeadersInit, _includeAuth = true, hasJSONBody = false) {
+  const requestHeaders = new Headers(headers)
+
+  if (hasJSONBody && !requestHeaders.has('Content-Type')) {
+    requestHeaders.set('Content-Type', 'application/json')
   }
-})
 
-// Request Interceptor: Tự động đính kèm JWT Token vào Header của mọi yêu cầu
-apiClient.interceptors.request.use(
-  (config) => {
-    // Chỉ chạy ở phía Client (Trình duyệt) vì Pinia và localStorage nằm ở Client
-    if (import.meta.client) {
-      const token = localStorage.getItem('qw_access_token')
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-    }
-    return config
+  return requestHeaders
+}
+
+async function request<T = any>(
+  method: ApiMethod,
+  url: string,
+  body?: any,
+  options: ApiOptions = {},
+) {
+  const config = useRuntimeConfig()
+  const { params, query, headers, auth = true, ...fetchOptions } = options
+  const baseURL = import.meta.server
+    ? normalizeServerApiBase(config.apiBaseInternal)
+    : config.public.apiBase
+
+  const reqHeaders = buildHeaders(headers, auth, body !== undefined && !(body instanceof FormData))
+  if (body instanceof FormData) {
+    reqHeaders.delete('Content-Type')
+  }
+
+  return await $fetch<T>(url, {
+    baseURL: isAbsoluteUrl(url) ? undefined : baseURL,
+    method,
+    body,
+    query: query || params,
+    headers: reqHeaders,
+    credentials: 'include',
+    ...fetchOptions,
+  })
+}
+
+const apiClient = {
+  get<T = any>(url: string, options?: ApiOptions) {
+    return request<T>('GET', url, undefined, options)
   },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
 
-// Response Interceptor: Xử lý dữ liệu trả về tập trung và bắt lỗi bảo mật toàn cục
-apiClient.interceptors.response.use(
-  (response) => {
-    // GoFiber thường bọc dữ liệu trong một data object, chúng ta bóc tách lấy data sạch
-    return response.data
+  post<T = any>(url: string, body?: any, options?: ApiOptions) {
+    return request<T>('POST', url, body, options)
   },
-  (error) => {
-    const response = error.response
 
-    // Xử lý lỗi 401 Unauthorized tập trung (Token không hợp lệ hoặc hết hạn)
-    if (response && response.status === 401) {
-      if (import.meta.client) {
-        console.warn('Xác thực thất bại hoặc Token hết hạn. Hệ thống tự động điều hướng...')
-        // Xóa sạch dấu vết Token cũ để tránh lặp lỗi vô hạn
-        localStorage.removeItem('qw_access_token')
-        localStorage.removeItem('qw_user_role')
-        
-        // Điều hướng người dùng quay lại trang đăng nhập một cách cưỡng bức
-        window.location.href = '/login'
-      }
-    }
+  put<T = any>(url: string, body?: any, options?: ApiOptions) {
+    return request<T>('PUT', url, body, options)
+  },
 
-    // Đóng gói và chuẩn hóa định dạng thông báo lỗi trả về từ GoFiber để phía UI dễ hiển thị
-    const errorMessage = response?.data?.message || 'Đã có lỗi hệ thống xảy ra, vui lòng thử lại.'
-    return Promise.reject(new Error(errorMessage))
-  }
-)
+  delete<T = any>(url: string, options?: ApiOptions) {
+    return request<T>('DELETE', url, undefined, options)
+  },
+}
 
+export type ApiClient = typeof apiClient
 export default apiClient

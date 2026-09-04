@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --no-fork",
     "generate": "nuxt generate",
+    "typecheck": "vue-tsc --noEmit --incremental false",
+    "typecheck:watch": "vue-tsc --noEmit --incremental false --watch",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
@@ -14,17 +16,21 @@
     "@vueuse/nuxt": "^14.3.0",
     "axios": "^1.18.1",
     "eslint": "^10.5.0",
+    "leaflet": "^1.9.4",
     "nuxt": "^4.4.8",
     "pinia": "^3.0.4",
     "vue": "^3.5.38",
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
+    "@iconify-json/svg-spinners": "^1.2.4",
+    "@iconify-json/uil": "^1.2.3",
     "@nuxt/eslint": "^1.16.0",
     "@nuxt/fonts": "^0.14.0",
     "@nuxt/icon": "^2.2.3",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@pinia/nuxt": "^0.11.3",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^26.0.0",
     "@vueuse/core": "^14.3.0",
     "typescript": "^6.0.3",

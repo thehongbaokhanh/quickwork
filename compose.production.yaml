@@ -1,0 +1,110 @@
+services:
+  nginx:
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: ${TLS_CERT_PATH:?Set TLS_CERT_PATH in .env.production}
+        target: /etc/nginx/certs/fullchain.pem
+        read_only: true
+      - type: bind
+        source: ${TLS_KEY_PATH:?Set TLS_KEY_PATH in .env.production}
+        target: /etc/nginx/certs/privkey.pem
+        read_only: true
+
+  frontend:
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  backend:
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      CLOUDINARY_URL: ${CLOUDINARY_URL:?Set CLOUDINARY_URL in .env.production}
+      AUTH_COOKIE_SECURE: "true"
+      AUTH_EXPOSE_TOKENS: "false"
+      UPLOAD_MALWARE_SCAN_REQUIRED: "true"
+      CLAMAV_ADDRESS: clamav:3310
+    depends_on:
+      clamav:
+        condition: service_healthy
+
+  mysql:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+
+  rabbitmq:
+    restart: unless-stopped
+
+  clamav:
+    image: clamav/clamav:1.5.4
+    restart: unless-stopped
+    volumes:
+      - clamav_data:/var/lib/clamav
+    networks:
+      - data
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  backup:
+    build:
+      context: ./deploy/backup
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Set RESTIC_REPOSITORY in .env.production}
+      RESTIC_PASSWORD_FILE: /run/secrets/restic_password
+      AWS_SHARED_CREDENTIALS_FILE: /run/secrets/aws_credentials
+      RESTIC_CACHE_DIR: /tmp/restic-cache
+      DB_HOST: mysql
+      DB_NAME: ${MYSQL_DATABASE:?Set MYSQL_DATABASE in .env.production}
+      DB_USER: ${MYSQL_USER:?Set MYSQL_USER in .env.production}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env.production}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+    secrets:
+      - restic_password
+      - aws_credentials
+    volumes:
+      - uploads_data:/uploads:ro
+    networks:
+      - edge
+      - data
+    depends_on:
+      mysql:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  clamav_data:
+
+secrets:
+  restic_password:
+    file: ${RESTIC_PASSWORD_FILE:?Set RESTIC_PASSWORD_FILE in .env.production}
+  aws_credentials:
+    file: ${AWS_CREDENTIALS_FILE:?Set AWS_CREDENTIALS_FILE in .env.production}

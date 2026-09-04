@@ -1,0 +1,23 @@
+# Automatically loaded by plain `docker compose` commands for local testing.
+# Production commands use explicit -f files, so this override is not applied there.
+services:
+  nginx:
+    ports:
+      - "127.0.0.1:80:80"
+    volumes:
+      - type: bind
+        source: ./deploy/nginx/quickwork.local.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+
+  backend:
+    environment:
+      APP_ENV: development
+      DB_SEED_ENABLED: ${DB_SEED_ENABLED:-true}
+
+  rabbitmq:
+    ports:
+      - "127.0.0.1:15672:15672"
+    networks:
+      - edge
+      - data

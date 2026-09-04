@@ -2,8 +2,15 @@
 import apiClient from './api'
 
 export const CompanyService = {
+  async getStudentCompanyProfile(id: string | number) {
+    return apiClient.get(`/student/companies/${id}`)
+  },
+
   async getProfile() {
-    const config = useRuntimeConfig()
-    return apiClient.get(`${config.public.apiBase}/company/profile`)
+    return apiClient.get('/enterprise/profile')
+  },
+
+  async updateProfile(body: any) {
+    return apiClient.put('/enterprise/profile', body)
   }
 }
