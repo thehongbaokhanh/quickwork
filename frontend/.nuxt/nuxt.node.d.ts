@@ -1,6 +1,6 @@
 /// <reference types="@pinia/nuxt" />
-/// <reference types="@nuxt/eslint" />
 /// <reference types="@nuxt/icon" />
+/// <reference types="@nuxt/eslint" />
 /// <reference types="@nuxtjs/tailwindcss" />
 /// <reference types="@nuxt/fonts" />
 /// <reference types="@nuxt/devtools" />

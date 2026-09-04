@@ -24,6 +24,15 @@ Tai lieu nay dung de ghi lai loi, thay doi, cach sua va ket qua kiem tra cua du 
 
 ## Da xu ly
 
+### 2026-09-04 - Chuyen Render Blueprint sang ban demo Docker mien phi
+
+- Thay `render.yaml` $85/thang bang topology `quickwork-free` + `quickwork-redis-free`, khong persistent disk; luu topology production cu tai `render.production.yaml`.
+- Them `Dockerfile.render-free` multi-stage va supervisor shell de chay Nuxt public cung Go API loopback trong mot Render Free Web Service, van giu API/cookie same-origin.
+- Them `APP_ENV=demo`: van validate secret, HTTPS cookie, CORS, Cloudinary va TiDB TLS; chi cho phep Key Value noi bo khong password, MQ tat va upload khong ClamAV theo gioi han demo da ghi ro.
+- Them `DB_TLS` vao DSN MySQL de ket noi TiDB Cloud Starter qua TLS; MySQL local/production cu mac dinh khong doi.
+- Cap nhat tai lieu kien truc va deploy, tach ro free demo va paid production.
+- Da xac minh `go test ./...`, `go build ./cmd/api`, `npm run typecheck`, `npm run build`, cu phap supervisor va schema cua ca hai Blueprint. Docker image smoke test tren may bi chan vi Docker Desktop/WSL engine khong khoi dong; Render se build image nay tren ha tang cua Render sau khi push.
+
 ### 2026-09-03 - Chuan hoa QuickWork cho Render Blueprint
 
 - Them `render.yaml` production gom Nuxt web public, Go API private, MySQL co disk, managed Key Value, RabbitMQ co disk va ClamAV; secret duoc tao/nhap tren Render va truyen noi bo, khong hardcode.

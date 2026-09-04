@@ -1,49 +1,26 @@
-# QuickWork Render Blueprint.
-# This production topology creates paid private services and persistent disks.
-# Render shows the estimated cost before applying the Blueprint.
+# QuickWork free demo Blueprint.
+# One Docker web service runs both Nuxt and Go. TiDB Cloud supplies the
+# external MySQL-compatible database; Render Key Value supplies ephemeral
+# Redis-compatible storage. See DEPLOYMENT.md before applying this Blueprint.
 services:
   - type: web
-    name: quickwork-web
+    name: quickwork-free
     runtime: docker
     region: singapore
-    plan: 0.5c-512mb
-    rootDir: frontend
-    dockerfilePath: ./Dockerfile
+    plan: free
+    dockerfilePath: ./Dockerfile.render-free
     dockerContext: .
     healthCheckPath: /
     maxShutdownDelaySeconds: 30
     envVars:
       - key: HOST
         value: 0.0.0.0
-      - key: NUXT_PUBLIC_API_BASE
-        value: /api/v1
-      - key: NUXT_PUBLIC_GEOCODING_BASE_URL
-        value: https://nominatim.openstreetmap.org
-      - key: NUXT_API_BASE_INTERNAL
-        fromService:
-          type: pserv
-          name: quickwork-api
-          property: hostport
-      - key: NUXT_API_PROXY_TARGET
-        fromService:
-          type: pserv
-          name: quickwork-api
-          property: hostport
-
-  - type: pserv
-    name: quickwork-api
-    runtime: docker
-    region: singapore
-    plan: 0.5c-512mb
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
-    maxShutdownDelaySeconds: 60
-    envVars:
+      - key: APP_PORT
+        value: "8080"
       - key: APP_NAME
         value: QuickWork
       - key: APP_ENV
-        value: production
+        value: demo
       - key: ADMIN_SECRET
         generateValue: true
       - key: ADMIN_IP_ALLOWLIST
@@ -63,71 +40,39 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         fromService:
           type: web
-          name: quickwork-web
+          name: quickwork-free
           envVarKey: RENDER_EXTERNAL_HOSTNAME
       - key: DB_HOST
-        fromService:
-          type: pserv
-          name: quickwork-mysql
-          property: host
+        sync: false
       - key: DB_PORT
-        value: "3306"
+        value: "4000"
       - key: DB_NAME
-        fromService:
-          type: pserv
-          name: quickwork-mysql
-          envVarKey: MYSQL_DATABASE
+        sync: false
       - key: DB_USER
-        fromService:
-          type: pserv
-          name: quickwork-mysql
-          envVarKey: MYSQL_USER
+        sync: false
       - key: DB_PASSWORD
-        fromService:
-          type: pserv
-          name: quickwork-mysql
-          envVarKey: MYSQL_PASSWORD
+        sync: false
+      - key: DB_TLS
+        value: "true"
       - key: REDIS_URL
         fromService:
           type: keyvalue
-          name: quickwork-redis
+          name: quickwork-redis-free
           property: connectionString
       - key: CLOUDINARY_URL
         sync: false
       - key: UPLOAD_MALWARE_SCAN_REQUIRED
-        value: "true"
-      - key: CLAMAV_ADDRESS
-        fromService:
-          type: pserv
-          name: quickwork-clamav
-          property: hostport
+        value: "false"
       - key: MQ_ENABLED
-        value: "true"
-      - key: RABBITMQ_HOST
-        fromService:
-          type: pserv
-          name: quickwork-rabbitmq
-          property: host
-      - key: RABBITMQ_PORT
-        value: "5672"
-      - key: RABBITMQ_USERNAME
-        fromService:
-          type: pserv
-          name: quickwork-rabbitmq
-          envVarKey: RABBITMQ_DEFAULT_USER
-      - key: RABBITMQ_PASSWORD
-        fromService:
-          type: pserv
-          name: quickwork-rabbitmq
-          envVarKey: RABBITMQ_DEFAULT_PASS
-      - key: RABBITMQ_EXCHANGE
-        value: quickwork.events
-      - key: RABBITMQ_QUEUE
-        value: quickwork.notifications
-      - key: RABBITMQ_ROUTING_KEY
-        value: notification.create
-      - key: RABBITMQ_PREFETCH
-        value: "20"
+        value: "false"
+      - key: NUXT_PUBLIC_API_BASE
+        value: /api/v1
+      - key: NUXT_API_BASE_INTERNAL
+        value: http://127.0.0.1:8080/api/v1
+      - key: NUXT_API_PROXY_TARGET
+        value: http://127.0.0.1:8080
+      - key: NUXT_PUBLIC_GEOCODING_BASE_URL
+        value: https://nominatim.openstreetmap.org
       - key: OPENAI_MODEL
         value: gpt-4o-mini
       - key: OPENAI_BASE_URL
@@ -139,62 +84,9 @@ services:
       - key: JOB_MATCH_AI_TIMEOUT_SECONDS
         value: "12"
 
-  - type: pserv
-    name: quickwork-mysql
-    runtime: image
-    region: singapore
-    plan: 1c-2g
-    image:
-      url: docker.io/library/mysql:8.4.11
-    disk:
-      name: quickwork-mysql-data
-      mountPath: /var/lib/mysql
-      sizeGB: 10
-    envVars:
-      - key: MYSQL_DATABASE
-        value: quickwork
-      - key: MYSQL_USER
-        value: quickwork
-      - key: MYSQL_PASSWORD
-        generateValue: true
-      - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
-
   - type: keyvalue
-    name: quickwork-redis
+    name: quickwork-redis-free
     region: singapore
-    plan: 256mb
+    plan: free
     ipAllowList: []
     maxmemoryPolicy: noeviction
-    persistenceMode: journal-snapshot
-
-  - type: pserv
-    name: quickwork-rabbitmq
-    runtime: image
-    region: singapore
-    plan: 0.5c-512mb
-    image:
-      url: docker.io/library/rabbitmq:4.3.5-management-alpine
-    disk:
-      name: quickwork-rabbitmq-data
-      mountPath: /var/lib/rabbitmq
-      sizeGB: 5
-    envVars:
-      - key: RABBITMQ_DEFAULT_USER
-        value: quickwork
-      - key: RABBITMQ_DEFAULT_PASS
-        generateValue: true
-      - key: RABBITMQ_NODENAME
-        value: rabbit@localhost
-
-  - type: pserv
-    name: quickwork-clamav
-    runtime: image
-    region: singapore
-    plan: 1c-2g
-    image:
-      url: docker.io/clamav/clamav:1.5.4
-    disk:
-      name: quickwork-clamav-data
-      mountPath: /var/lib/clamav
-      sizeGB: 1

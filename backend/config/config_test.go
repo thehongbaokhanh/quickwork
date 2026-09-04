@@ -37,6 +37,33 @@ func TestValidateDevelopmentAllowsOptionalProviders(t *testing.T) {
 	}
 }
 
+func TestValidateDemoAllowsDocumentedFreeTierTradeoffs(t *testing.T) {
+	cfg := &Config{
+		AppEnv:                    "demo",
+		AdminSecret:               "0123456789abcdef0123456789abcdef",
+		AdminIPAllowlist:          "203.0.113.10/32",
+		DBPassword:                "0123456789abcdef",
+		DBTLS:                     "true",
+		DatabaseSeedEnabled:       false,
+		RedisURL:                  "redis://quickwork-redis:6379",
+		JWTSecret:                 "0123456789abcdef0123456789abcdef",
+		AuthCookieSecure:          true,
+		AuthExposeTokens:          false,
+		CORSAllowedOrigins:        "https://quickwork-free.onrender.com",
+		CloudinaryURL:             "cloudinary://1234567890:0123456789abcdef@quickwork-demo",
+		UploadMalwareScanRequired: false,
+		MessageQueueEnabled:       false,
+	}
+	if err := cfg.ValidateProduction(); err != nil {
+		t.Fatalf("expected documented free-tier demo config to pass, got %v", err)
+	}
+
+	cfg.DBTLS = "false"
+	if err := cfg.ValidateProduction(); err == nil {
+		t.Fatal("expected demo database without TLS to fail closed")
+	}
+}
+
 func TestLoadConfigUsesRenderPortAndManagedServiceURLs(t *testing.T) {
 	t.Setenv("APP_PORT", "")
 	t.Setenv("PORT", "10000")

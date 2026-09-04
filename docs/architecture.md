@@ -1,6 +1,6 @@
 # Architecture
 
-Last updated: 2026-09-03
+Last updated: 2026-09-04
 
 ## Product Context
 
@@ -75,7 +75,7 @@ Local verification uses the automatically loaded `compose.override.yaml`. It rep
 
 Cloudflare demo sharing adds the explicit `compose.tunnel.yaml` overlay. Its locked-down `cloudflared` container joins only `edge` and exposes the existing Nginx origin through a temporary `trycloudflare.com` hostname; it cannot reach the private `data` network directly. Browser API requests use the same-origin `/api/v1` base so a remote browser never resolves `localhost` on the visitor device. Nuxt server rendering uses private runtime config `apiBaseInternal` (`http://backend:8080/api/v1` in Compose), while `apiClient` selects the internal base on the server and the public base in the browser. `scripts/start-quick-tunnel.ps1` owns rebuild, tunnel recreation, URL discovery, DNS-safe public health verification and output; `scripts/stop-quick-tunnel.ps1` stops only the tunnel service.
 
-Render production deployment is defined by root `render.yaml`. Only the Nuxt web service is public. Nitro catch-all routes proxy `/api/*` and `/uploads/*` to the private Go service using server-only `apiProxyTarget`; browser API configuration remains `/api/v1`, preserving first-party strict cookies. SSR API requests normalize Render's scheme-less private `hostport` and append `/api/v1`. The Go config accepts Render's `PORT`, managed Key Value `REDIS_URL`, and discrete RabbitMQ host/credential variables while retaining the existing Compose variables. MySQL, RabbitMQ and ClamAV run as disk-backed/private image services; Key Value uses its private connection string.
+The default Render deployment is the free demo topology in root `render.yaml`. `Dockerfile.render-free` builds the Go API and Nuxt server into one image; `deploy/render-free/start.sh` supervises both processes. Nuxt owns Render's public `PORT`, while Go listens on container loopback `APP_PORT=8080`; Nitro proxies `/api/*` and `/uploads/*` to that loopback origin, preserving same-origin strict cookies. The demo uses a TLS-enforced external TiDB Cloud Starter database and Render Key Value Free, disables MQ/ClamAV explicitly, and validates the remaining production-like security settings under `APP_ENV=demo`. The former paid topology remains in `render.production.yaml`: separate Nuxt web and private Go services plus disk-backed MySQL, RabbitMQ and ClamAV.
 
 ## Backend Layering
 

@@ -1,0 +1,63 @@
+# syntax=docker/dockerfile:1.7
+
+FROM golang:1.26.7-alpine AS backend-build
+
+WORKDIR /src/backend
+
+RUN apk add --no-cache ca-certificates git tzdata
+
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+
+COPY backend/ .
+RUN mkdir -p /out \
+    && CGO_ENABLED=0 GOOS=linux go build \
+    -trimpath \
+    -ldflags="-s -w" \
+    -o /out/quickwork-api \
+    ./cmd/api
+
+FROM node:24-alpine AS frontend-dependencies
+
+WORKDIR /src/frontend
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+
+FROM frontend-dependencies AS frontend-build
+
+COPY frontend/ .
+
+ENV NODE_ENV=production
+
+RUN npm run build
+
+FROM node:24-alpine AS runtime
+
+RUN apk add --no-cache ca-certificates tzdata
+
+WORKDIR /app
+
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=10000 \
+    APP_PORT=8080 \
+    NUXT_PUBLIC_API_BASE=/api/v1 \
+    NUXT_API_BASE_INTERNAL=http://127.0.0.1:8080/api/v1 \
+    NUXT_API_PROXY_TARGET=http://127.0.0.1:8080
+
+COPY --from=backend-build /out/quickwork-api ./quickwork-api
+COPY --from=frontend-build /src/frontend/.output ./.output
+COPY deploy/render-free/start.sh ./start-render-free.sh
+
+RUN sed -i 's/\r$//' ./start-render-free.sh \
+    && chmod +x ./start-render-free.sh \
+    && mkdir -p /app/uploads \
+    && chown -R node:node /app
+
+USER node
+
+EXPOSE 10000
+
+ENTRYPOINT ["./start-render-free.sh"]
+

@@ -57,8 +57,8 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // Render exposes the Go API only on its private network. Nitro proxies
-    // browser /api and /uploads requests to this server-only origin.
+    // Nitro proxies browser /api and /uploads requests to this server-only
+    // origin (a private service in production or loopback in the free demo).
     apiProxyTarget:
       process.env.NUXT_API_PROXY_TARGET ||
       'http://localhost:8080',

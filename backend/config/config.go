@@ -27,6 +27,7 @@ type Config struct {
 	DBName                    string
 	DBUser                    string
 	DBPassword                string
+	DBTLS                     string
 	DatabaseSeedEnabled       bool
 	RedisURL                  string
 	RedisHost                 string
@@ -108,6 +109,7 @@ func LoadConfig() (*Config, error) {
 		DBName:                    getEnv("DB_NAME", "quickwork"),
 		DBUser:                    getEnv("DB_USER", "root"),
 		DBPassword:                getEnv("DB_PASSWORD", "khanhanhan"),
+		DBTLS:                     getEnv("DB_TLS", "false"),
 		DatabaseSeedEnabled:       databaseSeedEnabled,
 		RedisURL:                  redisURL,
 		RedisHost:                 getEnv("REDIS_HOST", "127.0.0.1"),
@@ -143,12 +145,20 @@ func LoadConfig() (*Config, error) {
 	return cfg, nil
 }
 
-// ValidateProduction rejects unsafe or incomplete production settings before
-// any network listener is opened.
+// ValidateProduction rejects unsafe or incomplete production-like settings
+// before any network listener is opened. The demo environment keeps all
+// authentication and transport safeguards, but explicitly permits the two
+// infrastructure trade-offs documented for the free Render tier: an
+// unauthenticated private Key Value URL and uploads without ClamAV.
 func (c *Config) ValidateProduction() error {
-	if c == nil || !strings.EqualFold(strings.TrimSpace(c.AppEnv), "production") {
+	if c == nil {
 		return nil
 	}
+	environment := strings.ToLower(strings.TrimSpace(c.AppEnv))
+	if environment != "production" && environment != "demo" {
+		return nil
+	}
+	isDemo := environment == "demo"
 
 	var problems []string
 	requireSecret := func(name string, value string, minimum int) {
@@ -170,7 +180,9 @@ func (c *Config) ValidateProduction() error {
 			redisPassword = passwordFromURL(c.RedisURL)
 		}
 	}
-	requireSecret("REDIS_PASSWORD", redisPassword, 16)
+	if !isDemo {
+		requireSecret("REDIS_PASSWORD", redisPassword, 16)
+	}
 
 	if c.MessageQueueEnabled {
 		rabbitURL, err := url.Parse(strings.TrimSpace(c.RabbitMQURL))
@@ -200,6 +212,9 @@ func (c *Config) ValidateProduction() error {
 	if c.DatabaseSeedEnabled {
 		problems = append(problems, "DB_SEED_ENABLED must be false")
 	}
+	if isDemo && !strings.EqualFold(strings.TrimSpace(c.DBTLS), "true") {
+		problems = append(problems, "DB_TLS must be true for the external demo database")
+	}
 	if strings.TrimSpace(c.AdminIPAllowlist) == "" || containsPlaceholder(c.AdminIPAllowlist) {
 		problems = append(problems, "ADMIN_IP_ALLOWLIST must contain the trusted admin IPv4/CIDR range")
 	}
@@ -216,15 +231,21 @@ func (c *Config) ValidateProduction() error {
 		}
 	}
 
-	if !c.UploadMalwareScanRequired {
-		problems = append(problems, "UPLOAD_MALWARE_SCAN_REQUIRED must be true")
-	}
-	if strings.TrimSpace(c.ClamAVAddress) == "" {
-		problems = append(problems, "CLAMAV_ADDRESS is required when malware scanning is enabled")
+	if isDemo {
+		if c.UploadMalwareScanRequired && strings.TrimSpace(c.ClamAVAddress) == "" {
+			problems = append(problems, "CLAMAV_ADDRESS is required when malware scanning is enabled")
+		}
+	} else {
+		if !c.UploadMalwareScanRequired {
+			problems = append(problems, "UPLOAD_MALWARE_SCAN_REQUIRED must be true")
+		}
+		if strings.TrimSpace(c.ClamAVAddress) == "" {
+			problems = append(problems, "CLAMAV_ADDRESS is required when malware scanning is enabled")
+		}
 	}
 
 	if len(problems) > 0 {
-		return fmt.Errorf("unsafe production configuration: %s", strings.Join(problems, "; "))
+		return fmt.Errorf("unsafe %s configuration: %s", environment, strings.Join(problems, "; "))
 	}
 	return nil
 }

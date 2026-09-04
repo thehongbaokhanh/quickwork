@@ -212,7 +212,7 @@ func main() {
 	routes.RegisterAdminSettingsRoutes(adminGroup, adminSettingsHandler)
 	routes.RegisterAdminRoutes(adminGroup, adminHandler)
 
-	if !strings.EqualFold(cfg.AppEnv, "production") {
+	if strings.EqualFold(cfg.AppEnv, "development") {
 		app.Get("/swagger/*", swagger.HandlerDefault)
 	}
 
@@ -223,8 +223,12 @@ func main() {
 		}
 	}()
 
-	log.Println("Server started at :" + cfg.AppPort)
-	if err := app.Listen(":" + cfg.AppPort); err != nil {
+	listenAddress := ":" + cfg.AppPort
+	if strings.EqualFold(cfg.AppEnv, "demo") {
+		listenAddress = "127.0.0.1:" + cfg.AppPort
+	}
+	log.Println("Server started at " + listenAddress)
+	if err := app.Listen(listenAddress); err != nil {
 		log.Printf("Server stopped: %v", err)
 	}
 	stopRuntime()

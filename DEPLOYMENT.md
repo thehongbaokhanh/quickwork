@@ -27,7 +27,9 @@ Chi Nginx publish cong 80 va 443. MySQL, Redis va RabbitMQ chi nam trong Docker 
 - `compose.production.yaml`: publish HTTPS va ap dung restart policy.
 - `deploy/nginx/quickwork.conf`: terminate TLS va reverse proxy.
 - `.env.production.example`: danh sach bien can dien, khong chua secret that.
-- `render.yaml`: Blueprint Render cho frontend public, API private, MySQL, Key Value, RabbitMQ va ClamAV.
+- `render.yaml`: Blueprint demo mien phi, mot container chay ca Nuxt va Go, kem Render Key Value Free.
+- `render.production.yaml`: Blueprint production tra phi voi API private, MySQL, RabbitMQ, ClamAV va persistent disk.
+- `Dockerfile.render-free`: multi-stage build gop Go API va Nuxt server vao mot image Render Free.
 
 Volume duoc giu lai khi container duoc tao lai:
 
@@ -108,34 +110,53 @@ Khong khoi dong dong thoi `docker-compose.rabbitmq.yml` va full stack vi hai cau
 
 ## Trien khai bang Render Blueprint
 
-`render.yaml` tao mot topology production trong region Singapore:
+### Ban demo mien phi mac dinh
+
+`render.yaml` tao topology demo $0/thang trong region Singapore:
 
 ```text
 Internet
-  -> quickwork-web (Render Web Service)
-       /api/*, /uploads/* -> Nuxt server proxy
-                             -> quickwork-api (private service)
-                                  -> MySQL + Key Value + RabbitMQ + ClamAV
-                                  -> Cloudinary
+  -> quickwork-free (Render Free Web Service, mot Docker container)
+       -> Nuxt :$PORT
+            /api/*, /uploads/* -> Go API 127.0.0.1:8080
+                                      -> TiDB Cloud Starter (TLS)
+                                      -> Render Key Value Free
+                                      -> Cloudinary
 ```
 
-Backend khong co URL public. Trinh duyet chi goi same-origin `/api/v1`, vi vay cookie `HttpOnly`, `Secure`, `SameSite=Strict` van hoat dong tren hostname `onrender.com`. `NUXT_API_BASE_INTERNAL` va `NUXT_API_PROXY_TARGET` duoc Blueprint lay tu `hostport` private cua backend. Backend tu dong doc `PORT` cua Render, `REDIS_URL` cua managed Key Value, va tao URL AMQP an toan tu cac bien RabbitMQ rieng le.
+Nuxt la tien trinh public duy nhat. Go API chi nghe tren loopback ben trong cung container; trinh duyet goi same-origin `/api/v1`, vi vay cookie `HttpOnly`, `Secure`, `SameSite=Strict` van hoat dong. Script `deploy/render-free/start.sh` giam sat ca hai tien trinh va lam container fail neu mot tien trinh dung.
 
-Blueprint nay tao private service, managed Key Value va persistent disk co tinh phi. Render hien chi phi truoc khi nguoi dung xac nhan; khong deploy neu chua chap nhan chi phi.
+Tao TiDB Cloud Starter truoc khi tao Blueprint. Trong TiDB Cloud, tao mot cluster Starter, tao database `quickwork`, mo trang **Connect**, chon region gan Singapore va ghi lai host, port, database, username, password. Backend dat `DB_TLS=true`; khong tai CA rieng vi image da co system CA bundle.
 
 1. Commit va push `render.yaml` cung source len GitHub.
 2. Trong Render Dashboard, chon **New -> Blueprint**.
 3. Ket noi repository QuickWork, chon branch chua thay doi nay va giu Blueprint path la `render.yaml`.
-4. Tai man hinh khoi tao, dien hai bien `sync: false`:
+4. Tai man hinh khoi tao, dien cac bien `sync: false`:
    - `ADMIN_IP_ALLOWLIST`: IPv4/CIDR tin cay cua quan tri vien, vi du `203.0.113.10/32`.
    - `CLOUDINARY_URL`: `cloudinary://api_key:api_secret@cloud_name`.
-5. Xem danh sach service/chi phi, sau do chon **Deploy Blueprint**.
-6. Cho MySQL, Key Value, RabbitMQ va ClamAV san sang; backend se chay migration, sau do frontend moi pass health check.
-7. Mo URL cua `quickwork-web` va kiem tra `/api/v1/jobs`. Khong dung URL private cua `quickwork-api` tren trinh duyet.
+   - `DB_HOST`: hostname TiDB, khong kem `https://`.
+   - `DB_NAME`: `quickwork` hoac database da tao.
+   - `DB_USER`: username TiDB.
+   - `DB_PASSWORD`: password TiDB, toi thieu 16 ky tu.
+5. Xac nhan preview chi co `quickwork-free` va `quickwork-redis-free`, estimated cost `$0/month`, sau do chon **Deploy Blueprint**.
+6. Cho Key Value va container build xong; backend tu chay migration tren TiDB.
+7. Mo URL cua `quickwork-free` va kiem tra `/api/v1/jobs`.
 
-Secret MySQL, RabbitMQ, JWT va admin duoc Render tao bang `generateValue` va truyen noi bo bang `fromService`; khong copy chung vao Git. `CORS_ALLOWED_ORIGINS` lay hostname public do Render cap cho frontend va backend chuan hoa thanh HTTPS.
+`APP_ENV=demo` van bat buoc JWT/admin secret manh, HTTPS cookie, CORS HTTPS ro rang, tat seed va TiDB TLS. Hai ngoai le co chu dich cho free tier: Key Value noi bo co the khong dung password va upload van kiem tra kich thuoc/duoi file/chu ky file nhung khong quet ClamAV. `MQ_ENABLED=false` nen thong bao duoc ghi truc tiep trong transaction thay vi qua RabbitMQ.
 
-Google OAuth va OpenAI la tuy chon, khong dat secret rong trong Blueprint. Neu can, them thu cong vao Environment cua `quickwork-api`:
+Gioi han cua ban free:
+
+- Render Web Service sleep sau 15 phut khong co request; cold start co the mat khoang mot phut.
+- Key Value Free khong persistent; blacklist token, limiter va recommendation cache co the mat khi service restart.
+- Khong co ClamAV; khong dung topology nay cho production hoac file khong tin cay o quy mo that.
+- Khong co RabbitMQ/outbox consumer; luong notification dong bo van hoat dong.
+- TiDB Starter co quota; theo doi usage tai TiDB Cloud.
+
+### Ban production tra phi
+
+Khi can private service, RabbitMQ, ClamAV va disk rieng, tao Blueprint moi voi path `render.production.yaml`. Khong de cung mot resource bi quan ly boi ca hai Blueprint. File nay giu topology production cu va van yeu cau `ADMIN_IP_ALLOWLIST`, `CLOUDINARY_URL`.
+
+Google OAuth va OpenAI la tuy chon. Voi ban free, them thu cong vao Environment cua `quickwork-free`; voi ban production, them vao `quickwork-api`:
 
 ```text
 GOOGLE_CLIENT_ID
